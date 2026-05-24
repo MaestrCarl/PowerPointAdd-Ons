@@ -3,233 +3,276 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Floating Timer</title>
+    <title>Timer Toolbox - Mr. Carlo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --accent: #15c4c4;
-            --bg: #fdfdfd;
-            --text: #333;
-            --red: #ef5350;
+            --accent-color-value: #15c4c4; --bg-color: #fdfdfd; --text-color: #333; --text-color-light: #555;
+            --header-bg-color: #ffffff; --panel-bg-color: #f8f9fa; --primary-color: var(--accent-color-value);
+            --gray-color: #e0e0e0; --border-radius: 12px; --primary-color-rgb: 21, 196, 196;
+        }
+        .dark-mode {
+            --bg-color: #212529; --text-color: #dee2e6; --header-bg-color: #2c3034; --panel-bg-color: #343a40;
+            --primary-color: #15c4c4; --gray-color: #495057;
         }
 
-        body {
-            font-family: 'Montserrat', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: transparent; /* Allows PPT slide to show through corners if needed */
-            overflow: hidden;
-            color: var(--text);
-        }
-
-        .main-container {
-            width: 100vw;
-            height: 100vh;
-            background-color: var(--bg);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            box-sizing: border-box;
-            transition: all 0.3s ease;
-        }
-
-        /* Mode Switcher Buttons - Floating Top Right */
-        .mode-toolbar {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            display: flex;
-            gap: 5px;
-            z-index: 100;
-            opacity: 0.2;
-            transition: opacity 0.3s;
-        }
-        .mode-toolbar:hover { opacity: 1; }
+        body { font-family: 'Montserrat', sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-color); overflow-x: hidden; }
         
-        .mode-btn {
-            background: #eee;
-            border: none;
-            padding: 5px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 10px;
-            font-weight: bold;
-            text-transform: uppercase;
+        /* PowerPoint Floating Toolbar */
+        .view-toggle {
+            position: fixed; top: 10px; right: 10px; z-index: 1000;
+            display: flex; gap: 5px; opacity: 0.4; transition: 0.3s;
         }
-        .mode-btn:hover { background: var(--accent); color: white; }
-
-        /* View Modes */
-        .view-section {
-            flex: 1;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
+        .view-toggle:hover { opacity: 1; }
+        .view-toggle button { 
+            background: var(--primary-color); color: white; border: none; 
+            padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 10px;
         }
 
-        .active { display: flex !important; }
+        /* Container & Layout */
+        .container { padding: 15px; max-width: 100%; box-sizing: border-box; }
+        .full-view { display: block; }
+        .mini-view { display: none; height: 100vh; width: 100vw; justify-content: center; align-items: center; text-align: center; }
+        
+        /* Tabs */
+        .tab-container { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 10px; border-bottom: 1px solid var(--gray-color); margin-bottom: 15px; }
+        .tab-button { background: none; border: none; padding: 8px 12px; cursor: pointer; color: var(--text-color-light); font-weight: 600; white-space: nowrap; }
+        .tab-button.active { color: var(--primary-color); border-bottom: 2px solid var(--primary-color); }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
 
-        /* Full Mode Styles */
-        h2 { margin: 0 0 10px 0; color: var(--accent); font-size: 1.2rem; }
-        .input-group { margin-bottom: 15px; }
-        input {
-            width: 60px;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            text-align: center;
-            font-family: inherit;
-        }
-        .controls button {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 600;
-            margin: 5px;
-        }
-        .controls .reset-btn { background: #999; }
+        /* Timer UI Elements */
+        .timer-wrapper { background: var(--panel-bg-color); padding: 15px; border-radius: var(--border-radius); margin-bottom: 10px; position: relative; }
+        .timer-display { font-size: 2.2em; font-weight: 300; text-align: center; margin: 10px 0; }
+        .mini-display-text { font-size: 20vw; font-weight: 700; color: var(--primary-color); }
+        
+        .timer-controls { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+        .timer-controls button, .add-btn { background: var(--primary-color); color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.9em; }
+        
+        input[type="number"], input[type="text"] { padding: 5px; border: 1px solid var(--gray-color); border-radius: 5px; background: var(--bg-color); color: var(--text-color); width: 50px; text-align: center; }
+        .timer-name { width: 100%; border: none; background: transparent; font-weight: 600; border-bottom: 1px dashed var(--gray-color); margin-bottom: 10px; color: var(--text-color); }
 
-        /* Mini-Time Mode Styles */
-        #display-mini {
-            font-size: 25vw;
-            font-weight: 700;
-            color: var(--accent);
-        }
+        /* Progress Bars (Silent/Race) */
+        .progress-track { height: 15px; width: 100%; background: var(--gray-color); border-radius: 10px; margin: 10px 0; overflow: hidden; position: relative; }
+        .progress-bar { height: 100%; background: var(--primary-color); width: 0%; transition: 0.3s; }
+        .race-runner { position: absolute; top: -5px; transition: 0.1s; font-size: 1.2em; }
 
-        /* Circle Mode Styles */
-        svg {
-            width: 80%;
-            height: 80%;
-            transform: rotate(-90deg);
-        }
-        circle {
-            fill: none;
-            stroke-width: 8;
-            stroke-linecap: round;
-        }
-        .circle-bg { stroke: #eee; }
-        .circle-prog {
-            stroke: var(--accent);
-            stroke-dasharray: 251.2; /* 2 * PI * 40 */
-            stroke-dashoffset: 251.2;
-            transition: stroke-dashoffset 1s linear;
-        }
+        /* Laps */
+        .split-list { list-style: none; padding: 0; max-height: 80px; overflow-y: auto; font-size: 0.8em; }
+        
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-content { background: var(--bg-color); padding: 20px; border-radius: 12px; text-align: center; width: 80%; }
 
-        /* Alert State */
-        .time-up { color: var(--red) !important; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.5; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div class="mode-toolbar">
-        <button class="mode-btn" onclick="switchMode('full')">Settings</button>
-        <button class="mode-btn" onclick="switchMode('mini')">Time</button>
-        <button class="mode-btn" onclick="switchMode('circle')">Circle</button>
+    <div class="view-toggle">
+        <button onclick="toggleDarkMode()"><i class="fas fa-moon"></i></button>
+        <button onclick="switchView('full')">Full</button>
+        <button onclick="switchView('mini')">Mini</button>
     </div>
 
-    <div class="main-container">
-        
-        <!-- FULL SETTINGS MODE -->
-        <div id="view-full" class="view-section active">
-            <h2>Timer Settings</h2>
-            <div class="input-group">
-                <input type="number" id="mins" value="5" min="0"> : 
-                <input type="number" id="secs" value="0" min="0" max="59">
-            </div>
-            <div id="display-full" style="font-size: 2rem; margin: 10px 0;">05:00</div>
-            <div class="controls">
-                <button onclick="startTimer()">START</button>
-                <button class="reset-btn" onclick="resetTimer()">RESET</button>
-            </div>
+    <!-- MAIN TOOLBOX (FULL) -->
+    <div id="full-view" class="container full-view">
+        <div class="tab-container" id="tabs">
+            <button class="tab-button active" onclick="openTab('stopwatch')">Stopwatch</button>
+            <button class="tab-button" onclick="openTab('countdown')">Countdown</button>
+            <button class="tab-button" onclick="openTab('loop')">Loop</button>
+            <button class="tab-button" onclick="openTab('pomodoro')">Pomodoro</button>
+            <button class="tab-button" onclick="openTab('split')">Split</button>
+            <button class="tab-button" onclick="openTab('silent')">Silent</button>
+            <button class="tab-button" onclick="openTab('race')">Race</button>
+            <button class="tab-button" onclick="openTab('quiz')">Quiz</button>
         </div>
 
-        <!-- MINI TIME MODE -->
-        <div id="view-mini" class="view-section">
-            <div id="display-mini">05:00</div>
+        <!-- Stopwatch -->
+        <div id="stopwatch" class="tab-content active">
+            <button class="add-btn" onclick="addTimer('stopwatch')">+ Add Stopwatch</button>
+            <div id="stopwatch-list"></div>
         </div>
 
-        <!-- MINI CIRCLE MODE -->
-        <div id="view-circle" class="view-section">
-            <svg viewBox="0 0 100 100">
-                <circle class="circle-bg" cx="50" cy="50" r="40"></circle>
-                <circle id="progress-ring" class="circle-prog" cx="50" cy="50" r="40"></circle>
-            </svg>
+        <!-- Countdown -->
+        <div id="countdown" class="tab-content">
+            <button class="add-btn" onclick="addTimer('countdown')">+ Add Countdown</button>
+            <div id="countdown-list"></div>
         </div>
 
+        <!-- Other tabs follow same pattern -->
+        <div id="loop" class="tab-content"><button class="add-btn" onclick="addTimer('loop')">+ Add Loop</button><div id="loop-list"></div></div>
+        <div id="pomodoro" class="tab-content"><button class="add-btn" onclick="addTimer('pomodoro')">+ Add Pomodoro</button><div id="pomodoro-list"></div></div>
+        <div id="split" class="tab-content"><button class="add-btn" onclick="addTimer('split')">+ Add Split</button><div id="split-list-container"></div></div>
+        <div id="silent" class="tab-content"><button class="add-btn" onclick="addTimer('silent')">+ Add Silent</button><div id="silent-list"></div></div>
+        <div id="race" class="tab-content"><button class="add-btn" onclick="addTimer('race')">+ Add Race</button><div id="race-list"></div></div>
+        <div id="quiz" class="tab-content" style="text-align: center; padding: 20px;">
+            <button id="quiz-buzzer" style="width:150px; height:150px; border-radius:50%; background:var(--primary-color); color:white; border:none; font-size:2em; cursor:pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">BUZZ!</button>
+        </div>
+    </div>
+
+    <!-- MINI DISPLAY VIEW -->
+    <div id="mini-view" class="mini-view">
+        <div id="mini-display-content" class="mini-display-text">00:00</div>
+    </div>
+
+    <!-- Alert Modal -->
+    <div id="alertModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Time Up!</h2>
+            <p id="modalMsg"></p>
+            <button class="add-btn" onclick="closeModal()">OK</button>
+        </div>
     </div>
 
     <script>
-        let totalSeconds = 0;
-        let timeRemaining = 0;
-        let timerInterval = null;
+        // --- GLOBAL LOGIC ---
+        let timers = [];
+        let activeMiniTimerId = null;
 
-        function switchMode(mode) {
-            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-            document.getElementById('view-' + mode).classList.add('active');
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
         }
 
-        function startTimer() {
-            clearInterval(timerInterval);
+        function switchView(view) {
+            document.getElementById('full-view').style.display = view === 'full' ? 'block' : 'none';
+            document.getElementById('mini-view').style.display = view === 'mini' ? 'flex' : 'none';
+        }
+
+        function openTab(name) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+            document.getElementById(name).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        // --- TIMER CREATION ---
+        function addTimer(type) {
+            const id = Date.now();
+            const timerObj = {
+                id, type, 
+                running: false, 
+                elapsed: 0, 
+                total: 0, 
+                interval: null,
+                laps: [],
+                pomoState: 'Work'
+            };
+            timers.push(timerObj);
+            renderTimer(timerObj);
+        }
+
+        function renderTimer(t) {
+            const container = document.getElementById(`${t.type}-list`) || document.getElementById(`${t.type}-list-container`);
+            const div = document.createElement('div');
+            div.className = 'timer-wrapper';
+            div.id = `wrapper-${t.id}`;
             
-            const m = parseInt(document.getElementById('mins').value) || 0;
-            const s = parseInt(document.getElementById('secs').value) || 0;
+            let specialUI = '';
+            if(t.type === 'countdown' || t.type === 'silent' || t.type === 'race') {
+                specialUI = `<div class="timer-controls"><input type="number" id="m-${t.id}" placeholder="M"> : <input type="number" id="s-${t.id}" placeholder="S"></div>`;
+            }
+            if(t.type === 'silent' || t.type === 'race') {
+                specialUI += `<div class="progress-track"><div class="progress-bar" id="bar-${t.id}"></div>${t.type==='race'?'<div class="race-runner" id="run-'+t.id+'">🚀</div>':''}</div>`;
+            }
+
+            div.innerHTML = `
+                <input class="timer-name" value="${t.type.toUpperCase()}">
+                <div class="timer-display" id="disp-${t.id}">00:00</div>
+                ${specialUI}
+                <div class="timer-controls">
+                    <button onclick="startTimer(${t.id})">Start</button>
+                    <button onclick="pauseTimer(${t.id})">Pause</button>
+                    <button onclick="resetTimer(${t.id})">Reset</button>
+                    ${t.type==='split'?'<button onclick="addLap('+t.id+')">Lap</button>':''}
+                </div>
+                <ul class="split-list" id="laps-${t.id}"></ul>
+            `;
+            container.appendChild(div);
+        }
+
+        // --- CORE ENGINES ---
+        function startTimer(id) {
+            const t = timers.find(x => x.id === id);
+            if(t.running) return;
             
-            totalSeconds = (m * 60) + s;
-            timeRemaining = totalSeconds;
+            // Initialization for Countdown/Silent/Race
+            if((t.type === 'countdown' || t.type === 'silent' || t.type === 'race') && t.elapsed === 0) {
+                const m = parseInt(document.getElementById(`m-${id}`).value) || 0;
+                const s = parseInt(document.getElementById(`s-${id}`).value) || 0;
+                t.total = (m * 60) + s;
+                t.elapsed = t.total;
+            }
 
-            if (timeRemaining <= 0) return;
+            t.running = true;
+            activeMiniTimerId = id;
+            
+            t.interval = setInterval(() => {
+                if(t.type === 'stopwatch' || t.type === 'split') t.elapsed += 1;
+                else t.elapsed -= 1;
 
-            updateDisplays();
+                updateUI(t);
 
-            timerInterval = setInterval(() => {
-                timeRemaining--;
-                updateDisplays();
-
-                if (timeRemaining <= 0) {
-                    clearInterval(timerInterval);
-                    handleTimeUp();
+                if(t.elapsed <= 0 && t.type !== 'stopwatch' && t.type !== 'split') {
+                    pauseTimer(id);
+                    showAlert(t.type.toUpperCase() + " Finished!");
                 }
             }, 1000);
         }
 
-        function updateDisplays() {
-            const m = Math.floor(timeRemaining / 60);
-            const s = timeRemaining % 60;
-            const formatted = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-
-            // Update Text Displays
-            document.getElementById('display-full').innerText = formatted;
-            document.getElementById('display-mini').innerText = formatted;
+        function updateUI(t) {
+            const m = Math.floor(Math.abs(t.elapsed) / 60);
+            const s = Math.abs(t.elapsed) % 60;
+            const str = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
             
-            // Remove alert colors if running
-            document.getElementById('display-mini').classList.remove('time-up');
+            document.getElementById(`disp-${t.id}`).innerText = str;
+            if(activeMiniTimerId === t.id) {
+                document.getElementById('mini-display-content').innerText = str;
+            }
 
-            // Update Circle
-            const ring = document.getElementById('progress-ring');
-            const circumference = 251.2;
-            const offset = circumference - (timeRemaining / totalSeconds) * circumference;
-            ring.style.strokeDashoffset = offset;
+            // Progress Bar Logic
+            if(t.type === 'silent' || t.type === 'race') {
+                const perc = ((t.total - t.elapsed) / t.total) * 100;
+                document.getElementById(`bar-${t.id}`).style.width = perc + "%";
+                if(t.type === 'race') document.getElementById(`run-${t.id}`).style.left = `calc(${perc}% - 20px)`;
+            }
         }
 
-        function handleTimeUp() {
-            document.getElementById('display-mini').innerText = "00:00";
-            document.getElementById('display-mini').classList.add('time-up');
-            // Reset circle to empty
-            document.getElementById('progress-ring').style.strokeDashoffset = 251.2;
+        function pauseTimer(id) {
+            const t = timers.find(x => x.id === id);
+            t.running = false;
+            clearInterval(t.interval);
         }
 
-        function resetTimer() {
-            clearInterval(timerInterval);
-            timeRemaining = 0;
-            updateDisplays();
-            document.getElementById('display-mini').classList.remove('time-up');
+        function resetTimer(id) {
+            const t = timers.find(x => x.id === id);
+            pauseTimer(id);
+            t.elapsed = 0;
+            updateUI(t);
         }
+
+        function addLap(id) {
+            const t = timers.find(x => x.id === id);
+            const str = document.getElementById(`disp-${id}`).innerText;
+            const li = document.createElement('li');
+            li.innerText = `Lap ${t.laps.length + 1}: ${str}`;
+            document.getElementById(`laps-${id}`).appendChild(li);
+            t.laps.push(str);
+        }
+
+        // --- UTILS ---
+        function showAlert(msg) {
+            document.getElementById('modalMsg').innerText = msg;
+            document.getElementById('alertModal').style.display = 'flex';
+        }
+        function closeModal() { document.getElementById('alertModal').style.display = 'none'; }
+        
+        document.getElementById('quiz-buzzer').onclick = () => showAlert("BUZZER PRESSED!");
+
+        // Start with one stopwatch by default
+        window.onload = () => addTimer('stopwatch');
+
     </script>
 </body>
 </html>
