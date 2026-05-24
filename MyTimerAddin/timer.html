@@ -1,106 +1,235 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Floating Timer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #15c4c4; --bg: #fdfdfd; --text: #333; }
-        body { font-family: 'Montserrat', sans-serif; margin: 0; padding: 0; overflow: hidden; background: transparent; }
-        
-        /* Container and Modes */
-        .main-container { width: 100vw; height: 100vh; display: flex; flex-direction: column; transition: 0.3s; border-radius: 15px; background: var(--bg); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        
-        /* Floating Toolbar */
-        .mode-switcher { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; z-index: 100; opacity: 0.3; transition: 0.3s; }
-        .mode-switcher:hover { opacity: 1; }
-        .mode-btn { border: none; background: #eee; cursor: pointer; padding: 5px; border-radius: 5px; font-size: 12px; }
+        :root {
+            --accent: #15c4c4;
+            --bg: #fdfdfd;
+            --text: #333;
+            --red: #ef5350;
+        }
 
-        /* Full Mode - Your original Tabs */
-        #view-full { display: block; padding: 10px; overflow-y: auto; height: 100%; }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: transparent; /* Allows PPT slide to show through corners if needed */
+            overflow: hidden;
+            color: var(--text);
+        }
+
+        .main-container {
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--bg);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        /* Mode Switcher Buttons - Floating Top Right */
+        .mode-toolbar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+            z-index: 100;
+            opacity: 0.2;
+            transition: opacity 0.3s;
+        }
+        .mode-toolbar:hover { opacity: 1; }
         
-        /* Mini Time Mode */
-        #view-mini-time { display: none; height: 100%; justify-content: center; align-items: center; font-size: 15vw; font-weight: bold; color: var(--accent); }
+        .mode-btn {
+            background: #eee;
+            border: none;
+            padding: 5px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .mode-btn:hover { background: var(--accent); color: white; }
 
-        /* Mini Circle Mode */
-        #view-mini-circle { display: none; height: 100%; justify-content: center; align-items: center; }
-        svg { transform: rotate(-90deg); width: 80%; height: 80%; }
-        circle { fill: none; stroke-width: 8; stroke-linecap: round; }
-        .bg-circle { stroke: #eee; }
-        .progress-circle { stroke: var(--accent); stroke-dasharray: 251; stroke-dashoffset: 251; transition: 0.3s; }
+        /* View Modes */
+        .view-section {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
 
-        /* Helpers */
-        .active-view { display: flex !important; }
-        .hidden { display: none !important; }
+        .active { display: flex !important; }
+
+        /* Full Mode Styles */
+        h2 { margin: 0 0 10px 0; color: var(--accent); font-size: 1.2rem; }
+        .input-group { margin-bottom: 15px; }
+        input {
+            width: 60px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            font-family: inherit;
+        }
+        .controls button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+        }
+        .controls .reset-btn { background: #999; }
+
+        /* Mini-Time Mode Styles */
+        #display-mini {
+            font-size: 25vw;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        /* Circle Mode Styles */
+        svg {
+            width: 80%;
+            height: 80%;
+            transform: rotate(-90deg);
+        }
+        circle {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+        }
+        .circle-bg { stroke: #eee; }
+        .circle-prog {
+            stroke: var(--accent);
+            stroke-dasharray: 251.2; /* 2 * PI * 40 */
+            stroke-dashoffset: 251.2;
+            transition: stroke-dashoffset 1s linear;
+        }
+
+        /* Alert State */
+        .time-up { color: var(--red) !important; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
 
-    <div class="mode-switcher">
-        <button class="mode-btn" onclick="switchView('full')">Full</button>
-        <button class="mode-btn" onclick="switchView('time')">12:00</button>
-        <button class="mode-btn" onclick="switchView('circle')">◯</button>
+    <div class="mode-toolbar">
+        <button class="mode-btn" onclick="switchMode('full')">Settings</button>
+        <button class="mode-btn" onclick="switchMode('mini')">Time</button>
+        <button class="mode-btn" onclick="switchMode('circle')">Circle</button>
     </div>
 
     <div class="main-container">
-        <!-- FULL VIEW (Your Tabbed Logic goes here) -->
-        <div id="view-full">
-            <h3 style="margin-top:0">Timer Settings</h3>
-            <input type="number" id="input-mins" value="5" style="width:50px"> min
-            <button onclick="startGlobalTimer()">Start</button>
-            <p style="font-size: 11px; color: #666;">Choose a mode top-right to float this timer.</p>
+        
+        <!-- FULL SETTINGS MODE -->
+        <div id="view-full" class="view-section active">
+            <h2>Timer Settings</h2>
+            <div class="input-group">
+                <input type="number" id="mins" value="5" min="0"> : 
+                <input type="number" id="secs" value="0" min="0" max="59">
+            </div>
+            <div id="display-full" style="font-size: 2rem; margin: 10px 0;">05:00</div>
+            <div class="controls">
+                <button onclick="startTimer()">START</button>
+                <button class="reset-btn" onclick="resetTimer()">RESET</button>
+            </div>
         </div>
 
-        <!-- MINI TIME VIEW -->
-        <div id="view-mini-time">05:00</div>
+        <!-- MINI TIME MODE -->
+        <div id="view-mini" class="view-section">
+            <div id="display-mini">05:00</div>
+        </div>
 
-        <!-- MINI CIRCLE VIEW -->
-        <div id="view-mini-circle">
+        <!-- MINI CIRCLE MODE -->
+        <div id="view-circle" class="view-section">
             <svg viewBox="0 0 100 100">
-                <circle class="bg-circle" cx="50" cy="50" r="40"></circle>
-                <circle id="circle-progress" class="progress-circle" cx="50" cy="50" r="40"></circle>
+                <circle class="circle-bg" cx="50" cy="50" r="40"></circle>
+                <circle id="progress-ring" class="circle-prog" cx="50" cy="50" r="40"></circle>
             </svg>
         </div>
+
     </div>
 
-<script>
-    let timeLeft;
-    let totalTime;
-    let timerId;
+    <script>
+        let totalSeconds = 0;
+        let timeRemaining = 0;
+        let timerInterval = null;
 
-    function switchView(mode) {
-        document.getElementById('view-full').classList.add('hidden');
-        document.getElementById('view-mini-time').classList.remove('active-view');
-        document.getElementById('view-mini-circle').classList.remove('active-view');
+        function switchMode(mode) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.getElementById('view-' + mode).classList.add('active');
+        }
 
-        if (mode === 'full') document.getElementById('view-full').classList.remove('hidden');
-        if (mode === 'time') document.getElementById('view-mini-time').classList.add('active-view');
-        if (mode === 'circle') document.getElementById('view-mini-circle').classList.add('active-view');
-    }
+        function startTimer() {
+            clearInterval(timerInterval);
+            
+            const m = parseInt(document.getElementById('mins').value) || 0;
+            const s = parseInt(document.getElementById('secs').value) || 0;
+            
+            totalSeconds = (m * 60) + s;
+            timeRemaining = totalSeconds;
 
-    function startGlobalTimer() {
-        clearInterval(timerId);
-        let mins = document.getElementById('input-mins').value;
-        totalTime = mins * 60;
-        timeLeft = totalTime;
-        
-        timerId = setInterval(() => {
-            timeLeft--;
-            updateDisplay();
-            if (timeLeft <= 0) clearInterval(timerId);
-        }, 1000);
-    }
+            if (timeRemaining <= 0) return;
 
-    function updateDisplay() {
-        // Update Time Text
-        let m = Math.floor(timeLeft / 60);
-        let s = timeLeft % 60;
-        let timeStr = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-        document.getElementById('view-mini-time').innerText = timeStr;
+            updateDisplays();
 
-        // Update Circle (251 is circumference for r=40)
-        let offset = 251 - (timeLeft / totalTime) * 251;
-        document.getElementById('circle-progress').style.strokeDashoffset = offset;
-    }
-</script>
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateDisplays();
+
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeUp();
+                }
+            }, 1000);
+        }
+
+        function updateDisplays() {
+            const m = Math.floor(timeRemaining / 60);
+            const s = timeRemaining % 60;
+            const formatted = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+
+            // Update Text Displays
+            document.getElementById('display-full').innerText = formatted;
+            document.getElementById('display-mini').innerText = formatted;
+            
+            // Remove alert colors if running
+            document.getElementById('display-mini').classList.remove('time-up');
+
+            // Update Circle
+            const ring = document.getElementById('progress-ring');
+            const circumference = 251.2;
+            const offset = circumference - (timeRemaining / totalSeconds) * circumference;
+            ring.style.strokeDashoffset = offset;
+        }
+
+        function handleTimeUp() {
+            document.getElementById('display-mini').innerText = "00:00";
+            document.getElementById('display-mini').classList.add('time-up');
+            // Reset circle to empty
+            document.getElementById('progress-ring').style.strokeDashoffset = 251.2;
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timeRemaining = 0;
+            updateDisplays();
+            document.getElementById('display-mini').classList.remove('time-up');
+        }
+    </script>
 </body>
 </html>
