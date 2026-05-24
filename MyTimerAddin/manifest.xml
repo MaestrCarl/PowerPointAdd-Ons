@@ -2,17 +2,18 @@
 <OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1" 
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
            xsi:type="ContentApp">
-  <Id>d6023394-8255-46f9-a034-75de23388065</Id>
+  <Id>7bc23394-8255-46f9-a034-75de23388099</Id>
   <Version>1.0.0.0</Version>
   <ProviderName>Mr. Carlo</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="Pro Floating Timer" />
-  <Description DefaultValue="A professional, resizable timer with multiple view modes."/>
+  <Description DefaultValue="Movable, resizable timer with multiple view modes."/>
   <Hosts>
     <Host Name="Presentation" />
   </Hosts>
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://maestrcarl.github.io/PowerPointAdd-Ons/TimerApp/timer.html" />
+    <!-- Path updated to include MyTimerAddin folder -->
+    <SourceLocation DefaultValue="https://maestrcarl.github.io/PowerPointAdd-Ons/MyTimerAddin/timer.html" />
     <RequestedWidth>400</RequestedWidth>
     <RequestedHeight>400</RequestedHeight>
   </DefaultSettings>
