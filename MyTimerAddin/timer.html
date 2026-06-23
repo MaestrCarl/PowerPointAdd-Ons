@@ -3,513 +3,288 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Timer Toolbox - Mr. Carlo</title>
+    <title>Classroom Timer</title>
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #eef3f8; --bg-2: #e3ecf5; --text-color: #1f2937; --text-color-light: #6b7280;
-            --header-bg-color: #ffffff; --panel-bg-color: #ffffff; --primary-color: #0fb9b1; --primary-2: #15c4c4;
-            --gray-color: #e2e8f0; --border-radius: 14px; --primary-color-rgb: 15, 185, 177;
-            --danger: #ef476f;
+            --bg: #f4f1ff; --bg-2: #e7fbff; --surface: #ffffff; --surface-2: #f6f5ff;
+            --ink: #241b4e; --muted: #6b6790; --line: #e7e3f5;
+            --primary: #6d28d9; --primary-2: #9333ea; --primary-rgb: 109, 40, 217;
+            --danger: #ff3d7f; --radius: 18px;
+            --font-head: 'Fredoka', sans-serif; --font-body: 'Nunito', sans-serif;
         }
         .dark-mode {
-            --bg-color: #0f172a; --bg-2: #111c34; --text-color: #e2e8f0; --text-color-light: #94a3b8;
-            --header-bg-color: #1e293b; --panel-bg-color: #1e293b; --primary-color: #2dd4bf; --primary-2: #5eead4;
-            --gray-color: #334155; --primary-color-rgb: 45, 212, 191;
+            --bg: #14122e; --bg-2: #0e1330; --surface: #211d44; --surface-2: #2a2552;
+            --ink: #efeaff; --muted: #a9a3d6; --line: #352f63;
+            --primary: #a78bfa; --primary-2: #c084fc; --primary-rgb: 167, 139, 250; --danger: #ff5c93;
         }
-
         * { box-sizing: border-box; }
-        body { font-family: 'Montserrat', sans-serif; margin: 0; color: var(--text-color); overflow-x: hidden; transition: background .3s, color .3s;
-            background: radial-gradient(1200px 600px at 80% -10%, var(--bg-2), var(--bg-color)) fixed; min-height: 100vh; }
+        html, body { height: 100%; }
+        body { margin: 0; font-family: var(--font-body); color: var(--ink);
+            background: radial-gradient(1200px 700px at 85% -15%, var(--bg-2), var(--bg)) fixed;
+            display: flex; flex-direction: column; overflow: hidden; transition: background .3s, color .3s; }
+        button { font-family: var(--font-body); }
 
-        /* PowerPoint Floating Toolbar */
-        .view-toggle {
-            position: fixed; top: 10px; right: 10px; z-index: 1000;
-            display: flex; gap: 5px; opacity: 0.4; transition: 0.3s;
-        }
-        .view-toggle:hover { opacity: 1; }
-        .view-toggle button {
-            background: var(--primary-color); color: white; border: none;
-            padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 10px; font-family: inherit;
-        }
-        .view-toggle button.muted { background: var(--danger); }
+        .topbar { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; box-shadow: 0 4px 16px rgba(var(--primary-rgb), .35); z-index: 50; }
+        .topbar .brand { display: flex; align-items: center; gap: 8px; font-family: var(--font-head); font-weight: 700; font-size: clamp(14px, 2.6vw, 18px); }
+        .topbar .spacer { flex: 1 1 auto; }
+        .icon-btn { width: 34px; height: 34px; border-radius: 10px; border: none; cursor: pointer; background: rgba(255,255,255,.16); color: #fff; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; transition: background .15s, transform .1s; }
+        .icon-btn:hover { background: rgba(255,255,255,.3); } .icon-btn:active { transform: scale(.92); } .icon-btn.on { background: #fff; color: var(--primary); }
 
-        /* Container & Layout */
-        .container { padding: 15px; max-width: 100%; }
-        .full-view { display: block; }
-        .mini-view { display: none; height: 100vh; width: 100vw; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 18px; }
+        .classbar { flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; background: var(--surface-2); border-bottom: 1px solid var(--line); }
+        .classbar .field { display: flex; flex-direction: column; flex: 1 1 120px; min-width: 0; }
+        .classbar label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin: 0 0 2px 3px; }
+        .classbar input { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 9px; padding: 7px 9px; font-family: var(--font-body); font-size: 13px; font-weight: 600; min-width: 0; }
+        .classbar input:focus { outline: 2px solid rgba(var(--primary-rgb), .4); border-color: transparent; }
 
-        /* Tabs */
-        .tab-container { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 10px; border-bottom: 1px solid var(--gray-color); margin-bottom: 15px; }
-        .tab-button { background: none; border: none; padding: 8px 12px; cursor: pointer; color: var(--text-color-light); font-weight: 600; white-space: nowrap; font-family: inherit; }
-        .tab-button.active { color: var(--primary-color); border-bottom: 2px solid var(--primary-color); }
-        .tab-content { display: none; animation: fadeIn 0.3s ease; }
-        .tab-content.active { display: block; }
+        main { flex: 1 1 auto; position: relative; overflow: hidden; }
+        .pane { position: absolute; inset: 0; overflow: auto; padding: 12px; }
+        #presentView { display: none; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center; }
+        #presentView.show { display: flex; }
 
-        /* Timer cards */
-        .timer-wrapper {
-            background: var(--panel-bg-color); padding: 15px 15px 12px; border-radius: var(--border-radius);
-            margin-bottom: 12px; position: relative; border: 1px solid transparent;
-            animation: cardIn .45s cubic-bezier(.18,.89,.32,1.28);
-        }
-        .timer-wrapper.removing { animation: cardOut .3s ease forwards; }
-        @keyframes cardIn  { from { opacity: 0; transform: translateY(18px) scale(.97); } to { opacity: 1; transform: none; } }
+        .tabs { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 10px; }
+        .tab { border: 1px solid var(--line); background: var(--surface); color: var(--muted); cursor: pointer; font-weight: 800; font-size: 12.5px; padding: 7px 13px; border-radius: 30px; white-space: nowrap; transition: all .15s; }
+        .tab.active { color: #fff; background: linear-gradient(135deg, var(--primary), var(--primary-2)); border-color: transparent; box-shadow: 0 5px 14px rgba(var(--primary-rgb), .35); }
+        .panel { display: none; animation: fade .25s ease; } .panel.active { display: block; }
+        @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+        .btn { border: none; cursor: pointer; font-weight: 800; font-family: var(--font-body); border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; transition: filter .15s, transform .1s; }
+        .btn:active { transform: scale(.96); }
+        .add-btn { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; padding: 10px 16px; box-shadow: 0 6px 16px rgba(var(--primary-rgb), .3); }
+        .add-btn:hover { filter: brightness(1.06); }
+        .hint { font-size: 12px; color: var(--muted); margin: 8px 0; text-align: center; }
+
+        .card { background: var(--surface); padding: 14px 14px 12px; border-radius: var(--radius); margin: 12px 0; position: relative; border: 1px solid var(--line); animation: cardIn .4s cubic-bezier(.18,.89,.32,1.28); }
+        .card.removing { animation: cardOut .3s ease forwards; }
+        @keyframes cardIn { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }
         @keyframes cardOut { to { opacity: 0; transform: translateX(40px) scale(.95); height: 0; padding: 0; margin: 0; } }
-        .timer-wrapper.flash { animation: flashCard 1.6s ease; }
-        @keyframes flashCard {
-            0%,100% { box-shadow: 0 0 0 rgba(var(--primary-color-rgb), 0); border-color: transparent; }
-            25%, 75% { box-shadow: 0 0 26px rgba(var(--primary-color-rgb), .55); border-color: var(--primary-color); }
-        }
+        .card.flash { animation: flash 1.6s ease; }
+        @keyframes flash { 0%,100% { box-shadow: 0 0 0 rgba(var(--primary-rgb),0); } 25%,75% { box-shadow: 0 0 26px rgba(var(--primary-rgb),.5); } }
 
-        .timer-display { font-size: 2.2em; font-weight: 300; text-align: center; margin: 10px 0; transition: color .2s; }
-        .timer-display.ending { color: var(--danger); animation: tick 1s ease infinite; }
-        @keyframes tick { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
-        .state-label { text-align: center; font-weight: 700; font-size: .8em; letter-spacing: 1px; text-transform: uppercase; color: var(--primary-color); min-height: 1em; }
+        .tname { width: 100%; border: none; background: transparent; font-family: var(--font-head); font-weight: 700; font-size: 1.05rem; border-bottom: 1px dashed var(--line); margin-bottom: 8px; color: var(--ink); padding-right: 26px; }
+        .state { text-align: center; font-weight: 800; font-size: .78rem; letter-spacing: 1px; text-transform: uppercase; color: var(--primary); min-height: 1em; }
+        .disp { font-family: var(--font-head); font-size: 2.4rem; font-weight: 600; text-align: center; margin: 6px 0; transition: color .2s; }
+        .disp.ending { color: var(--danger); animation: tick 1s ease infinite; }
+        @keyframes tick { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .irow { display: flex; justify-content: center; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; font-size: .9em; color: var(--muted); font-weight: 700; }
+        input[type=number] { padding: 6px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); width: 56px; text-align: center; font-family: var(--font-body); font-weight: 700; }
+        .controls { display: flex; justify-content: center; gap: 7px; flex-wrap: wrap; }
+        .controls button { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; padding: 8px 13px; border-radius: 9px; font-size: .9em; font-weight: 700; box-shadow: 0 4px 12px rgba(var(--primary-rgb),.26); }
+        .controls button.ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); box-shadow: none; }
+        .del { position: absolute; top: 8px; right: 8px; background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: .95em; padding: 4px 6px; border-radius: 6px; }
+        .del:hover { color: #fff; background: var(--danger); }
+        .laps { list-style: none; padding: 0; margin: 8px 0 0; max-height: 90px; overflow-y: auto; font-size: .82em; font-weight: 600; }
+        .laps li { padding: 3px 0; border-bottom: 1px dashed var(--line); }
 
-        .mini-display-text { font-size: 18vw; font-weight: 800; color: var(--primary-color); line-height: 1; }
-        .mini-display-text.ending { color: var(--danger); animation: tick 1s ease infinite; }
-        #mini-state { font-size: 3vw; font-weight: 700; letter-spacing: 3px; color: var(--text-color-light); text-transform: uppercase; min-height: 1em; }
+        /* ===== RACE — runner + sparkle trail ===== */
+        .race { position: relative; height: 46px; margin: 14px 0 6px; }
+        .race-track { position: absolute; left: 0; right: 0; top: 18px; height: 12px; background: var(--line); border-radius: 10px; overflow: hidden; }
+        .race-fill { height: 100%; width: 0%; border-radius: 10px; background: linear-gradient(90deg, #ffb020, var(--danger), var(--primary)); transition: width .35s linear; }
+        .runner { position: absolute; top: 2px; left: 0%; font-size: 26px; transition: left .35s linear; z-index: 2; animation: bob .5s ease-in-out infinite; }
+        @keyframes bob { 0%,100% { transform: translateY(0) scaleX(1); } 50% { transform: translateY(-4px) scaleX(1.06); } }
+        .sparkles { position: absolute; top: 12px; width: 24px; height: 24px; transform: translateX(-26px); pointer-events: none; transition: left .35s linear; }
+        .sparkles span { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #ffd34d; opacity: 0; animation: spark .6s linear infinite; }
+        .sparkles span:nth-child(1){ left:0; top:6px; animation-delay:0s; }
+        .sparkles span:nth-child(2){ left:8px; top:14px; animation-delay:.15s; background:#ff8ac4; }
+        .sparkles span:nth-child(3){ left:2px; top:18px; animation-delay:.3s; background:#7cf5ff; }
+        @keyframes spark { 0% { opacity:1; transform: translate(0,0) scale(1); } 100% { opacity:0; transform: translate(-14px,6px) scale(.3); } }
 
-        .timer-controls { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
-        .timer-controls button, .add-btn {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-2)); color: white; border: none; padding: 8px 15px;
-            border-radius: 9px; cursor: pointer; font-size: 0.9em; font-family: inherit; font-weight: 600;
-            display: inline-flex; align-items: center; gap: 6px; transition: filter .15s, transform .1s;
-            box-shadow: 0 4px 12px rgba(var(--primary-color-rgb), .28);
-        }
-        .timer-controls button:hover, .add-btn:hover { filter: brightness(1.08); }
-        .timer-controls button:active, .add-btn:active { transform: scale(.96); }
-        .timer-controls button.ghost { background: transparent; color: var(--text-color-light); border: 1px solid var(--gray-color); }
+        /* Present view */
+        .p-state { font-family: var(--font-head); font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); font-size: clamp(.9rem, 3vmin, 1.6rem); min-height: 1em; }
+        .p-disp { font-family: var(--font-head); font-weight: 700; color: var(--primary); font-size: clamp(3rem, 24vmin, 16rem); line-height: 1; }
+        .p-disp.ending { color: var(--danger); animation: tick 1s ease infinite; }
+        .p-controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .p-controls .btn { padding: 12px 22px; border-radius: 40px; font-size: 1rem; }
+        .p-controls .go { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; box-shadow: 0 6px 16px rgba(var(--primary-rgb),.3); }
+        .p-controls .ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
 
-        .delete-btn {
-            position: absolute; top: 8px; right: 8px; background: transparent; border: none;
-            color: var(--text-color-light); cursor: pointer; font-size: .95em; padding: 4px 6px;
-            border-radius: 6px; transition: color .15s, background .15s;
-        }
-        .delete-btn:hover { color: #fff; background: var(--danger); }
-
-        input[type="number"], input[type="text"] { padding: 5px; border: 1px solid var(--gray-color); border-radius: 5px; background: var(--bg-color); color: var(--text-color); width: 52px; text-align: center; font-family: inherit; }
-        .timer-name { width: 100%; border: none; background: transparent; font-weight: 700; border-bottom: 1px dashed var(--gray-color); margin-bottom: 10px; color: var(--text-color); font-family: inherit; padding-right: 28px; }
-        .input-row { display: flex; justify-content: center; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; font-size: .9em; color: var(--text-color-light); }
-
-        /* Progress Bars (Silent/Race) */
-        .progress-track { height: 16px; width: 100%; background: var(--gray-color); border-radius: 10px; margin: 12px 0; overflow: hidden; position: relative; }
-        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary-color), #4fe3e3); width: 0%; transition: width .35s linear; }
-        .race-runner { position: absolute; top: -6px; transition: left .35s linear; font-size: 1.3em; }
-
-        .split-list { list-style: none; padding: 0; max-height: 90px; overflow-y: auto; font-size: 0.82em; margin: 8px 0 0; }
-        .split-list li { padding: 3px 0; border-bottom: 1px dashed var(--gray-color); animation: cardIn .3s ease; }
-
-        /* Mini controls */
-        .mini-controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-        .mini-controls button {
-            font-family: inherit; font-weight: 700; font-size: 1rem; cursor: pointer;
-            padding: 12px 22px; border-radius: 40px; border: none; color: #fff; background: var(--primary-color);
-            display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 6px 16px rgba(0,0,0,.18);
-            transition: transform .1s, filter .15s;
-        }
-        .mini-controls button:active { transform: scale(.96); }
-        .mini-controls button.ghost { background: var(--card-bg, #fff); color: var(--text-color); border: 1px solid var(--gray-color); }
-        .dark-mode .mini-controls button.ghost { background: #2c3034; }
-
-        /* Modal */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 2000; align-items: center; justify-content: center; }
-        .modal-content { background: var(--bg-color); padding: 26px; border-radius: 16px; text-align: center; width: 80%; max-width: 360px; animation: winnerPop .5s cubic-bezier(.18,.89,.32,1.28); }
-        .modal-content h2 { margin: 0 0 6px; }
-        .modal-content .bell { font-size: 2.4em; color: var(--primary-color); margin-bottom: 6px; animation: ring .8s ease infinite; transform-origin: top center; }
-        @keyframes ring { 0%,100% { transform: rotate(0); } 20% { transform: rotate(14deg); } 40% { transform: rotate(-12deg); } 60% { transform: rotate(8deg); } 80% { transform: rotate(-5deg); } }
-        @keyframes winnerPop { 0% { transform: scale(.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .hint { font-size: .78em; color: var(--text-color-light); text-align: center; margin-top: 6px; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(10,8,30,.6); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-card { background: var(--surface); padding: 26px; border-radius: 18px; text-align: center; width: 82%; max-width: 360px; animation: pop .5s cubic-bezier(.18,.89,.32,1.28); }
+        @keyframes pop { from { transform: scale(.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-card .bell { font-size: 2.4em; color: var(--primary); margin-bottom: 6px; animation: ring .8s ease infinite; transform-origin: top center; }
+        @keyframes ring { 0%,100%{transform:rotate(0);}20%{transform:rotate(14deg);}40%{transform:rotate(-12deg);}60%{transform:rotate(8deg);}80%{transform:rotate(-5deg);} }
+        .modal-card h2 { font-family: var(--font-head); margin: 0 0 6px; }
     </style>
 </head>
 <body>
-
-    <div class="view-toggle">
-        <button onclick="toggleDark()" id="darkBtn" title="Dark mode"><i class="fas fa-moon"></i></button>
-        <button id="muteBtn" onclick="toggleMute()" title="Sound on/off"><i class="fas fa-volume-high"></i></button>
-        <button onclick="switchView('full')">Full</button>
-        <button onclick="switchView('mini')">Mini</button>
+    <div class="topbar">
+        <div class="brand"><i class="fas fa-stopwatch"></i> Timer</div>
+        <div class="spacer"></div>
+        <button class="icon-btn" id="modeBtn" onclick="toggleMode()" title="Edit / Present"><i class="fas fa-display"></i></button>
+        <button class="icon-btn" id="exportBtn" onclick="exportResults()" title="Export times (.txt)"><i class="fas fa-file-arrow-down"></i></button>
+        <button class="icon-btn" id="muteBtn" onclick="toggleMute()" title="Sound on/off"><i class="fas fa-volume-high"></i></button>
+        <button class="icon-btn" id="darkBtn" onclick="toggleDark()" title="Dark mode"><i class="fas fa-moon"></i></button>
     </div>
 
-    <!-- MAIN TOOLBOX (FULL) -->
-    <div id="full-view" class="container full-view">
-        <div class="tab-container" id="tabs">
-            <button class="tab-button active" onclick="openTab('stopwatch')">Stopwatch</button>
-            <button class="tab-button" onclick="openTab('countdown')">Countdown</button>
-            <button class="tab-button" onclick="openTab('loop')">Loop</button>
-            <button class="tab-button" onclick="openTab('pomodoro')">Pomodoro</button>
-            <button class="tab-button" onclick="openTab('split')">Split</button>
-            <button class="tab-button" onclick="openTab('silent')">Silent</button>
-            <button class="tab-button" onclick="openTab('race')">Race</button>
-            <button class="tab-button" onclick="openTab('quiz')">Quiz</button>
-        </div>
-
-        <div id="stopwatch" class="tab-content active">
-            <button class="add-btn" onclick="addTimer('stopwatch')"><i class="fas fa-plus"></i> Add Stopwatch</button>
-            <div id="stopwatch-list"></div>
-        </div>
-        <div id="countdown" class="tab-content">
-            <button class="add-btn" onclick="addTimer('countdown')"><i class="fas fa-plus"></i> Add Countdown</button>
-            <div id="countdown-list"></div>
-        </div>
-        <div id="loop" class="tab-content">
-            <button class="add-btn" onclick="addTimer('loop')"><i class="fas fa-plus"></i> Add Loop</button>
-            <div class="hint">Counts down, then restarts automatically each round.</div>
-            <div id="loop-list"></div>
-        </div>
-        <div id="pomodoro" class="tab-content">
-            <button class="add-btn" onclick="addTimer('pomodoro')"><i class="fas fa-plus"></i> Add Pomodoro</button>
-            <div class="hint">Alternates Work and Break automatically.</div>
-            <div id="pomodoro-list"></div>
-        </div>
-        <div id="split" class="tab-content">
-            <button class="add-btn" onclick="addTimer('split')"><i class="fas fa-plus"></i> Add Split</button>
-            <div id="split-list"></div>
-        </div>
-        <div id="silent" class="tab-content">
-            <button class="add-btn" onclick="addTimer('silent')"><i class="fas fa-plus"></i> Add Silent</button>
-            <div class="hint">Visual-only countdown — gentle end cue, no ticking.</div>
-            <div id="silent-list"></div>
-        </div>
-        <div id="race" class="tab-content">
-            <button class="add-btn" onclick="addTimer('race')"><i class="fas fa-plus"></i> Add Race</button>
-            <div id="race-list"></div>
-        </div>
-        <div id="quiz" class="tab-content" style="text-align: center; padding: 20px;">
-            <button id="quiz-buzzer" onclick="pressBuzzer()" style="width:150px; height:150px; border-radius:50%; background:var(--primary-color); color:white; border:none; font-size:2em; cursor:pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-family:inherit; font-weight:800;">BUZZ!</button>
-            <div class="hint">Tap for a buzzer sound &amp; flash.</div>
-        </div>
+    <div class="classbar">
+        <div class="field"><label>Activity</label><input id="ci-activity" placeholder="e.g. Group Task" oninput="saveSoon()"></div>
+        <div class="field"><label>Grade</label><input id="ci-grade" placeholder="e.g. Grade 7" oninput="saveSoon()"></div>
+        <div class="field"><label>Section</label><input id="ci-section" placeholder="e.g. Rizal" oninput="saveSoon()"></div>
+        <div class="field"><label>Subject</label><input id="ci-subject" placeholder="e.g. Science" oninput="saveSoon()"></div>
     </div>
 
-    <!-- MINI DISPLAY VIEW -->
-    <div id="mini-view" class="mini-view">
-        <div id="mini-state"></div>
-        <div id="mini-display-content" class="mini-display-text">00:00</div>
-        <div class="mini-controls" id="mini-controls">
-            <button onclick="miniStart()"><i class="fas fa-play"></i> Start</button>
-            <button onclick="miniPause()"><i class="fas fa-pause"></i> Pause</button>
-            <button onclick="miniReset()" class="ghost"><i class="fas fa-rotate-left"></i> Reset</button>
-            <button onclick="switchView('full')" class="ghost"><i class="fas fa-table-cells-large"></i> Full</button>
-        </div>
-    </div>
+    <main>
+        <div id="editView" class="pane">
+            <div class="tabs" id="tabs">
+                <button class="tab active" onclick="openTab(event,'stopwatch')">Stopwatch</button>
+                <button class="tab" onclick="openTab(event,'countdown')">Countdown</button>
+                <button class="tab" onclick="openTab(event,'loop')">Loop</button>
+                <button class="tab" onclick="openTab(event,'pomodoro')">Pomodoro</button>
+                <button class="tab" onclick="openTab(event,'split')">Split</button>
+                <button class="tab" onclick="openTab(event,'silent')">Silent</button>
+                <button class="tab" onclick="openTab(event,'race')">Race</button>
+                <button class="tab" onclick="openTab(event,'quiz')">Quiz</button>
+            </div>
 
-    <!-- Alert Modal -->
-    <div id="alertModal" class="modal">
-        <div class="modal-content">
-            <div class="bell"><i class="fas fa-bell"></i></div>
-            <h2 id="modalTitle">Time's Up!</h2>
-            <p id="modalMsg"></p>
-            <button class="add-btn" onclick="closeModal()">OK</button>
+            <div id="stopwatch" class="panel active"><button class="btn add-btn" onclick="addTimer('stopwatch')"><i class="fas fa-plus"></i> Add Stopwatch</button><div id="stopwatch-list"></div></div>
+            <div id="countdown" class="panel"><button class="btn add-btn" onclick="addTimer('countdown')"><i class="fas fa-plus"></i> Add Countdown</button><div id="countdown-list"></div></div>
+            <div id="loop" class="panel"><button class="btn add-btn" onclick="addTimer('loop')"><i class="fas fa-plus"></i> Add Loop</button><div class="hint">Counts down, then restarts each round.</div><div id="loop-list"></div></div>
+            <div id="pomodoro" class="panel"><button class="btn add-btn" onclick="addTimer('pomodoro')"><i class="fas fa-plus"></i> Add Pomodoro</button><div class="hint">Alternates Work and Break automatically.</div><div id="pomodoro-list"></div></div>
+            <div id="split" class="panel"><button class="btn add-btn" onclick="addTimer('split')"><i class="fas fa-plus"></i> Add Split</button><div id="split-list"></div></div>
+            <div id="silent" class="panel"><button class="btn add-btn" onclick="addTimer('silent')"><i class="fas fa-plus"></i> Add Silent</button><div class="hint">Visual-only — gentle end cue, no ticking.</div><div id="silent-list"></div></div>
+            <div id="race" class="panel"><button class="btn add-btn" onclick="addTimer('race')"><i class="fas fa-plus"></i> Add Race</button><div id="race-list"></div></div>
+            <div id="quiz" class="panel" style="text-align:center;padding:18px">
+                <button id="quiz-buzzer" onclick="pressBuzzer()" style="width:150px;height:150px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;border:none;font-family:var(--font-head);font-size:1.8em;font-weight:700;cursor:pointer;box-shadow:0 10px 26px rgba(var(--primary-rgb),.4)">BUZZ!</button>
+                <div class="hint">Tap for a buzzer sound &amp; flash.</div>
+            </div>
         </div>
-    </div>
+
+        <div id="presentView" class="pane">
+            <div class="p-state" id="p-state"></div>
+            <div class="p-disp" id="p-disp">00:00</div>
+            <div class="p-controls">
+                <button class="btn go" onclick="pStart()"><i class="fas fa-play"></i> Start</button>
+                <button class="btn ghost" onclick="pPause()"><i class="fas fa-pause"></i> Pause</button>
+                <button class="btn ghost" onclick="pReset()"><i class="fas fa-rotate-left"></i> Reset</button>
+                <button class="btn ghost" onclick="setMode(false)"><i class="fas fa-pen"></i> Edit</button>
+            </div>
+        </div>
+    </main>
+
+    <div id="alertModal" class="modal"><div class="modal-card"><div class="bell"><i class="fas fa-bell"></i></div><h2 id="modalTitle">Time's Up!</h2><p id="modalMsg"></p><button class="btn add-btn" onclick="closeModal()">OK</button></div></div>
 
     <script>
-        /* ============================================================
-           SOUND ENGINE — gentle, low-volume Web Audio (no files)
-           ============================================================ */
-        let audioCtx = null, masterGain = null, muted = false;
-        function ensureAudio() {
-            if (!audioCtx) {
-                const AC = window.AudioContext || window.webkitAudioContext;
-                audioCtx = new AC();
-                masterGain = audioCtx.createGain();
-                masterGain.gain.value = 0.16;        // soft / not too loud
-                masterGain.connect(audioCtx.destination);
-            }
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-        }
-        function note(freq, dur, type, vol, when) {
-            if (muted) return;
-            ensureAudio();
-            const t0 = audioCtx.currentTime + (when || 0);
-            const osc = audioCtx.createOscillator();
-            const g = audioCtx.createGain();
-            osc.type = type || 'sine';
-            osc.frequency.value = freq;
-            g.gain.setValueAtTime(0.0001, t0);
-            g.gain.exponentialRampToValueAtTime(vol || 0.5, t0 + 0.012);
-            g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-            osc.connect(g); g.connect(masterGain);
-            osc.start(t0); osc.stop(t0 + dur + 0.03);
-        }
-        function marimba(freq, when, vol) {
-            note(freq, 0.45, 'triangle', (vol || 0.55), when);
-            note(freq * 2, 0.30, 'sine', (vol || 0.55) * 0.22, when);
-        }
-        function playClick()  { note(660, 0.06, 'sine', 0.3); }
-        function playStart()  { marimba(659.25, 0, 0.5); }
-        function playPause()  { note(392, 0.16, 'sine', 0.35); }
-        function playTick()   { note(880, 0.03, 'triangle', 0.06); }                  // last seconds, very soft
-        function playFinish() { marimba(523.25,0,.55); marimba(659.25,.09,.55); marimba(783.99,.18,.55); marimba(1046.5,.30,.6); }
-        function playSoftEnd(){ marimba(659.25, 0, 0.4); }                            // silent timer end
-        function playLoop()   { marimba(880, 0, 0.45); }                             // loop round
-        function playWork()   { marimba(659.25, 0, 0.5); marimba(880, 0.12, 0.5); }  // -> work
-        function playBreak()  { marimba(587.33, 0, 0.5); marimba(440, 0.12, 0.5); }  // -> break
-        function playBuzzer() { note(220, 0.28, 'sawtooth', 0.3); note(330, 0.28, 'square', 0.12); }
-        function toggleMute() {
-            muted = !muted;
-            const b = document.getElementById('muteBtn');
-            b.classList.toggle('muted', muted);
-            b.innerHTML = muted ? '<i class="fas fa-volume-xmark"></i>' : '<i class="fas fa-volume-high"></i>';
-            if (!muted) { ensureAudio(); marimba(880, 0, 0.4); }
-        }
+        const STATE_KEY = 'ct-timer-state', THEME_KEY = 'ct-theme';
+        let timers = [], activeId = null;
 
-        /* ============================================================
-           GLOBAL STATE + VIEW
-           ============================================================ */
-        let timers = [];
-        let activeMiniTimerId = null;
-
-        /* Theme synced across all tools via shared storage */
-        const THEME_KEY = 'ct-theme';
-        function readDark() { try { return localStorage.getItem(THEME_KEY) === 'dark'; } catch (e) { return false; } }
-        function applyTheme(dark) {
-            document.body.classList.toggle('dark-mode', dark);
-            const b = document.getElementById('darkBtn');
-            if (b) b.innerHTML = dark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        /* ===== OFFICE PERSISTENCE ===== */
+        let officeReady = false, saveTimer = null;
+        function val(id){ const e=document.getElementById(id); return e?e.value:''; }
+        function set(id,v){ const e=document.getElementById(id); if(e&&v!=null) e.value=v; }
+        function timerDefs(){ return timers.map(t => ({ type:t.type, name:(document.getElementById('name-'+t.id)||{}).value||'', m:(document.getElementById('m-'+t.id)||{}).value||'', s:(document.getElementById('s-'+t.id)||{}).value||'', work:(document.getElementById('work-'+t.id)||{}).value||'', brk:(document.getElementById('break-'+t.id)||{}).value||'' })); }
+        function collectState(){ return { theme: document.body.classList.contains('dark-mode')?'dark':'light', muted, tab:(document.querySelector('.panel.active')||{}).id||'stopwatch', ci:{activity:val('ci-activity'),grade:val('ci-grade'),section:val('ci-section'),subject:val('ci-subject')}, defs: timerDefs() }; }
+        function applyState(s){
+            if(!s) return;
+            if(s.ci){ set('ci-activity',s.ci.activity); set('ci-grade',s.ci.grade); set('ci-section',s.ci.section); set('ci-subject',s.ci.subject); }
+            if(s.muted){ muted=true; updateMuteIcon(); }
+            applyTheme(s.theme==='dark');
+            // rebuild saved timers
+            ['stopwatch','countdown','loop','pomodoro','split','silent','race'].forEach(tp=>{ const c=document.getElementById(tp+'-list'); if(c) c.innerHTML=''; });
+            timers = [];
+            if(Array.isArray(s.defs) && s.defs.length){ s.defs.forEach(d=> addTimer(d.type, d)); }
+            else { addTimer('stopwatch'); }
+            if(s.tab){ const b=[...document.querySelectorAll('.tab')].find(x=>x.getAttribute('onclick').includes("'"+s.tab+"'")); if(b) b.click(); }
         }
-        function toggleDark() {
-            const dark = !document.body.classList.contains('dark-mode');
-            try { localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light'); } catch (e) {}
-            applyTheme(dark);
-        }
-        window.addEventListener('storage', e => { if (e.key === THEME_KEY) applyTheme(e.newValue === 'dark'); });
-        function switchView(view) {
-            document.getElementById('full-view').style.display = view === 'full' ? 'block' : 'none';
-            document.getElementById('mini-view').style.display = view === 'mini' ? 'flex' : 'none';
-        }
-        function openTab(name) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
-            document.getElementById(name).classList.add('active');
-            event.currentTarget.classList.add('active');
-        }
+        function saveNow(){ const j=JSON.stringify(collectState()); try{localStorage.setItem(STATE_KEY,j);}catch(e){} if(officeReady){ try{ Office.context.document.settings.set(STATE_KEY,j); Office.context.document.settings.saveAsync(); }catch(e){} } }
+        function saveSoon(){ clearTimeout(saveTimer); saveTimer=setTimeout(saveNow,500); }
+        function loadState(){ let raw=null; if(officeReady){ try{raw=Office.context.document.settings.get(STATE_KEY);}catch(e){} } if(raw==null){ try{raw=localStorage.getItem(STATE_KEY);}catch(e){} } if(raw){ try{ applyState(JSON.parse(raw)); return true; }catch(e){} } return false; }
 
-        const COUNTDOWNISH = ['countdown', 'silent', 'race', 'loop'];
+        /* ===== THEME ===== */
+        function readDark(){ try{return localStorage.getItem(THEME_KEY)==='dark';}catch(e){return false;} }
+        function applyTheme(dark){ document.body.classList.toggle('dark-mode',dark); document.getElementById('darkBtn').innerHTML = dark?'<i class="fas fa-sun"></i>':'<i class="fas fa-moon"></i>'; }
+        function toggleDark(){ const d=!document.body.classList.contains('dark-mode'); try{localStorage.setItem(THEME_KEY,d?'dark':'light');}catch(e){} applyTheme(d); saveSoon(); }
+        window.addEventListener('storage', e=>{ if(e.key===THEME_KEY) applyTheme(e.newValue==='dark'); });
 
-        /* ============================================================
-           TIMER CREATION
-           ============================================================ */
-        function addTimer(type) {
-            playClick();
-            const id = Date.now() + Math.floor(Math.random() * 999);
-            timers.push({ id, type, running: false, elapsed: 0, total: 0, interval: null, laps: [], round: 1, phase: 'Work' });
-            renderTimer(timers.find(t => t.id === id));
-        }
+        /* ===== SOUND ===== */
+        let audioCtx=null, masterGain=null, muted=false;
+        function ensureAudio(){ if(!audioCtx){ const AC=window.AudioContext||window.webkitAudioContext; audioCtx=new AC(); masterGain=audioCtx.createGain(); masterGain.gain.value=.16; masterGain.connect(audioCtx.destination); } if(audioCtx.state==='suspended') audioCtx.resume(); }
+        function note(f,dur,type,vol,when){ if(muted) return; ensureAudio(); const t0=audioCtx.currentTime+(when||0),o=audioCtx.createOscillator(),g=audioCtx.createGain(); o.type=type||'sine'; o.frequency.value=f; g.gain.setValueAtTime(.0001,t0); g.gain.exponentialRampToValueAtTime(vol||.5,t0+.012); g.gain.exponentialRampToValueAtTime(.0001,t0+dur); o.connect(g); g.connect(masterGain); o.start(t0); o.stop(t0+dur+.03); }
+        function marimba(f,when,vol){ note(f,.45,'triangle',vol||.55,when); note(f*2,.3,'sine',(vol||.55)*.22,when); }
+        function playStart(){ marimba(659.25,0,.5); } function playPause(){ note(392,.16,'sine',.35); }
+        function playTickS(){ note(880,.03,'triangle',.06); }
+        function playFinish(){ marimba(523.25,0,.55); marimba(659.25,.09,.55); marimba(783.99,.18,.55); marimba(1046.5,.3,.6); }
+        function playSoftEnd(){ marimba(659.25,0,.4); } function playLoop(){ marimba(880,0,.45); }
+        function playWork(){ marimba(659.25,0,.5); marimba(880,.12,.5); } function playBreak(){ marimba(587.33,0,.5); marimba(440,.12,.5); }
+        function playBuzzer(){ note(220,.28,'sawtooth',.3); note(330,.28,'square',.12); } function playClick(){ note(660,.06,'sine',.3); }
+        function updateMuteIcon(){ const b=document.getElementById('muteBtn'); b.classList.toggle('on',muted); b.innerHTML=muted?'<i class="fas fa-volume-xmark"></i>':'<i class="fas fa-volume-high"></i>'; }
+        function toggleMute(){ muted=!muted; updateMuteIcon(); if(!muted){ ensureAudio(); marimba(880,0,.4);} saveSoon(); }
 
-        function renderTimer(t) {
-            const container = document.getElementById(`${t.type}-list`);
-            const div = document.createElement('div');
-            div.className = 'timer-wrapper';
-            div.id = `wrapper-${t.id}`;
+        /* ===== MODE ===== */
+        function setMode(present){ document.getElementById('editView').style.display=present?'none':'block'; document.getElementById('presentView').classList.toggle('show',present); document.getElementById('modeBtn').classList.toggle('on',present); document.querySelector('.classbar').style.display=present?'none':'flex'; if(present){ const t=timers.find(x=>x.id===activeId); if(t) updateUI(t); } }
+        function toggleMode(){ playClick(); setMode(!document.getElementById('presentView').classList.contains('show')); }
+        function pStart(){ if(activeId) startTimer(activeId); } function pPause(){ if(activeId) pauseTimer(activeId,true); } function pReset(){ if(activeId) resetTimer(activeId); }
 
-            let inputs = '';
-            if (COUNTDOWNISH.includes(t.type)) {
-                inputs = `<div class="input-row">Set <input type="number" id="m-${t.id}" placeholder="M" min="0"> :
-                          <input type="number" id="s-${t.id}" placeholder="S" min="0" max="59"></div>`;
-            }
-            if (t.type === 'pomodoro') {
-                inputs = `<div class="input-row">Work <input type="number" id="work-${t.id}" value="25" min="1"> min &nbsp;·&nbsp;
-                          Break <input type="number" id="break-${t.id}" value="5" min="1"> min</div>`;
-            }
-            let bar = '';
-            if (t.type === 'silent' || t.type === 'race') {
-                bar = `<div class="progress-track"><div class="progress-bar" id="bar-${t.id}"></div>` +
-                      (t.type === 'race' ? `<div class="race-runner" id="run-${t.id}">🚀</div>` : '') + `</div>`;
-            }
+        /* ===== TABS ===== */
+        function openTab(evt,name){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active')); document.getElementById(name).classList.add('active'); evt.currentTarget.classList.add('active'); saveSoon(); }
+        const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+        const COUNTDOWNISH = ['countdown','silent','race','loop'];
 
-            div.innerHTML = `
-                <button class="delete-btn" onclick="removeTimer(${t.id})" title="Delete"><i class="fas fa-xmark"></i></button>
-                <input class="timer-name" value="${t.type.charAt(0).toUpperCase() + t.type.slice(1)}">
-                <div class="state-label" id="state-${t.id}"></div>
-                <div class="timer-display" id="disp-${t.id}">00:00</div>
-                ${inputs}
-                ${bar}
-                <div class="timer-controls">
-                    <button onclick="startTimer(${t.id})"><i class="fas fa-play"></i> Start</button>
-                    <button onclick="pauseTimer(${t.id}, true)"><i class="fas fa-pause"></i> Pause</button>
-                    <button onclick="resetTimer(${t.id})" class="ghost"><i class="fas fa-rotate-left"></i> Reset</button>
-                    ${t.type === 'split' ? `<button onclick="addLap(${t.id})"><i class="fas fa-flag"></i> Lap</button>` : ''}
-                </div>
-                <ul class="split-list" id="laps-${t.id}"></ul>
-            `;
+        /* ===== CREATE ===== */
+        function addTimer(type, cfg){ playClick(); const id=Date.now()+Math.floor(Math.random()*9999); timers.push({id,type,running:false,elapsed:0,total:0,interval:null,laps:[],round:1,phase:'Work'}); renderTimer(timers.find(t=>t.id===id), cfg); if(!cfg) saveSoon(); }
+        function renderTimer(t, cfg){
+            const container=document.getElementById(t.type+'-list'); const div=document.createElement('div'); div.className='card'; div.id='wrapper-'+t.id; div.dataset.type=t.type;
+            let inputs='';
+            if(COUNTDOWNISH.includes(t.type)) inputs='<div class="irow">Set <input type="number" id="m-'+t.id+'" placeholder="M" min="0" oninput="saveSoon()"> : <input type="number" id="s-'+t.id+'" placeholder="S" min="0" max="59" oninput="saveSoon()"></div>';
+            if(t.type==='pomodoro') inputs='<div class="irow">Work <input type="number" id="work-'+t.id+'" value="25" min="1" oninput="saveSoon()"> min · Break <input type="number" id="break-'+t.id+'" value="5" min="1" oninput="saveSoon()"> min</div>';
+            let bar='';
+            if(t.type==='silent') bar='<div class="race"><div class="race-track"><div class="race-fill" id="bar-'+t.id+'"></div></div></div>';
+            if(t.type==='race') bar='<div class="race"><div class="race-track"><div class="race-fill" id="bar-'+t.id+'"></div></div><div class="sparkles" id="spk-'+t.id+'"><span></span><span></span><span></span></div><div class="runner" id="run-'+t.id+'">🏃</div></div>';
+            div.innerHTML='<button class="del" onclick="removeTimer('+t.id+')" title="Delete"><i class="fas fa-xmark"></i></button>'+
+                '<input class="tname" id="name-'+t.id+'" value="'+cap(t.type)+'" oninput="saveSoon()">'+
+                '<div class="state" id="state-'+t.id+'"></div><div class="disp" id="disp-'+t.id+'">00:00</div>'+inputs+bar+
+                '<div class="controls"><button onclick="startTimer('+t.id+')"><i class="fas fa-play"></i> Start</button><button onclick="pauseTimer('+t.id+',true)"><i class="fas fa-pause"></i> Pause</button><button onclick="resetTimer('+t.id+')" class="ghost"><i class="fas fa-rotate-left"></i> Reset</button>'+(t.type==='split'?'<button onclick="addLap('+t.id+')"><i class="fas fa-flag"></i> Lap</button>':'')+'</div>'+
+                '<ul class="laps" id="laps-'+t.id+'"></ul>';
             container.appendChild(div);
+            if(cfg){ set('name-'+t.id,cfg.name); set('m-'+t.id,cfg.m); set('s-'+t.id,cfg.s); set('work-'+t.id,cfg.work); set('break-'+t.id,cfg.brk); }
         }
+        function removeTimer(id){ playClick(); const t=timers.find(x=>x.id===id); if(t) clearInterval(t.interval); if(activeId===id) activeId=null; const w=document.getElementById('wrapper-'+id); if(w){ w.classList.add('removing'); setTimeout(()=>w.remove(),300);} timers=timers.filter(x=>x.id!==id); saveSoon(); }
 
-        function removeTimer(id) {
-            playClick();
-            const t = timers.find(x => x.id === id);
-            if (t) { clearInterval(t.interval); }
-            if (activeMiniTimerId === id) activeMiniTimerId = null;
-            const w = document.getElementById(`wrapper-${id}`);
-            if (w) { w.classList.add('removing'); setTimeout(() => w.remove(), 300); }
-            timers = timers.filter(x => x.id !== id);
+        /* ===== ENGINE ===== */
+        function startTimer(id){ const t=timers.find(x=>x.id===id); if(!t||t.running) return; ensureAudio();
+            if(COUNTDOWNISH.includes(t.type) && t.elapsed===0){ const m=parseInt(val('m-'+id))||0, s=parseInt(val('s-'+id))||0; t.total=m*60+s; t.elapsed=t.total; }
+            if(t.type==='pomodoro' && t.elapsed===0){ t.workSecs=(parseInt(val('work-'+id))||25)*60; t.breakSecs=(parseInt(val('break-'+id))||5)*60; t.phase='Work'; t.total=t.workSecs; t.elapsed=t.workSecs; }
+            if(COUNTDOWNISH.includes(t.type) && t.total===0){ showAlert('Set a time first.', t.type); return; }
+            t.running=true; activeId=id; playStart(); updateUI(t);
+            t.interval=setInterval(()=>{ if(t.type==='stopwatch'||t.type==='split') t.elapsed+=1; else t.elapsed-=1; updateUI(t);
+                if(t.elapsed>0 && t.elapsed<=3 && t.type!=='silent' && t.type!=='stopwatch' && t.type!=='split') playTickS();
+                if(t.elapsed<=0 && COUNTDOWNISH.includes(t.type)) endCountdown(t); else if(t.elapsed<=0 && t.type==='pomodoro') endPomodoro(t); },1000); }
+        function endCountdown(t){ if(t.type==='loop'){ t.round+=1; t.elapsed=t.total; playLoop(); flashCard(t.id); updateUI(t); return; } pauseTimer(t.id); flashCard(t.id); if(t.type==='silent'){ playSoftEnd(); showAlert('Silent timer finished.', t.type);} else { playFinish(); showAlert(cap(t.type)+' finished!', t.type);} }
+        function endPomodoro(t){ if(t.phase==='Work'){ t.phase='Break'; t.total=t.breakSecs; t.elapsed=t.breakSecs; playBreak(); } else { t.phase='Work'; t.round+=1; t.total=t.workSecs; t.elapsed=t.workSecs; playWork(); } flashCard(t.id); updateUI(t); }
+        function updateUI(t){ const m=Math.floor(Math.abs(t.elapsed)/60), s=Math.abs(t.elapsed)%60, str=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+            const d=document.getElementById('disp-'+t.id); if(d) d.innerText=str;
+            let st=''; if(t.type==='loop') st='Round '+t.round; if(t.type==='pomodoro') st=t.phase+' · Round '+t.round; const se=document.getElementById('state-'+t.id); if(se) se.innerText=st;
+            const ending=(COUNTDOWNISH.includes(t.type)||t.type==='pomodoro')&&t.running&&t.elapsed<=5&&t.elapsed>0&&t.type!=='silent'; if(d) d.classList.toggle('ending',ending);
+            if(activeId===t.id){ const pd=document.getElementById('p-disp'); pd.innerText=str; pd.classList.toggle('ending',ending); document.getElementById('p-state').innerText = st || (t.running?'Running':''); }
+            if((t.type==='silent'||t.type==='race')&&t.total>0){ const perc=Math.min(100,((t.total-t.elapsed)/t.total)*100); const b=document.getElementById('bar-'+t.id); if(b) b.style.width=perc+'%'; if(t.type==='race'){ const r=document.getElementById('run-'+t.id); if(r) r.style.left='calc('+perc+'% - 13px)'; const sp=document.getElementById('spk-'+t.id); if(sp) sp.style.left='calc('+perc+'% - 13px)'; } } }
+        function pauseTimer(id,manual){ const t=timers.find(x=>x.id===id); if(!t) return; if(manual&&t.running) playPause(); t.running=false; clearInterval(t.interval); updateUI(t); }
+        function resetTimer(id){ playClick(); const t=timers.find(x=>x.id===id); if(!t) return; pauseTimer(id); t.elapsed=0; t.total=0; t.round=1; t.phase='Work'; const l=document.getElementById('laps-'+id); if(l) l.innerHTML=''; t.laps=[]; const b=document.getElementById('bar-'+id); if(b) b.style.width='0%'; const r=document.getElementById('run-'+id); if(r) r.style.left='0%'; const sp=document.getElementById('spk-'+id); if(sp) sp.style.left='0%'; updateUI(t); }
+        function addLap(id){ playClick(); const t=timers.find(x=>x.id===id); const str=document.getElementById('disp-'+id).innerText; const li=document.createElement('li'); li.innerText='Lap '+(t.laps.length+1)+': '+str; document.getElementById('laps-'+id).appendChild(li); t.laps.push(str); }
+        function flashCard(id){ const w=document.getElementById('wrapper-'+id); if(!w) return; w.classList.remove('flash'); void w.offsetWidth; w.classList.add('flash'); }
+
+        /* ===== QUIZ + MODAL ===== */
+        function pressBuzzer(){ ensureAudio(); playBuzzer(); const b=document.getElementById('quiz-buzzer'); b.style.transform='scale(1.12)'; setTimeout(()=>b.style.transform='scale(1)',150); showAlert('BUZZER PRESSED!','quiz'); }
+        function showAlert(msg,title){ document.getElementById('modalTitle').innerText=title?cap(title):"Time's Up!"; document.getElementById('modalMsg').innerText=msg; document.getElementById('alertModal').style.display='flex'; }
+        function closeModal(){ playClick(); document.getElementById('alertModal').style.display='none'; }
+
+        /* ===== EXPORT ===== */
+        async function exportResults(){
+            if(!timers.length){ showAlert('Add a timer first.','Export'); return; }
+            const ci={activity:val('ci-activity'),grade:val('ci-grade'),section:val('ci-section'),subject:val('ci-subject')};
+            const lines=['Activity : '+(ci.activity||'-'),'Grade    : '+(ci.grade||'-'),'Section  : '+(ci.section||'-'),'Subject  : '+(ci.subject||'-'),'Date     : '+new Date().toLocaleString(),'Tool     : Timer','','====== TIMERS ======'];
+            timers.forEach(t=>{ const name=(document.getElementById('name-'+t.id)||{}).value||cap(t.type); const time=(document.getElementById('disp-'+t.id)||{}).innerText||'00:00'; lines.push('• '+name+' ['+t.type+'] — '+time); if(t.laps&&t.laps.length) t.laps.forEach((lp,i)=>lines.push('    Lap '+(i+1)+': '+lp)); });
+            const base=(ci.activity||'timer').replace(/[^a-z0-9-_ ]/gi,'').trim()||'timer';
+            await saveText(base+'_'+new Date().toISOString().slice(0,10)+'.txt', lines.join('\r\n'));
         }
+        async function saveText(filename,text){ if(window.showSaveFilePicker){ try{ const h=await showSaveFilePicker({suggestedName:filename,types:[{description:'Text file',accept:{'text/plain':['.txt']}}]}); const w=await h.createWritable(); await w.write(text); await w.close(); return; }catch(e){ if(e&&e.name==='AbortError') return; } } const blob=new Blob([text],{type:'text/plain'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
 
-        /* ============================================================
-           CORE ENGINE
-           ============================================================ */
-        function startTimer(id) {
-            const t = timers.find(x => x.id === id);
-            if (!t || t.running) return;
-            ensureAudio();
-
-            if (COUNTDOWNISH.includes(t.type) && t.elapsed === 0) {
-                const m = parseInt(document.getElementById(`m-${id}`).value) || 0;
-                const s = parseInt(document.getElementById(`s-${id}`).value) || 0;
-                t.total = (m * 60) + s;
-                t.elapsed = t.total;
-            }
-            if (t.type === 'pomodoro' && t.elapsed === 0) {
-                t.workSecs = (parseInt(document.getElementById(`work-${id}`).value) || 25) * 60;
-                t.breakSecs = (parseInt(document.getElementById(`break-${id}`).value) || 5) * 60;
-                t.phase = 'Work'; t.total = t.workSecs; t.elapsed = t.workSecs;
-            }
-            if (COUNTDOWNISH.includes(t.type) && t.total === 0 && t.type !== 'stopwatch') {
-                showAlert('Set a time first.', t.type); return;
-            }
-
-            t.running = true;
-            activeMiniTimerId = id;
-            playStart();
-            updateUI(t);
-
-            t.interval = setInterval(() => {
-                if (t.type === 'stopwatch' || t.type === 'split') t.elapsed += 1;
-                else t.elapsed -= 1;
-                updateUI(t);
-
-                // gentle countdown ticks (not for silent)
-                if (t.elapsed > 0 && t.elapsed <= 3 && t.type !== 'silent' && t.type !== 'stopwatch' && t.type !== 'split') playTick();
-
-                if (t.elapsed <= 0 && COUNTDOWNISH.includes(t.type)) handleCountdownEnd(t);
-                else if (t.elapsed <= 0 && t.type === 'pomodoro') handlePomodoroEnd(t);
-            }, 1000);
-        }
-
-        function handleCountdownEnd(t) {
-            if (t.type === 'loop') {                    // auto-restart, no dead-end
-                t.round += 1; t.elapsed = t.total;
-                playLoop(); flashCard(t.id); updateUI(t);
-                return;
-            }
-            pauseTimer(t.id);
-            flashCard(t.id);
-            if (t.type === 'silent') { playSoftEnd(); showAlert('Silent timer finished.', t.type); }
-            else { playFinish(); showAlert(`${cap(t.type)} finished!`, t.type); }
-        }
-
-        function handlePomodoroEnd(t) {
-            if (t.phase === 'Work') { t.phase = 'Break'; t.total = t.breakSecs; t.elapsed = t.breakSecs; playBreak(); }
-            else { t.phase = 'Work'; t.round += 1; t.total = t.workSecs; t.elapsed = t.workSecs; playWork(); }
-            flashCard(t.id); updateUI(t);
-        }
-
-        function updateUI(t) {
-            const m = Math.floor(Math.abs(t.elapsed) / 60);
-            const s = Math.abs(t.elapsed) % 60;
-            const str = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-            const disp = document.getElementById(`disp-${t.id}`);
-            if (disp) disp.innerText = str;
-
-            // state label (loop round / pomodoro phase)
-            const stateEl = document.getElementById(`state-${t.id}`);
-            let stateTxt = '';
-            if (t.type === 'loop') stateTxt = `Round ${t.round}`;
-            if (t.type === 'pomodoro') stateTxt = `${t.phase} · Round ${t.round}`;
-            if (stateEl) stateEl.innerText = stateTxt;
-
-            // low-time visual emphasis
-            const ending = (COUNTDOWNISH.includes(t.type) || t.type === 'pomodoro') && t.running && t.elapsed <= 5 && t.elapsed > 0 && t.type !== 'silent';
-            if (disp) disp.classList.toggle('ending', ending);
-
-            // mirror to mini view
-            if (activeMiniTimerId === t.id) {
-                const mc = document.getElementById('mini-display-content');
-                mc.innerText = str;
-                mc.classList.toggle('ending', ending);
-                document.getElementById('mini-state').innerText = stateTxt || (t.running ? 'Running' : '');
-            }
-
-            // progress bar
-            if ((t.type === 'silent' || t.type === 'race') && t.total > 0) {
-                const perc = Math.min(100, ((t.total - t.elapsed) / t.total) * 100);
-                const barEl = document.getElementById(`bar-${t.id}`);
-                if (barEl) barEl.style.width = perc + '%';
-                if (t.type === 'race') { const r = document.getElementById(`run-${t.id}`); if (r) r.style.left = `calc(${perc}% - 22px)`; }
-            }
-        }
-
-        function pauseTimer(id, manual) {
-            const t = timers.find(x => x.id === id);
-            if (!t) return;
-            if (manual && t.running) playPause();
-            t.running = false;
-            clearInterval(t.interval);
-            updateUI(t);
-        }
-
-        function resetTimer(id) {
-            playClick();
-            const t = timers.find(x => x.id === id);
-            if (!t) return;
-            pauseTimer(id);
-            t.elapsed = 0; t.total = 0; t.round = 1; t.phase = 'Work';
-            const laps = document.getElementById(`laps-${id}`); if (laps) laps.innerHTML = '';
-            t.laps = [];
-            const bar = document.getElementById(`bar-${id}`); if (bar) bar.style.width = '0%';
-            const run = document.getElementById(`run-${id}`); if (run) run.style.left = '-22px';
-            updateUI(t);
-        }
-
-        function addLap(id) {
-            playClick();
-            const t = timers.find(x => x.id === id);
-            const str = document.getElementById(`disp-${id}`).innerText;
-            const li = document.createElement('li');
-            li.innerText = `Lap ${t.laps.length + 1}: ${str}`;
-            document.getElementById(`laps-${id}`).appendChild(li);
-            t.laps.push(str);
-        }
-
-        function flashCard(id) {
-            const w = document.getElementById(`wrapper-${id}`);
-            if (!w) return;
-            w.classList.remove('flash'); void w.offsetWidth; w.classList.add('flash');
-        }
-        const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-
-        /* ============================================================
-           MINI VIEW CONTROLS (operate on active timer)
-           ============================================================ */
-        function miniStart() { if (activeMiniTimerId) startTimer(activeMiniTimerId); else hintNoTimer(); }
-        function miniPause() { if (activeMiniTimerId) pauseTimer(activeMiniTimerId, true); }
-        function miniReset() { if (activeMiniTimerId) resetTimer(activeMiniTimerId); }
-        function hintNoTimer() {
-            document.getElementById('mini-state').innerText = 'Pick a timer in Full view';
-        }
-
-        /* ============================================================
-           QUIZ + MODAL
-           ============================================================ */
-        function pressBuzzer() {
-            ensureAudio(); playBuzzer();
-            const b = document.getElementById('quiz-buzzer');
-            b.style.transform = 'scale(1.12)';
-            setTimeout(() => b.style.transform = 'scale(1)', 150);
-            showAlert('BUZZER PRESSED!', 'quiz');
-        }
-        function showAlert(msg, title) {
-            document.getElementById('modalTitle').innerText = title ? cap(title) : "Time's Up!";
-            document.getElementById('modalMsg').innerText = msg;
-            document.getElementById('alertModal').style.display = 'flex';
-        }
-        function closeModal() { playClick(); document.getElementById('alertModal').style.display = 'none'; }
-
-        // Start with one stopwatch by default + apply saved theme
-        window.onload = () => { applyTheme(readDark()); addTimer('stopwatch'); };
+        /* ===== BOOT ===== */
+        let booted = false;
+        function boot(){ if(booted) return; booted = true; if(!loadState()){ applyTheme(readDark()); addTimer('stopwatch'); } }
+        if(window.Office && Office.onReady){ Office.onReady(function(info){ officeReady=!!(info&&info.host); boot(); }); } else { boot(); }
+        setTimeout(function(){ if(!officeReady && !timers.length) boot(); }, 1500);
     </script>
 </body>
 </html>

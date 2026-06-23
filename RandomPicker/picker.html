@@ -3,478 +3,489 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Classroom Picker - Mr. Carlo</title>
+    <title>Classroom Picker</title>
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #eef3f8; --bg-2: #e3ecf5; --card-bg: #ffffff;
-            --text: #1f2937; --muted: #6b7280; --gray: #e2e8f0;
-            --primary: #0fb9b1; --primary-2: #15c4c4; --primary-rgb: 15, 185, 177;
-            --radius: 16px; --danger: #ef476f;
+            --bg: #f4f1ff; --bg-2: #e7fbff; --surface: #ffffff; --surface-2: #f6f5ff;
+            --ink: #241b4e; --muted: #6b6790; --line: #e7e3f5;
+            --primary: #6d28d9; --primary-2: #9333ea; --primary-rgb: 109, 40, 217;
+            --danger: #ff3d7f; --radius: 18px;
+            --font-head: 'Fredoka', sans-serif; --font-body: 'Nunito', sans-serif;
         }
         .dark-mode {
-            --bg: #0f172a; --bg-2: #111c34; --card-bg: #1e293b;
-            --text: #e2e8f0; --muted: #94a3b8; --gray: #334155;
-            --primary: #2dd4bf; --primary-2: #5eead4; --primary-rgb: 45, 212, 191;
+            --bg: #14122e; --bg-2: #0e1330; --surface: #211d44; --surface-2: #2a2552;
+            --ink: #efeaff; --muted: #a9a3d6; --line: #352f63;
+            --primary: #a78bfa; --primary-2: #c084fc; --primary-rgb: 167, 139, 250;
+            --danger: #ff5c93;
         }
         * { box-sizing: border-box; }
         html, body { height: 100%; }
         body {
-            font-family: 'Montserrat', sans-serif; margin: 0; color: var(--text);
-            background: radial-gradient(1200px 600px at 80% -10%, var(--bg-2), var(--bg)) fixed;
-            overflow-x: hidden; transition: background .3s, color .3s;
+            margin: 0; font-family: var(--font-body); color: var(--ink);
+            background: radial-gradient(1200px 700px at 85% -15%, var(--bg-2), var(--bg)) fixed;
+            display: flex; flex-direction: column; overflow: hidden; transition: background .3s, color .3s;
         }
+        button { font-family: var(--font-body); }
 
-        /* Floating Toolbar */
-        .view-toggle { position: fixed; top: 10px; right: 10px; z-index: 1000; display: flex; gap: 6px; opacity: .4; transition: .3s; }
-        .view-toggle:hover { opacity: 1; }
-        .view-toggle button {
-            background: var(--primary); color: #fff; border: none; padding: 6px 11px;
-            border-radius: 8px; cursor: pointer; font-size: 11px; font-family: inherit; font-weight: 600;
-        }
-        .view-toggle button.muted { background: var(--danger); }
+        /* ===== TOP BAR (compact, icon tools, no overlap) ===== */
+        .topbar { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff;
+            box-shadow: 0 4px 16px rgba(var(--primary-rgb), .35); z-index: 50; }
+        .topbar .brand { display: flex; align-items: center; gap: 8px; font-family: var(--font-head); font-weight: 700; font-size: clamp(14px, 2.6vw, 18px); }
+        .topbar .brand i { font-size: 1.1em; }
+        .topbar .spacer { flex: 1 1 auto; }
+        .icon-btn { width: 34px; height: 34px; border-radius: 10px; border: none; cursor: pointer;
+            background: rgba(255,255,255,.16); color: #fff; font-size: 14px; display: inline-flex; align-items: center; justify-content: center;
+            transition: background .15s, transform .1s; }
+        .icon-btn:hover { background: rgba(255,255,255,.3); }
+        .icon-btn:active { transform: scale(.92); }
+        .icon-btn.on { background: #fff; color: var(--primary); }
 
-        /* Confetti overlay (covers viewport) */
-        #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 900; }
+        /* ===== CLASS INFO BAR ===== */
+        .classbar { flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; background: var(--surface-2); border-bottom: 1px solid var(--line); }
+        .classbar .field { display: flex; flex-direction: column; flex: 1 1 120px; min-width: 0; }
+        .classbar label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin: 0 0 2px 3px; }
+        .classbar input { border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+            border-radius: 9px; padding: 7px 9px; font-family: var(--font-body); font-size: 13px; font-weight: 600; min-width: 0; }
+        .classbar input:focus { outline: 2px solid rgba(var(--primary-rgb), .4); border-color: transparent; }
 
-        /* ===== FULL (setup) VIEW ===== */
-        .full-view { display: block; padding: 18px 16px 24px; min-height: 100vh; }
-        .brand { display: flex; align-items: center; gap: 10px; margin: 2px 0 14px; }
-        .brand .logo { width: 38px; height: 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center;
-            background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; font-size: 18px;
-            box-shadow: 0 6px 16px rgba(var(--primary-rgb), .4); }
-        .brand h1 { font-size: 18px; margin: 0; font-weight: 800; }
+        /* ===== MAIN ===== */
+        main { flex: 1 1 auto; position: relative; overflow: hidden; }
+        .pane { position: absolute; inset: 0; overflow: auto; }
+        #editView { padding: 12px; }
+        #presentView { display: none; padding: 12px; }
 
-        .tab-container { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 14px; }
-        .tab-button {
-            background: var(--card-bg); border: 1px solid var(--gray); padding: 9px 14px; cursor: pointer;
-            color: var(--muted); font-family: inherit; font-weight: 700; border-radius: 30px; white-space: nowrap;
-            transition: all .15s; font-size: 13px;
-        }
-        .tab-button.active { color: #fff; background: linear-gradient(135deg, var(--primary), var(--primary-2)); border-color: transparent; box-shadow: 0 5px 14px rgba(var(--primary-rgb), .35); }
-        .tab-content { display: none; animation: fadeIn .25s ease; }
-        .tab-content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+        /* Tabs */
+        .tabs { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 10px; }
+        .tab { border: 1px solid var(--line); background: var(--surface); color: var(--muted); cursor: pointer;
+            font-weight: 800; font-size: 13px; padding: 8px 14px; border-radius: 30px; white-space: nowrap; transition: all .15s; display: inline-flex; gap: 7px; align-items: center; }
+        .tab.active { color: #fff; background: linear-gradient(135deg, var(--primary), var(--primary-2)); border-color: transparent; box-shadow: 0 5px 14px rgba(var(--primary-rgb), .35); }
+        .panel { display: none; animation: fade .25s ease; }
+        .panel.active { display: block; }
+        @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-        textarea {
-            width: 100%; height: 120px; border-radius: 12px; border: 1px solid var(--gray);
-            padding: 12px; font-family: inherit; background: var(--card-bg); color: var(--text); resize: vertical; font-size: 14px;
-        }
+        textarea { width: 100%; min-height: 110px; border-radius: 14px; border: 1px solid var(--line);
+            padding: 12px; font-family: var(--font-body); font-size: 14px; background: var(--surface); color: var(--ink); resize: vertical; }
         textarea:focus { outline: 2px solid rgba(var(--primary-rgb), .4); border-color: transparent; }
-        .row { display: flex; align-items: center; gap: 8px; margin-top: 12px; color: var(--muted); font-weight: 600; flex-wrap: wrap; }
-        input[type="number"] { width: 56px; padding: 7px; border: 1px solid var(--gray); border-radius: 8px; background: var(--card-bg); color: var(--text); text-align: center; font-family: inherit; }
-        .tool-button {
-            background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; border: none;
-            padding: 13px 20px; border-radius: 12px; cursor: pointer; width: 100%; margin-top: 14px;
-            font-weight: 700; font-family: inherit; font-size: 15px; box-shadow: 0 8px 20px rgba(var(--primary-rgb), .35);
-            transition: filter .15s, transform .1s; display: inline-flex; justify-content: center; align-items: center; gap: 9px;
-        }
-        .tool-button:hover { filter: brightness(1.06); }
-        .tool-button:active { transform: scale(.98); }
+        .row { display: flex; align-items: center; gap: 8px; margin-top: 12px; color: var(--muted); font-weight: 700; flex-wrap: wrap; }
+        input[type=number] { width: 60px; padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); text-align: center; font-family: var(--font-body); font-weight: 700; }
+        .btn { border: none; cursor: pointer; font-weight: 800; font-family: var(--font-body); border-radius: 14px;
+            display: inline-flex; align-items: center; justify-content: center; gap: 9px; transition: filter .15s, transform .1s; }
+        .btn:active { transform: scale(.97); }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; padding: 13px 20px; font-size: 15px; width: 100%; margin-top: 14px; box-shadow: 0 8px 20px rgba(var(--primary-rgb), .35); }
+        .btn-primary:hover { filter: brightness(1.06); }
+        .btn-soft { background: var(--surface); color: var(--ink); border: 1px solid var(--line); padding: 11px 18px; }
         .hint { font-size: 12px; color: var(--muted); margin-top: 8px; text-align: center; }
 
-        /* ===== MINI (results) VIEW ===== */
-        .mini-view { display: none; height: 100vh; width: 100vw; align-items: stretch; justify-content: center; }
-        #mini-content { width: 100%; height: 100vh; overflow: hidden; padding: 16px 16px 84px; display: flex; flex-direction: column; }
+        /* ===== PRESENT (results) ===== */
+        #presentView { display: none; flex-direction: column; height: 100%; }
+        #presentView.show { display: flex; }
+        .stage { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+        .present-actions { flex: 0 0 auto; display: flex; gap: 9px; justify-content: center; flex-wrap: wrap; padding-top: 10px; }
+        .present-actions .btn { padding: 10px 18px; font-size: 14px; }
 
-        /* Picker winner */
-        .winner-card {
-            margin: auto; display: inline-flex; flex-direction: column; align-items: center; gap: 14px;
-            padding: clamp(20px, 5vh, 48px) clamp(24px, 7vw, 80px); border-radius: 28px;
-            background: linear-gradient(160deg, var(--card-bg), rgba(var(--primary-rgb), .14));
-            box-shadow: 0 20px 60px rgba(var(--primary-rgb), .35); border: 2px solid rgba(var(--primary-rgb), .5);
-            animation: pop .6s cubic-bezier(.18,.89,.32,1.28); max-width: 92vw;
-        }
-        .winner-label { font-size: clamp(.9rem, 2.6vmin, 1.6rem); font-weight: 800; letter-spacing: 5px; color: var(--primary); }
-        .winner-name { font-size: clamp(2.2rem, 12vmin, 9rem); font-weight: 800; line-height: 1.02; word-break: break-word; animation: glow 1.8s ease-in-out infinite; }
+        .winner-card { margin: auto; display: inline-flex; flex-direction: column; align-items: center; gap: 12px;
+            padding: clamp(16px, 4vh, 40px) clamp(20px, 6vw, 70px); border-radius: 26px;
+            background: linear-gradient(160deg, var(--surface), rgba(var(--primary-rgb), .14));
+            box-shadow: 0 20px 55px rgba(var(--primary-rgb), .32); border: 2px solid rgba(var(--primary-rgb), .45);
+            animation: pop .6s cubic-bezier(.18,.89,.32,1.28); max-width: 94%; }
+        .winner-label { font-family: var(--font-head); font-size: clamp(.85rem, 2.4vmin, 1.5rem); letter-spacing: 5px; color: var(--primary); font-weight: 700; }
+        .winner-name { font-family: var(--font-head); font-weight: 700; font-size: clamp(2rem, 11vmin, 8rem); line-height: 1.02; word-break: break-word; animation: glow 1.8s ease-in-out infinite; }
         @keyframes pop { 0% { transform: scale(.3) rotate(-6deg); opacity: 0; } 60% { transform: scale(1.08) rotate(2deg); opacity: 1; } 100% { transform: scale(1) rotate(0); } }
-        @keyframes glow { 0%,100% { text-shadow: 0 0 0 rgba(var(--primary-rgb), 0); } 50% { text-shadow: 0 0 26px rgba(var(--primary-rgb), .55); } }
+        @keyframes glow { 0%,100% { text-shadow: 0 0 0 rgba(var(--primary-rgb), 0); } 50% { text-shadow: 0 0 26px rgba(var(--primary-rgb), .5); } }
+        .shuffle-name { margin: auto; font-family: var(--font-head); font-weight: 700; font-size: clamp(1.8rem, 9vmin, 7rem); opacity: .85; animation: flip .12s ease; }
+        @keyframes flip { from { transform: translateY(12px) scale(.96); opacity: 0; } to { transform: translateY(0) scale(1); opacity: .85; } }
 
-        .shuffle-name { margin: auto; font-size: clamp(2rem, 9vmin, 7rem); font-weight: 800; opacity: .85; animation: flip .12s ease; }
-        @keyframes flip { from { transform: translateY(14px) scale(.96); opacity: 0; } to { transform: translateY(0) scale(1); opacity: .85; } }
-
-        /* Results stage (groups / pairs) — responsive, fits up to 10 without scroll */
-        .results-stage { height: 100%; display: flex; flex-direction: column; min-height: 0; }
-        .results-title { flex: 0 0 auto; text-align: center; font-weight: 800; color: var(--primary);
-            font-size: clamp(1.05rem, 3.2vmin, 1.7rem); margin: 0 0 12px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .results-grid { flex: 1 1 auto; display: grid; grid-template-columns: repeat(var(--cols, 2), 1fr); gap: clamp(7px, 1.4vmin, 14px); min-height: 0; }
-        .results-grid.fit { grid-auto-rows: 1fr; overflow: hidden; }
-        .results-grid.scroll { grid-auto-rows: minmax(112px, 1fr); overflow-y: auto; padding-right: 4px; }
-
-        .reveal-card {
-            text-align: left; border-radius: 14px; padding: clamp(8px, 1.5vmin, 16px); background: var(--card-bg);
-            border-left: 6px solid var(--g, var(--primary)); box-shadow: 0 8px 20px rgba(0,0,0,.12);
-            display: flex; flex-direction: column; min-height: 0; overflow: hidden;
-            opacity: 0; transform: translateY(18px) scale(.97);
-        }
-        .reveal-card.in { animation: cardIn .45s cubic-bezier(.18,.89,.32,1.28) forwards; }
+        .results-title { flex: 0 0 auto; text-align: center; font-family: var(--font-head); font-weight: 700; color: var(--primary);
+            font-size: clamp(1.05rem, 3.2vmin, 1.7rem); margin: 0 0 10px; display: flex; gap: 10px; align-items: center; justify-content: center; }
+        .grid { flex: 1 1 auto; display: grid; grid-template-columns: repeat(var(--cols, 2), 1fr); gap: clamp(7px, 1.4vmin, 14px); min-height: 0; }
+        .grid.fit { grid-auto-rows: 1fr; overflow: hidden; }
+        .grid.scroll { grid-auto-rows: minmax(110px, 1fr); overflow-y: auto; padding-right: 4px; }
+        .gcard { text-align: left; border-radius: 14px; padding: clamp(8px, 1.5vmin, 16px); background: var(--surface);
+            border-left: 6px solid var(--g, var(--primary)); box-shadow: 0 8px 20px rgba(0,0,0,.10);
+            display: flex; flex-direction: column; min-height: 0; overflow: hidden; opacity: 0; transform: translateY(16px) scale(.97); }
+        .gcard.in { animation: cardIn .45s cubic-bezier(.18,.89,.32,1.28) forwards; }
         @keyframes cardIn { to { opacity: 1; transform: none; } }
-        .card-head { display: flex; align-items: center; gap: 8px; margin-bottom: clamp(4px, 1vmin, 9px);
-            font-weight: 800; color: var(--g, var(--primary)); font-size: clamp(.82rem, 2.2vmin, 1.2rem); flex: 0 0 auto; }
-        .card-head .dot { width: clamp(20px, 3.4vmin, 30px); height: clamp(20px, 3.4vmin, 30px); border-radius: 50%; flex: 0 0 auto;
-            background: var(--g, var(--primary)); color: #fff; display: flex; align-items: center; justify-content: center; font-size: clamp(.62rem, 1.7vmin, .9rem); }
-        .card-head .count { color: var(--muted); font-weight: 700; font-size: .8em; }
+        .ghead { display: flex; align-items: center; gap: 8px; margin-bottom: clamp(4px, 1vmin, 9px); font-family: var(--font-head); font-weight: 700; color: var(--g, var(--primary)); font-size: clamp(.82rem, 2.2vmin, 1.2rem); flex: 0 0 auto; }
+        .ghead .dot { width: clamp(20px, 3.4vmin, 30px); height: clamp(20px, 3.4vmin, 30px); border-radius: 50%; flex: 0 0 auto; background: var(--g, var(--primary)); color: #fff; display: flex; align-items: center; justify-content: center; font-size: clamp(.62rem, 1.7vmin, .9rem); }
+        .ghead .count { color: var(--muted); font-weight: 800; font-size: .78em; }
         .chips { display: flex; flex-wrap: wrap; gap: clamp(4px, 1vmin, 8px); overflow: hidden; align-content: flex-start; }
-        .chip { background: rgba(var(--primary-rgb), .13); color: var(--text); border-radius: 20px; font-weight: 700;
+        .chip { background: rgba(var(--primary-rgb), .12); color: var(--ink); border-radius: 20px; font-weight: 700;
             font-size: clamp(.62rem, 1.85vmin, 1.05rem); padding: clamp(2px, .8vmin, 7px) clamp(7px, 1.5vmin, 13px);
             opacity: 0; animation: chipIn .3s ease forwards; }
         @keyframes chipIn { from { opacity: 0; transform: scale(.8); } to { opacity: 1; transform: scale(1); } }
 
-        /* Contextual action bar */
-        .result-actions { position: fixed; left: 0; right: 0; bottom: 16px; z-index: 950; display: none; gap: 10px; justify-content: center; flex-wrap: wrap; padding: 0 12px; }
-        .result-actions button { font-family: inherit; font-weight: 700; font-size: .95rem; cursor: pointer; padding: 11px 20px; border-radius: 40px; border: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 6px 18px rgba(0,0,0,.2); transition: transform .1s, filter .15s; }
-        .result-actions button:active { transform: scale(.96); }
-        .result-actions .again { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; }
-        .result-actions .setup { background: var(--card-bg); color: var(--text); border: 1px solid var(--gray); }
-
-        /* ===== SPINNER ===== */
-        .spin-stage { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        #wheelWrap { position: relative; display: inline-block; margin-top: 4px; filter: drop-shadow(0 12px 16px rgba(0,0,0,.28)); }
+        /* ===== SPINNER (two-column on wide; spinner in focus) ===== */
+        .spin-wrap { display: flex; gap: 16px; align-items: stretch; }
+        .spin-left { flex: 0 0 38%; max-width: 340px; display: flex; flex-direction: column; gap: 10px; }
+        .spin-right { flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; gap: 10px; min-width: 0; }
+        #wheelWrap { position: relative; display: inline-block; filter: drop-shadow(0 12px 18px rgba(0,0,0,.28)); }
         #wheelCanvas { display: block; border-radius: 50%; }
-        .pointer { position: absolute; top: 50%; right: -8px; transform: translateY(-50%); width: 0; height: 0;
-            border-top: 16px solid transparent; border-bottom: 16px solid transparent; border-right: 30px solid var(--danger);
+        .pointer { position: absolute; top: 50%; right: -6px; transform: translateY(-50%); width: 0; height: 0;
+            border-top: 15px solid transparent; border-bottom: 15px solid transparent; border-right: 28px solid var(--danger);
             filter: drop-shadow(2px 3px 3px rgba(0,0,0,.4)); z-index: 10; }
         .spin-controls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; align-items: center; }
-        .spin-controls .tool-button { width: auto; margin: 0; padding: 11px 22px; }
-        .spin-controls .mini-btn { background: var(--card-bg); color: var(--text); border: 1px solid var(--gray); border-radius: 30px; padding: 10px 16px; font-family: inherit; font-weight: 700; cursor: pointer; display: inline-flex; gap: 7px; align-items: center; }
-        .spin-check { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-weight: 600; font-size: 13px; }
-        #spin-winner { min-height: 1.4em; font-weight: 800; font-size: clamp(1.1rem, 3vmin, 1.8rem); color: var(--primary); }
-        #spin-winner .name { animation: pop .5s cubic-bezier(.18,.89,.32,1.28) inline-block; }
-        .history { width: 100%; max-width: 460px; background: var(--card-bg); border: 1px solid var(--gray); border-radius: 12px; padding: 10px 14px; }
-        .history h3 { margin: 0 0 6px; font-size: 13px; color: var(--muted); font-weight: 700; }
-        .history ul { list-style: none; margin: 0; padding: 0; max-height: 90px; overflow-y: auto; font-size: 13px; }
-        .history li { padding: 3px 0; border-bottom: 1px dashed var(--gray); }
+        .spin-check { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-weight: 700; font-size: 13px; }
+        #spin-winner { min-height: 1.3em; font-family: var(--font-head); font-weight: 700; font-size: clamp(1.1rem, 3.4vmin, 2rem); color: var(--primary); text-align: center; }
+        .history { width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+        .history h3 { margin: 0 0 6px; font-size: 12px; color: var(--muted); font-weight: 800; text-transform: uppercase; letter-spacing: .5px; }
+        .history ul { list-style: none; margin: 0; padding: 0; max-height: 130px; overflow-y: auto; font-size: 13px; font-weight: 600; }
+        .history li { padding: 3px 0; border-bottom: 1px dashed var(--line); }
+        @media (max-width: 600px) {
+            .spin-wrap { flex-direction: column; }
+            .spin-left { flex: none; max-width: none; order: 2; }
+            .spin-right { order: 1; }
+        }
+
+        #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 900; }
     </style>
 </head>
 <body>
     <canvas id="confetti"></canvas>
 
-    <div class="view-toggle">
-        <button onclick="toggleDark()" id="darkBtn" title="Dark mode"><i class="fas fa-moon"></i></button>
-        <button onclick="toggleMute()" id="muteBtn" title="Sound on/off"><i class="fas fa-volume-high"></i></button>
-        <button onclick="setView('full')">Setup</button>
-        <button onclick="setView('mini')">Results</button>
+    <!-- TOP BAR -->
+    <div class="topbar">
+        <div class="brand"><i class="fas fa-dice"></i> Picker</div>
+        <div class="spacer"></div>
+        <button class="icon-btn" id="modeBtn" onclick="toggleMode()" title="Edit / Present"><i class="fas fa-display"></i></button>
+        <button class="icon-btn" id="exportBtn" onclick="exportResults()" title="Export results (.txt)"><i class="fas fa-file-arrow-down"></i></button>
+        <button class="icon-btn" id="muteBtn" onclick="toggleMute()" title="Sound on/off"><i class="fas fa-volume-high"></i></button>
+        <button class="icon-btn" id="darkBtn" onclick="toggleDark()" title="Dark mode"><i class="fas fa-moon"></i></button>
     </div>
 
-    <!-- SETUP VIEW -->
-    <div id="full-view" class="full-view">
-        <div class="brand"><div class="logo"><i class="fas fa-dice"></i></div><h1>Classroom Picker</h1></div>
+    <!-- CLASS INFO -->
+    <div class="classbar">
+        <div class="field"><label>Activity</label><input id="ci-activity" placeholder="e.g. Quiz Bee" oninput="saveSoon()"></div>
+        <div class="field"><label>Grade</label><input id="ci-grade" placeholder="e.g. Grade 7" oninput="saveSoon()"></div>
+        <div class="field"><label>Section</label><input id="ci-section" placeholder="e.g. Rizal" oninput="saveSoon()"></div>
+        <div class="field"><label>Subject</label><input id="ci-subject" placeholder="e.g. Science" oninput="saveSoon()"></div>
+    </div>
 
-        <div class="tab-container">
-            <button class="tab-button active" onclick="openTab(event,'picker')"><i class="fas fa-wand-magic-sparkles"></i> Picker</button>
-            <button class="tab-button" onclick="openTab(event,'groups')"><i class="fas fa-users"></i> Groups</button>
-            <button class="tab-button" onclick="openTab(event,'pairs')"><i class="fas fa-user-group"></i> Pairs</button>
-            <button class="tab-button" onclick="openTab(event,'spinner')"><i class="fas fa-life-ring"></i> Spinner</button>
-        </div>
-
-        <div id="picker" class="tab-content active">
-            <textarea id="list-picker" placeholder="Enter names here (one per line)..."></textarea>
-            <button class="tool-button" onclick="runPicker()"><i class="fas fa-wand-magic-sparkles"></i> Pick Random Student</button>
-        </div>
-
-        <div id="groups" class="tab-content">
-            <textarea id="list-groups" placeholder="Enter names here (one per line)..."></textarea>
-            <div class="row">Number of groups: <input type="number" id="num-groups" value="2" min="1"></div>
-            <button class="tool-button" onclick="runGroups()"><i class="fas fa-users"></i> Generate Groups</button>
-            <div class="hint">Up to 10 groups fit on screen without scrolling.</div>
-        </div>
-
-        <div id="pairs" class="tab-content">
-            <textarea id="list-pairs" placeholder="Enter names here (one per line)..."></textarea>
-            <button class="tool-button" onclick="runPairs()"><i class="fas fa-user-group"></i> Generate Pairs</button>
-        </div>
-
-        <div id="spinner" class="tab-content">
-            <textarea id="list-spinner" placeholder="Enter names here (one per line)..." oninput="spinnerSetNames()"></textarea>
-            <div class="spin-stage">
-                <div id="wheelWrap"><canvas id="wheelCanvas"></canvas><div class="pointer"></div></div>
-                <div id="spin-winner"></div>
-                <div class="spin-controls">
-                    <button class="tool-button" onclick="spinWheel()"><i class="fas fa-rotate-right"></i> Spin</button>
-                    <label class="spin-check"><input type="checkbox" id="excludeWinners"> Remove winners</label>
-                    <button class="mini-btn" onclick="resetWheel()"><i class="fas fa-eraser"></i> Reset</button>
-                </div>
-                <div class="history"><h3>Winner history</h3><ul id="history-list"></ul></div>
+    <main>
+        <!-- EDIT VIEW -->
+        <div id="editView" class="pane">
+            <div class="tabs">
+                <button class="tab active" onclick="openTab(event,'picker')"><i class="fas fa-wand-magic-sparkles"></i> Picker</button>
+                <button class="tab" onclick="openTab(event,'groups')"><i class="fas fa-users"></i> Groups</button>
+                <button class="tab" onclick="openTab(event,'pairs')"><i class="fas fa-user-group"></i> Pairs</button>
+                <button class="tab" onclick="openTab(event,'spinner')"><i class="fas fa-life-ring"></i> Spinner</button>
             </div>
+
+            <div id="picker" class="panel active">
+                <textarea id="list-picker" placeholder="Enter names here (one per line)..." oninput="saveSoon()"></textarea>
+                <button class="btn btn-primary" onclick="runPicker()"><i class="fas fa-wand-magic-sparkles"></i> Pick Random Student</button>
+            </div>
+
+            <div id="groups" class="panel">
+                <textarea id="list-groups" placeholder="Enter names here (one per line)..." oninput="saveSoon()"></textarea>
+                <div class="row">Number of groups: <input type="number" id="num-groups" value="2" min="1" oninput="saveSoon()"></div>
+                <button class="btn btn-primary" onclick="runGroups()"><i class="fas fa-users"></i> Generate Groups</button>
+                <div class="hint">Up to 10 groups fit on screen without scrolling.</div>
+            </div>
+
+            <div id="pairs" class="panel">
+                <textarea id="list-pairs" placeholder="Enter names here (one per line)..." oninput="saveSoon()"></textarea>
+                <button class="btn btn-primary" onclick="runPairs()"><i class="fas fa-user-group"></i> Generate Pairs</button>
+            </div>
+
+            <div id="spinner" class="panel">
+                <div class="spin-wrap">
+                    <div class="spin-left">
+                        <textarea id="list-spinner" placeholder="Paste names here (one per line)..." oninput="spinnerSetNames()" style="min-height:160px"></textarea>
+                        <div class="spin-controls">
+                            <label class="spin-check"><input type="checkbox" id="excludeWinners" onchange="saveSoon()"> Remove winners after spin</label>
+                        </div>
+                        <button class="btn btn-soft" onclick="resetWheel()"><i class="fas fa-rotate-left"></i> Restore all names</button>
+                        <div class="history"><h3>Winner history</h3><ul id="history-list"></ul></div>
+                    </div>
+                    <div class="spin-right">
+                        <div id="wheelWrap"><canvas id="wheelCanvas"></canvas><div class="pointer"></div></div>
+                        <button class="btn btn-primary" style="width:auto;margin:0;padding:13px 30px" onclick="spinWheel()"><i class="fas fa-rotate-right"></i> SPIN</button>
+                        <div id="spin-winner"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="status" class="hint">Tip: your names &amp; settings save into the PowerPoint file.</div>
         </div>
 
-        <div id="status" class="hint">Results show in the Results view.</div>
-    </div>
-
-    <!-- RESULTS VIEW -->
-    <div id="mini-view" class="mini-view">
-        <div id="mini-content">Ready...</div>
-        <div id="result-actions" class="result-actions"></div>
-    </div>
+        <!-- PRESENT VIEW -->
+        <div id="presentView" class="pane">
+            <div class="stage" id="stage">Ready...</div>
+            <div class="present-actions" id="present-actions"></div>
+        </div>
+    </main>
 
     <script>
-        /* ===================== THEME (synced across pages) ===================== */
+        const PALETTE = ['#6d28d9','#ff3d7f','#14d6c4','#ffb020','#2f6bff','#22c55e','#ef4444','#f97316','#a855f7','#06b6d4'];
+        const STATE_KEY = 'ct-picker-state';
         const THEME_KEY = 'ct-theme';
+        let lastResult = { label: '', body: '' };
+
+        /* ============ OFFICE / PERSISTENCE (saves inside the .pptx) ============ */
+        let officeReady = false, saveTimer = null;
+        function collectState() {
+            return {
+                theme: document.body.classList.contains('dark-mode') ? 'dark' : 'light',
+                muted: muted,
+                tab: (document.querySelector('.panel.active') || {}).id || 'picker',
+                ci: { activity: val('ci-activity'), grade: val('ci-grade'), section: val('ci-section'), subject: val('ci-subject') },
+                names: { picker: val('list-picker'), groups: val('list-groups'), pairs: val('list-pairs'), spinner: val('list-spinner') },
+                numGroups: val('num-groups'),
+                exclude: document.getElementById('excludeWinners').checked
+            };
+        }
+        function applyState(s) {
+            if (!s) return;
+            if (s.ci) { set('ci-activity', s.ci.activity); set('ci-grade', s.ci.grade); set('ci-section', s.ci.section); set('ci-subject', s.ci.subject); }
+            if (s.names) { set('list-picker', s.names.picker); set('list-groups', s.names.groups); set('list-pairs', s.names.pairs); set('list-spinner', s.names.spinner); }
+            if (s.numGroups) set('num-groups', s.numGroups);
+            if (typeof s.exclude === 'boolean') document.getElementById('excludeWinners').checked = s.exclude;
+            if (s.muted) { muted = true; updateMuteIcon(); }
+            applyTheme(s.theme === 'dark');
+            if (s.tab) { const btn = [...document.querySelectorAll('.tab')].find(b => b.getAttribute('onclick').includes("'" + s.tab + "'")); if (btn) btn.click(); }
+            spinnerSetNames();
+        }
+        function saveNow() {
+            const json = JSON.stringify(collectState());
+            try { localStorage.setItem(STATE_KEY, json); } catch (e) {}
+            if (officeReady) { try { Office.context.document.settings.set(STATE_KEY, json); Office.context.document.settings.saveAsync(); } catch (e) {} }
+        }
+        function saveSoon() { clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 500); }
+        function loadState() {
+            let raw = null;
+            if (officeReady) { try { raw = Office.context.document.settings.get(STATE_KEY); } catch (e) {} }
+            if (raw == null) { try { raw = localStorage.getItem(STATE_KEY); } catch (e) {} }
+            if (raw) { try { applyState(JSON.parse(raw)); } catch (e) {} }
+        }
+        function val(id) { return (document.getElementById(id).value || ''); }
+        function set(id, v) { if (v != null) document.getElementById(id).value = v; }
+
+        /* ============ THEME (synced live across tools + saved in file) ============ */
         function readDark() { try { return localStorage.getItem(THEME_KEY) === 'dark'; } catch (e) { return false; } }
         function applyTheme(dark) {
             document.body.classList.toggle('dark-mode', dark);
-            const b = document.getElementById('darkBtn');
-            if (b) b.innerHTML = dark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-            if (typeof drawWheel === 'function' && names.length) renderWheel();
+            document.getElementById('darkBtn').innerHTML = dark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            if (names.length) renderWheel();
         }
         function toggleDark() {
             const dark = !document.body.classList.contains('dark-mode');
             try { localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light'); } catch (e) {}
-            applyTheme(dark);
+            applyTheme(dark); saveSoon();
         }
         window.addEventListener('storage', e => { if (e.key === THEME_KEY) applyTheme(e.newValue === 'dark'); });
 
-        /* ===================== SOUND (gentle, low volume) ===================== */
+        /* ============ SOUND ============ */
         let audioCtx = null, masterGain = null, muted = false;
         function ensureAudio() {
-            if (!audioCtx) {
-                const AC = window.AudioContext || window.webkitAudioContext;
-                audioCtx = new AC(); masterGain = audioCtx.createGain();
-                masterGain.gain.value = 0.16; masterGain.connect(audioCtx.destination);
-            }
+            if (!audioCtx) { const AC = window.AudioContext || window.webkitAudioContext; audioCtx = new AC(); masterGain = audioCtx.createGain(); masterGain.gain.value = 0.16; masterGain.connect(audioCtx.destination); }
             if (audioCtx.state === 'suspended') audioCtx.resume();
         }
-        function tone(freq, dur, type, vol, when) {
+        function tone(f, dur, type, vol, when) {
             if (muted) return; ensureAudio();
-            const t0 = audioCtx.currentTime + (when || 0);
-            const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-            o.type = type || 'sine'; o.frequency.value = freq;
-            g.gain.setValueAtTime(0.0001, t0);
-            g.gain.exponentialRampToValueAtTime(vol || 0.5, t0 + 0.012);
-            g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-            o.connect(g); g.connect(masterGain); o.start(t0); o.stop(t0 + dur + 0.03);
+            const t0 = audioCtx.currentTime + (when || 0), o = audioCtx.createOscillator(), g = audioCtx.createGain();
+            o.type = type || 'sine'; o.frequency.value = f;
+            g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol || .5, t0 + .012); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+            o.connect(g); g.connect(masterGain); o.start(t0); o.stop(t0 + dur + .03);
         }
         function marimba(f, when, vol) { tone(f, .45, 'triangle', vol || .55, when); tone(f * 2, .3, 'sine', (vol || .55) * .22, when); }
         const PENTA = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66];
-        function playTick()   { tone(1300, .025, 'triangle', .07); }
-        function playPop(i)   { marimba(PENTA[i % PENTA.length], 0, .5); }
+        function playTick() { tone(1300, .025, 'triangle', .07); }
+        function playPop(i) { marimba(PENTA[i % PENTA.length], 0, .5); }
         function playReveal() { marimba(523.25,0,.55); marimba(659.25,.09,.55); marimba(783.99,.18,.55); marimba(1046.5,.3,.6); }
         function playFinish() { marimba(783.99, 0, .5); marimba(1046.5, .12, .55); }
-        function playClick()  { tone(660, .06, 'sine', .3); }
-        function playSpinTick(){ tone(900, .02, 'square', .05); }
-        function toggleMute() {
-            muted = !muted; const b = document.getElementById('muteBtn');
-            b.classList.toggle('muted', muted);
-            b.innerHTML = muted ? '<i class="fas fa-volume-xmark"></i>' : '<i class="fas fa-volume-high"></i>';
-            if (!muted) { ensureAudio(); marimba(880, 0, .4); }
-        }
+        function playClick() { tone(660, .06, 'sine', .3); }
+        function playSpinTick() { tone(900, .02, 'square', .05); }
+        function updateMuteIcon() { const b = document.getElementById('muteBtn'); b.classList.toggle('on', muted); b.innerHTML = muted ? '<i class="fas fa-volume-xmark"></i>' : '<i class="fas fa-volume-high"></i>'; }
+        function toggleMute() { muted = !muted; updateMuteIcon(); if (!muted) { ensureAudio(); marimba(880, 0, .4); } saveSoon(); }
 
-        /* ===================== CONFETTI (viewport overlay) ===================== */
+        /* ============ CONFETTI ============ */
         function confetti(duration) {
-            const canvas = document.getElementById('confetti');
-            const W = canvas.width = window.innerWidth, H = canvas.height = window.innerHeight;
-            const ctx = canvas.getContext('2d');
-            const colors = PALETTE, N = 100, parts = [];
-            for (let i = 0; i < N; i++) parts.push({
-                x: W / 2 + (Math.random() - .5) * W * .3, y: H * .35 + (Math.random() - .5) * 40,
-                vx: (Math.random() - .5) * 9, vy: Math.random() * -9 - 4, g: .22 + Math.random() * .12,
-                s: 5 + Math.random() * 6, rot: Math.random() * Math.PI, vr: (Math.random() - .5) * .3, color: colors[i % colors.length]
-            });
+            const canvas = document.getElementById('confetti'); const W = canvas.width = innerWidth, H = canvas.height = innerHeight; const ctx = canvas.getContext('2d');
+            const parts = []; for (let i = 0; i < 100; i++) parts.push({ x: W/2 + (Math.random()-.5)*W*.3, y: H*.35+(Math.random()-.5)*40, vx:(Math.random()-.5)*9, vy:Math.random()*-9-4, g:.22+Math.random()*.12, s:5+Math.random()*6, rot:Math.random()*Math.PI, vr:(Math.random()-.5)*.3, color:PALETTE[i%PALETTE.length] });
             const end = performance.now() + (duration || 1800);
-            (function frame(now) {
-                ctx.clearRect(0, 0, W, H);
-                parts.forEach(p => { p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
-                    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.color; ctx.globalAlpha = .9;
-                    ctx.fillRect(-p.s / 2, -p.s / 2, p.s, p.s * .6); ctx.restore(); });
-                if (now < end) requestAnimationFrame(frame); else ctx.clearRect(0, 0, W, H);
-            })(performance.now());
+            (function f(now){ ctx.clearRect(0,0,W,H); parts.forEach(p=>{p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.fillStyle=p.color;ctx.globalAlpha=.9;ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);ctx.restore();}); if(now<end)requestAnimationFrame(f); else ctx.clearRect(0,0,W,H); })(performance.now());
         }
 
-        /* ===================== VIEW + UTILS ===================== */
-        const PALETTE = ['#06b6d4','#8b5cf6','#f59e0b','#ec4899','#10b981','#3b82f6','#ef4444','#f97316','#14b8a6','#a855f7'];
-        function setView(v) {
-            document.getElementById('full-view').style.display = v === 'full' ? 'block' : 'none';
-            document.getElementById('mini-view').style.display = v === 'mini' ? 'flex' : 'none';
-            if (v === 'full') hideActions();
+        /* ============ MODE (Edit / Present) ============ */
+        function setMode(present) {
+            document.getElementById('editView').style.display = present ? 'none' : 'block';
+            document.getElementById('presentView').classList.toggle('show', present);
+            document.getElementById('modeBtn').classList.toggle('on', present);
+            document.querySelector('.classbar').style.display = present ? 'none' : 'flex';
         }
+        function toggleMode() { playClick(); setMode(!document.getElementById('presentView').classList.contains('show')); }
+
+        /* ============ TABS / UTILS ============ */
         function openTab(evt, name) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
             document.getElementById(name).classList.add('active');
             evt.currentTarget.classList.add('active');
             if (name === 'spinner') { sizeWheel(); renderWheel(); }
+            saveSoon();
         }
-        function getList(id) { return document.getElementById(id).value.split('\n').map(n => n.trim()).filter(n => n !== ''); }
-        function escapeHtml(s) { return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-        function flashStatus(msg) {
-            const s = document.getElementById('status'); s.textContent = msg; s.style.color = 'var(--danger)';
-            setTimeout(() => { s.textContent = 'Results show in the Results view.'; s.style.color = ''; }, 2200);
-        }
-        function hideActions() { document.getElementById('result-actions').style.display = 'none'; }
-        function showActions(label, fn) {
-            const bar = document.getElementById('result-actions'); bar.innerHTML = '';
-            const again = document.createElement('button'); again.className = 'again';
-            again.innerHTML = '<i class="fas fa-rotate-right"></i> ' + label;
-            again.onclick = () => { playClick(); fn(); };
-            const setup = document.createElement('button'); setup.className = 'setup';
-            setup.innerHTML = '<i class="fas fa-sliders"></i> Back to Setup';
-            setup.onclick = () => { playClick(); setView('full'); };
-            bar.appendChild(again); bar.appendChild(setup); bar.style.display = 'flex';
-        }
-        // responsive layout: <=10 items fit (no scroll); >10 scrolls
-        function layoutFor(n) {
-            if (n <= 3) return { cols: 1, fit: true };
-            if (n <= 10) return { cols: 2, fit: true };
-            return { cols: Math.min(4, Math.ceil(n / 5)), fit: false };
+        function getList(id) { return val(id).split('\n').map(n => n.trim()).filter(n => n !== ''); }
+        function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+        function flashStatus(m) { const s = document.getElementById('status'); s.textContent = m; s.style.color = 'var(--danger)'; setTimeout(() => { s.textContent = 'Tip: your names & settings save into the PowerPoint file.'; s.style.color = ''; }, 2200); }
+        function layoutFor(n) { if (n <= 3) return { cols: 1, fit: true }; if (n <= 10) return { cols: 2, fit: true }; return { cols: Math.min(4, Math.ceil(n / 5)), fit: false }; }
+        function presentActions(label, fn) {
+            const bar = document.getElementById('present-actions'); bar.innerHTML = '';
+            const again = document.createElement('button'); again.className = 'btn btn-primary'; again.style.width = 'auto'; again.style.margin = '0';
+            again.innerHTML = '<i class="fas fa-rotate-right"></i> ' + label; again.onclick = () => { playClick(); fn(); };
+            const exp = document.createElement('button'); exp.className = 'btn btn-soft'; exp.innerHTML = '<i class="fas fa-file-arrow-down"></i> Export'; exp.onclick = () => { playClick(); exportResults(); };
+            const edit = document.createElement('button'); edit.className = 'btn btn-soft'; edit.innerHTML = '<i class="fas fa-pen"></i> Edit'; edit.onclick = () => { playClick(); setMode(false); };
+            bar.append(again, exp, edit);
         }
 
-        /* ===================== PICKER ===================== */
+        /* ============ EXPORT (.txt with save dialog) ============ */
+        async function exportResults() {
+            if (!lastResult.body) { flashStatus('Run an activity first, then export.'); return; }
+            const ci = { activity: val('ci-activity'), grade: val('ci-grade'), section: val('ci-section'), subject: val('ci-subject') };
+            const text = [
+                'Activity : ' + (ci.activity || '-'),
+                'Grade    : ' + (ci.grade || '-'),
+                'Section  : ' + (ci.section || '-'),
+                'Subject  : ' + (ci.subject || '-'),
+                'Date     : ' + new Date().toLocaleString(),
+                'Tool     : ' + lastResult.label,
+                '',
+                '====== RESULTS ======',
+                lastResult.body
+            ].join('\r\n');
+            const base = (ci.activity || 'picker').replace(/[^a-z0-9-_ ]/gi, '').trim() || 'picker';
+            const fname = base + '_' + new Date().toISOString().slice(0, 10) + '.txt';
+            await saveText(fname, text);
+        }
+        async function saveText(filename, text) {
+            if (window.showSaveFilePicker) {
+                try {
+                    const h = await showSaveFilePicker({ suggestedName: filename, types: [{ description: 'Text file', accept: { 'text/plain': ['.txt'] } }] });
+                    const w = await h.createWritable(); await w.write(text); await w.close(); return;
+                } catch (e) { if (e && e.name === 'AbortError') return; }
+            }
+            const blob = new Blob([text], { type: 'text/plain' }); const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+        }
+
+        /* ============ PICKER ============ */
         function runPicker() {
-            const list = getList('list-picker');
-            if (!list.length) { flashStatus('Add some names first.'); return; }
-            ensureAudio(); setView('mini'); hideActions();
-            const content = document.getElementById('mini-content');
+            const list = getList('list-picker'); if (!list.length) { flashStatus('Add some names first.'); return; }
+            ensureAudio(); setMode(true);
+            const stage = document.getElementById('stage'); document.getElementById('present-actions').innerHTML = '';
             const start = performance.now(); let delay = 55;
             (function cycle() {
-                content.innerHTML = '<div class="shuffle-name">' + escapeHtml(list[Math.floor(Math.random() * list.length)]) + '</div>';
+                stage.innerHTML = '<div class="shuffle-name">' + esc(list[Math.floor(Math.random()*list.length)]) + '</div>';
                 playTick(); delay *= 1.12;
                 if (delay < 320 && performance.now() - start < 2200) setTimeout(cycle, delay); else reveal();
             })();
             function reveal() {
-                const picked = list[Math.floor(Math.random() * list.length)];
-                content.innerHTML = '<div class="winner-card"><span class="winner-label">SELECTED</span><span class="winner-name">' + escapeHtml(picked) + '</span></div>';
-                playReveal(); confetti(1900); showActions('Pick Again', runPicker);
+                const picked = list[Math.floor(Math.random()*list.length)];
+                stage.innerHTML = '<div class="winner-card"><span class="winner-label">SELECTED</span><span class="winner-name">' + esc(picked) + '</span></div>';
+                playReveal(); confetti(1900);
+                lastResult = { label: 'Random Picker', body: 'Selected student: ' + picked };
+                presentActions('Pick Again', runPicker);
             }
         }
 
-        /* ===================== GROUPS ===================== */
+        /* ============ GROUPS ============ */
         function runGroups() {
             const list = getList('list-groups').sort(() => Math.random() - .5);
-            const num = Math.max(1, parseInt(document.getElementById('num-groups').value) || 1);
+            const num = Math.max(1, parseInt(val('num-groups')) || 1);
             if (!list.length) { flashStatus('Add some names first.'); return; }
-            ensureAudio(); setView('mini'); hideActions();
-            const groups = [];
-            for (let i = 0; i < num; i++) groups.push(list.filter((_, idx) => idx % num === i));
-            renderCards('Groups', 'fa-users', groups.map((m, i) => ({ title: 'Group ' + (i + 1), members: m })), runGroups, 'Shuffle Again');
+            ensureAudio(); setMode(true);
+            const groups = []; for (let i = 0; i < num; i++) groups.push(list.filter((_, idx) => idx % num === i));
+            renderCards('Groups', 'fa-users', groups.map((m, i) => ({ title: 'Group ' + (i+1), members: m })), runGroups, 'Shuffle Again');
+            lastResult = { label: 'Groups', body: groups.map((m, i) => 'Group ' + (i+1) + ' (' + m.length + '): ' + m.join(', ')).join('\r\n') };
         }
 
-        /* ===================== PAIRS ===================== */
+        /* ============ PAIRS ============ */
         function runPairs() {
             const list = getList('list-pairs').sort(() => Math.random() - .5);
             if (list.length < 2) { flashStatus('Add at least two names.'); return; }
-            ensureAudio(); setView('mini'); hideActions();
-            const pairs = [];
-            for (let i = 0; i < list.length; i += 2) pairs.push({ title: 'Pair ' + (i / 2 + 1), members: list[i + 1] ? [list[i], list[i + 1]] : [list[i], 'solo'] });
+            ensureAudio(); setMode(true);
+            const pairs = []; for (let i = 0; i < list.length; i += 2) pairs.push({ title: 'Pair ' + (i/2+1), members: list[i+1] ? [list[i], list[i+1]] : [list[i], 'solo'] });
             renderCards('Pairs', 'fa-user-group', pairs, runPairs, 'Shuffle Again');
+            lastResult = { label: 'Pairs', body: pairs.map(p => p.title + ': ' + p.members.join(' & ')).join('\r\n') };
         }
 
-        // Shared responsive card renderer
         function renderCards(title, icon, items, againFn, againLabel) {
-            const n = items.length, lay = layoutFor(n);
-            const content = document.getElementById('mini-content');
-            content.innerHTML =
-                '<div class="results-stage"><div class="results-title"><i class="fas ' + icon + '"></i> ' + title +
-                ' <span style="color:var(--muted);font-weight:700">(' + n + ')</span></div>' +
-                '<div class="results-grid ' + (lay.fit ? 'fit' : 'scroll') + '" id="results-grid" style="--cols:' + lay.cols + '"></div></div>';
-            const grid = document.getElementById('results-grid');
+            const n = items.length, lay = layoutFor(n), stage = document.getElementById('stage');
+            stage.innerHTML = '<div class="results-title"><i class="fas ' + icon + '"></i> ' + title + ' <span style="color:var(--muted);font-weight:800">(' + n + ')</span></div>' +
+                '<div class="grid ' + (lay.fit ? 'fit' : 'scroll') + '" id="grid" style="--cols:' + lay.cols + '"></div>';
+            const grid = document.getElementById('grid');
             items.forEach((it, i) => {
-                const color = PALETTE[i % PALETTE.length];
-                const card = document.createElement('div'); card.className = 'reveal-card'; card.style.setProperty('--g', color);
-                const chips = it.members.map((m, j) => '<span class="chip" style="animation-delay:' + (j * .04) + 's">' + escapeHtml(m) + '</span>').join('');
-                card.innerHTML = '<div class="card-head"><span class="dot">' + (i + 1) + '</span> ' + escapeHtml(it.title) +
-                    ' <span class="count">' + it.members.length + '</span></div><div class="chips">' + chips + '</div>';
+                const card = document.createElement('div'); card.className = 'gcard'; card.style.setProperty('--g', PALETTE[i % PALETTE.length]);
+                const chips = it.members.map((m, j) => '<span class="chip" style="animation-delay:' + (j*.04) + 's">' + esc(m) + '</span>').join('');
+                card.innerHTML = '<div class="ghead"><span class="dot">' + (i+1) + '</span> ' + esc(it.title) + ' <span class="count">' + it.members.length + '</span></div><div class="chips">' + chips + '</div>';
                 grid.appendChild(card);
-                setTimeout(() => {
-                    card.classList.add('in'); playPop(i);
-                    if (i === n - 1) setTimeout(() => { playFinish(); confetti(1400); showActions(againLabel, againFn); }, 220);
-                }, 90 + i * Math.min(260, 1600 / n));
+                setTimeout(() => { card.classList.add('in'); playPop(i); if (i === n - 1) setTimeout(() => { playFinish(); confetti(1400); presentActions(againLabel, againFn); }, 220); }, 90 + i * Math.min(260, 1600 / n));
             });
         }
 
-        /* ===================== SPINNER ===================== */
-        const canvas = document.getElementById('wheelCanvas');
-        const ctx = canvas.getContext('2d');
-        let names = [], history = [], spinning = false, rotation = 0, spinVelocity = 0, lastTickIdx = -1;
-        function spinnerSetNames() { names = getList('list-spinner'); renderWheel(); }
+        /* ============ SPINNER ============ */
+        const canvas = document.getElementById('wheelCanvas'); const ctx = canvas.getContext('2d');
+        let names = [], spinning = false, rotation = 0, spinVelocity = 0, lastTickIdx = -1;
+        function spinnerSetNames() { names = getList('list-spinner'); sizeWheel(); renderWheel(); saveSoon(); }
         function sizeWheel() {
-            const wrap = document.getElementById('wheelWrap');
-            const avail = Math.max(180, Math.min(wrap.parentElement.clientWidth - 10, window.innerHeight * 0.5, 460));
+            const wrap = document.getElementById('wheelWrap'); const host = wrap.parentElement;
+            const avail = Math.max(180, Math.min((host.clientWidth || 300) - 4, window.innerHeight * 0.62, 520));
             const dpr = window.devicePixelRatio || 1;
             canvas.style.width = avail + 'px'; canvas.style.height = avail + 'px';
             canvas.width = Math.round(avail * dpr); canvas.height = Math.round(avail * dpr);
         }
-        function wheelColors() {
-            return PALETTE.map(c => c);
-        }
+        function shade(hex, amt) { const n = parseInt(hex.slice(1), 16); let r=(n>>16)+amt,g=((n>>8)&255)+amt,b=(n&255)+amt; r=Math.max(0,Math.min(255,r));g=Math.max(0,Math.min(255,g));b=Math.max(0,Math.min(255,b)); return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1); }
         function drawWheel() {
-            const cols = wheelColors(), n = names.length;
-            ctx.clearRect(0, 0, 400, 400);
-            const rim = getComputedStyle(document.body).getPropertyValue('--card-bg') || '#fff';
-            if (n === 0) {
-                ctx.beginPath(); ctx.arc(200, 200, 190, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(125,125,125,.15)'; ctx.fill();
-                ctx.fillStyle = '#999'; ctx.font = '600 18px Montserrat, Arial'; ctx.textAlign = 'center';
-                ctx.fillText('Add names', 200, 205); return;
-            }
+            const n = names.length; ctx.clearRect(0, 0, 400, 400);
+            const rim = (getComputedStyle(document.body).getPropertyValue('--surface') || '#fff').trim();
+            if (n === 0) { ctx.beginPath(); ctx.arc(200,200,190,0,Math.PI*2); ctx.fillStyle='rgba(125,125,125,.15)'; ctx.fill(); ctx.fillStyle='#999'; ctx.font='600 18px Nunito,Arial'; ctx.textAlign='center'; ctx.fillText('Add names', 200, 205); return; }
             const ang = (2 * Math.PI) / n;
             for (let i = 0; i < n; i++) {
-                ctx.beginPath(); ctx.moveTo(200, 200); ctx.arc(200, 200, 190, i * ang, (i + 1) * ang);
-                const base = cols[i % cols.length];
-                const grad = ctx.createRadialGradient(200, 200, 40, 200, 200, 190);
-                grad.addColorStop(0, base); grad.addColorStop(1, shade(base, -28));
-                ctx.fillStyle = grad; ctx.fill();
+                ctx.beginPath(); ctx.moveTo(200,200); ctx.arc(200,200,190,i*ang,(i+1)*ang);
+                const base = PALETTE[i % PALETTE.length], grad = ctx.createRadialGradient(200,200,40,200,200,190);
+                grad.addColorStop(0, base); grad.addColorStop(1, shade(base, -30)); ctx.fillStyle = grad; ctx.fill();
                 ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.stroke();
-                ctx.save(); ctx.translate(200, 200); ctx.rotate(i * ang + ang / 2);
-                ctx.fillStyle = '#fff'; ctx.font = '700 ' + Math.max(11, Math.min(18, 220 / n)) + 'px Montserrat, Arial';
-                ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-                ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 3;
-                ctx.fillText(names[i].length > 14 ? names[i].slice(0, 13) + '…' : names[i], 178, 0);
-                ctx.restore();
+                ctx.save(); ctx.translate(200,200); ctx.rotate(i*ang + ang/2);
+                ctx.fillStyle = '#fff'; ctx.font = '700 ' + Math.max(11, Math.min(18, 220/n)) + 'px Nunito, Arial'; ctx.textAlign='right'; ctx.textBaseline='middle';
+                ctx.shadowColor='rgba(0,0,0,.35)'; ctx.shadowBlur=3;
+                ctx.fillText(names[i].length > 14 ? names[i].slice(0,13)+'…' : names[i], 178, 0); ctx.restore();
             }
-            ctx.beginPath(); ctx.arc(200, 200, 18, 0, Math.PI * 2);
-            ctx.fillStyle = rim.trim() || '#fff'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,.15)'; ctx.stroke();
+            ctx.beginPath(); ctx.arc(200,200,18,0,Math.PI*2); ctx.fillStyle = rim || '#fff'; ctx.fill(); ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.15)'; ctx.stroke();
         }
-        function shade(hex, amt) {
-            const n = parseInt(hex.slice(1), 16); let r = (n >> 16) + amt, g = ((n >> 8) & 255) + amt, b = (n & 255) + amt;
-            r = Math.max(0, Math.min(255, r)); g = Math.max(0, Math.min(255, g)); b = Math.max(0, Math.min(255, b));
-            return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-        }
-        function renderWheel() {
-            const s = canvas.width / 400;
-            ctx.setTransform(s, 0, 0, s, 0, 0);
-            ctx.clearRect(0, 0, 400, 400);
-            ctx.save(); ctx.translate(200, 200); ctx.rotate(rotation * Math.PI / 180); ctx.translate(-200, -200);
-            drawWheel(); ctx.restore();
-        }
+        function renderWheel() { const s = canvas.width / 400; ctx.setTransform(s,0,0,s,0,0); ctx.clearRect(0,0,400,400); ctx.save(); ctx.translate(200,200); ctx.rotate(rotation*Math.PI/180); ctx.translate(-200,-200); drawWheel(); ctx.restore(); }
         function spinWheel() {
             if (spinning || names.length === 0) { if (!names.length) flashStatus('Add names for the wheel.'); return; }
-            ensureAudio(); spinning = true; spinVelocity = Math.random() * 18 + 22; lastTickIdx = -1;
-            document.getElementById('spin-winner').textContent = '';
-            animateSpin();
+            ensureAudio(); spinning = true; spinVelocity = Math.random()*18 + 22; lastTickIdx = -1; document.getElementById('spin-winner').textContent = ''; animateSpin();
         }
         function animateSpin() {
-            if (spinVelocity > 0.25) {
-                rotation += spinVelocity; spinVelocity *= 0.987; renderWheel();
-                const n = names.length, idx = Math.floor(((360 - (rotation % 360)) % 360) / (360 / n)) % n;
-                if (idx !== lastTickIdx) { playSpinTick(); lastTickIdx = idx; }
-                requestAnimationFrame(animateSpin);
-            } else { determineWinner(); }
+            if (spinVelocity > .25) {
+                rotation += spinVelocity; spinVelocity *= .987; renderWheel();
+                const n = names.length, idx = Math.floor(((360-(rotation%360))%360)/(360/n))%n;
+                if (idx !== lastTickIdx) { playSpinTick(); lastTickIdx = idx; } requestAnimationFrame(animateSpin);
+            } else determineWinner();
         }
         function determineWinner() {
-            const n = names.length, ang = 360 / n;
-            const pointerAngle = (360 - (rotation % 360)) % 360;
-            const idx = Math.floor(pointerAngle / ang) % n;
-            const winner = names[idx];
-            history.push(winner);
-            document.getElementById('history-list').innerHTML += '<li>' + escapeHtml(winner) + '</li>';
-            document.getElementById('spin-winner').innerHTML = '🎉 <span class="name">' + escapeHtml(winner) + '</span>';
+            const n = names.length, ang = 360 / n, pa = (360-(rotation%360))%360, idx = Math.floor(pa/ang)%n, winner = names[idx];
+            document.getElementById('history-list').innerHTML += '<li>' + esc(winner) + '</li>';
+            document.getElementById('spin-winner').innerHTML = '🎉 ' + esc(winner);
             playReveal(); confetti(1700);
-            if (document.getElementById('excludeWinners').checked) { names.splice(idx, 1); }
+            lastResult = { label: 'Spinner', body: 'Winner: ' + winner };
+            if (document.getElementById('excludeWinners').checked) names.splice(idx, 1);
             spinning = false; renderWheel();
         }
-        function resetWheel() {
-            playClick(); names = []; history = []; rotation = 0;
-            document.getElementById('history-list').innerHTML = '';
-            document.getElementById('list-spinner').value = '';
-            document.getElementById('spin-winner').textContent = '';
-            renderWheel();
-        }
-        window.addEventListener('resize', () => { if (document.getElementById('spinner').classList.contains('active')) { sizeWheel(); renderWheel(); } });
+        function resetWheel() { playClick(); names = getList('list-spinner'); rotation = 0; document.getElementById('spin-winner').textContent = ''; document.getElementById('history-list').innerHTML = ''; renderWheel(); flashStatus('All names restored.'); }
+        window.addEventListener('resize', () => { if (document.getElementById('spinner').classList.contains('active')) { sizeWheel(); renderWheel(); } else if (document.getElementById('confetti')) {} });
 
-        /* ===================== INIT ===================== */
-        applyTheme(readDark());
-        sizeWheel(); renderWheel();
+        /* ============ BOOT ============ */
+        let booted = false;
+        function boot() { if (booted) return; booted = true; loadState(); applyTheme(document.body.classList.contains('dark-mode') || readDark()); sizeWheel(); renderWheel(); }
+        if (window.Office && Office.onReady) { Office.onReady(function (info) { officeReady = !!(info && info.host); boot(); }); }
+        else { boot(); }
+        // safety: if Office never initializes, still boot from localStorage
+        setTimeout(function () { if (!officeReady) boot(); }, 1500);
     </script>
 </body>
 </html>
