@@ -8,18 +8,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --accent-color-value: #15c4c4; --bg-color: #fdfdfd; --text-color: #333; --text-color-light: #555;
-            --header-bg-color: #ffffff; --panel-bg-color: #f8f9fa; --primary-color: var(--accent-color-value);
-            --gray-color: #e0e0e0; --border-radius: 12px; --primary-color-rgb: 21, 196, 196;
-            --danger: #e63946;
+            --bg-color: #eef3f8; --bg-2: #e3ecf5; --text-color: #1f2937; --text-color-light: #6b7280;
+            --header-bg-color: #ffffff; --panel-bg-color: #ffffff; --primary-color: #0fb9b1; --primary-2: #15c4c4;
+            --gray-color: #e2e8f0; --border-radius: 14px; --primary-color-rgb: 15, 185, 177;
+            --danger: #ef476f;
         }
         .dark-mode {
-            --bg-color: #212529; --text-color: #dee2e6; --header-bg-color: #2c3034; --panel-bg-color: #343a40;
-            --primary-color: #15c4c4; --gray-color: #495057;
+            --bg-color: #0f172a; --bg-2: #111c34; --text-color: #e2e8f0; --text-color-light: #94a3b8;
+            --header-bg-color: #1e293b; --panel-bg-color: #1e293b; --primary-color: #2dd4bf; --primary-2: #5eead4;
+            --gray-color: #334155; --primary-color-rgb: 45, 212, 191;
         }
 
         * { box-sizing: border-box; }
-        body { font-family: 'Montserrat', sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-color); overflow-x: hidden; transition: background-color .3s, color .3s; }
+        body { font-family: 'Montserrat', sans-serif; margin: 0; color: var(--text-color); overflow-x: hidden; transition: background .3s, color .3s;
+            background: radial-gradient(1200px 600px at 80% -10%, var(--bg-2), var(--bg-color)) fixed; min-height: 100vh; }
 
         /* PowerPoint Floating Toolbar */
         .view-toggle {
@@ -71,9 +73,10 @@
 
         .timer-controls { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
         .timer-controls button, .add-btn {
-            background: var(--primary-color); color: white; border: none; padding: 8px 15px;
-            border-radius: 8px; cursor: pointer; font-size: 0.9em; font-family: inherit; font-weight: 600;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-2)); color: white; border: none; padding: 8px 15px;
+            border-radius: 9px; cursor: pointer; font-size: 0.9em; font-family: inherit; font-weight: 600;
             display: inline-flex; align-items: center; gap: 6px; transition: filter .15s, transform .1s;
+            box-shadow: 0 4px 12px rgba(var(--primary-color-rgb), .28);
         }
         .timer-controls button:hover, .add-btn:hover { filter: brightness(1.08); }
         .timer-controls button:active, .add-btn:active { transform: scale(.96); }
@@ -124,7 +127,7 @@
 <body>
 
     <div class="view-toggle">
-        <button onclick="toggleDarkMode()" title="Dark mode"><i class="fas fa-moon"></i></button>
+        <button onclick="toggleDark()" id="darkBtn" title="Dark mode"><i class="fas fa-moon"></i></button>
         <button id="muteBtn" onclick="toggleMute()" title="Sound on/off"><i class="fas fa-volume-high"></i></button>
         <button onclick="switchView('full')">Full</button>
         <button onclick="switchView('mini')">Mini</button>
@@ -259,7 +262,20 @@
         let timers = [];
         let activeMiniTimerId = null;
 
-        function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
+        /* Theme synced across all tools via shared storage */
+        const THEME_KEY = 'ct-theme';
+        function readDark() { try { return localStorage.getItem(THEME_KEY) === 'dark'; } catch (e) { return false; } }
+        function applyTheme(dark) {
+            document.body.classList.toggle('dark-mode', dark);
+            const b = document.getElementById('darkBtn');
+            if (b) b.innerHTML = dark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        }
+        function toggleDark() {
+            const dark = !document.body.classList.contains('dark-mode');
+            try { localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light'); } catch (e) {}
+            applyTheme(dark);
+        }
+        window.addEventListener('storage', e => { if (e.key === THEME_KEY) applyTheme(e.newValue === 'dark'); });
         function switchView(view) {
             document.getElementById('full-view').style.display = view === 'full' ? 'block' : 'none';
             document.getElementById('mini-view').style.display = view === 'mini' ? 'flex' : 'none';
@@ -492,8 +508,8 @@
         }
         function closeModal() { playClick(); document.getElementById('alertModal').style.display = 'none'; }
 
-        // Start with one stopwatch by default
-        window.onload = () => addTimer('stopwatch');
+        // Start with one stopwatch by default + apply saved theme
+        window.onload = () => { applyTheme(readDark()); addTimer('stopwatch'); };
     </script>
 </body>
 </html>

@@ -3,287 +3,286 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Classroom Tools - PowerPoint</title>
+    <title>Classroom Picker - Mr. Carlo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --accent-color-value: #15c4c4; --bg-color: #fdfdfd; --text-color: #333;
-            --primary-color: var(--accent-color-value); --gray-color: #e0e0e0; --border-radius: 12px;
-            --card-bg: #ffffff; --primary-color-rgb: 21, 196, 196;
+            --bg: #eef3f8; --bg-2: #e3ecf5; --card-bg: #ffffff;
+            --text: #1f2937; --muted: #6b7280; --gray: #e2e8f0;
+            --primary: #0fb9b1; --primary-2: #15c4c4; --primary-rgb: 15, 185, 177;
+            --radius: 16px; --danger: #ef476f;
         }
         .dark-mode {
-            --bg-color: #212529; --text-color: #dee2e6; --primary-color: #15c4c4;
-            --gray-color: #495057; --card-bg: #2c3034;
+            --bg: #0f172a; --bg-2: #111c34; --card-bg: #1e293b;
+            --text: #e2e8f0; --muted: #94a3b8; --gray: #334155;
+            --primary: #2dd4bf; --primary-2: #5eead4; --primary-rgb: 45, 212, 191;
         }
-
         * { box-sizing: border-box; }
-        body { font-family: 'Montserrat', sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-color); overflow-x: hidden; transition: background-color .3s, color .3s; }
-
-        /* Floating Toolbar for PPT */
-        .view-toggle {
-            position: fixed; top: 10px; right: 10px; z-index: 1000;
-            display: flex; gap: 5px; opacity: 0.3; transition: 0.3s;
+        html, body { height: 100%; }
+        body {
+            font-family: 'Montserrat', sans-serif; margin: 0; color: var(--text);
+            background: radial-gradient(1200px 600px at 80% -10%, var(--bg-2), var(--bg)) fixed;
+            overflow-x: hidden; transition: background .3s, color .3s;
         }
+
+        /* Floating Toolbar */
+        .view-toggle { position: fixed; top: 10px; right: 10px; z-index: 1000; display: flex; gap: 6px; opacity: .4; transition: .3s; }
         .view-toggle:hover { opacity: 1; }
         .view-toggle button {
-            background: var(--primary-color); color: white; border: none;
-            padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 10px;
-            font-family: inherit;
+            background: var(--primary); color: #fff; border: none; padding: 6px 11px;
+            border-radius: 8px; cursor: pointer; font-size: 11px; font-family: inherit; font-weight: 600;
         }
-        .view-toggle button.muted { background: #b33; }
+        .view-toggle button.muted { background: var(--danger); }
 
-        /* Container & Layout */
-        .full-view { display: block; padding: 20px; }
-        .mini-view {
-            display: none; height: 100vh; width: 100vw;
-            justify-content: center; align-items: center;
-            text-align: center; background: var(--bg-color); position: relative; overflow: hidden;
-        }
-        #mini-content { width: 100%; max-height: 100vh; overflow-y: auto; padding: 18px 18px 90px; }
-        #confetti { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        /* Confetti overlay (covers viewport) */
+        #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 900; }
 
-        /* Contextual action bar in results (no dead-ends) */
-        .result-actions {
-            position: fixed; left: 0; right: 0; bottom: 16px; z-index: 30;
-            display: none; gap: 10px; justify-content: center; flex-wrap: wrap; padding: 0 12px;
-        }
-        .result-actions button {
-            font-family: inherit; font-weight: 700; font-size: .95rem; cursor: pointer;
-            padding: 11px 20px; border-radius: 40px; border: none;
-            display: inline-flex; align-items: center; gap: 8px;
-            box-shadow: 0 6px 18px rgba(0,0,0,.18); transition: transform .1s, filter .15s;
-        }
-        .result-actions button:active { transform: scale(.96); }
-        .result-actions .again { background: var(--primary-color); color: #fff; }
-        .result-actions .again:hover { filter: brightness(1.08); }
-        .result-actions .setup {
-            background: var(--card-bg); color: var(--text-color); border: 1px solid var(--gray-color);
-        }
-        .result-actions .setup:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        /* ===== FULL (setup) VIEW ===== */
+        .full-view { display: block; padding: 18px 16px 24px; min-height: 100vh; }
+        .brand { display: flex; align-items: center; gap: 10px; margin: 2px 0 14px; }
+        .brand .logo { width: 38px; height: 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; font-size: 18px;
+            box-shadow: 0 6px 16px rgba(var(--primary-rgb), .4); }
+        .brand h1 { font-size: 18px; margin: 0; font-weight: 800; }
 
-        /* Original Tab Styles */
-        .tab-container { display: flex; gap: 5px; overflow-x: auto; margin-bottom: 15px; border-bottom: 1px solid var(--gray-color); }
-        .tab-button { background: none; border: none; padding: 10px; cursor: pointer; color: #888; font-family: inherit; font-weight: 600; }
-        .tab-button.active { color: var(--primary-color); border-bottom: 2px solid var(--primary-color); }
-        .tab-content { display: none; }
+        .tab-container { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 14px; }
+        .tab-button {
+            background: var(--card-bg); border: 1px solid var(--gray); padding: 9px 14px; cursor: pointer;
+            color: var(--muted); font-family: inherit; font-weight: 700; border-radius: 30px; white-space: nowrap;
+            transition: all .15s; font-size: 13px;
+        }
+        .tab-button.active { color: #fff; background: linear-gradient(135deg, var(--primary), var(--primary-2)); border-color: transparent; box-shadow: 0 5px 14px rgba(var(--primary-rgb), .35); }
+        .tab-content { display: none; animation: fadeIn .25s ease; }
         .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-        /* Inputs & Cards */
-        textarea { width: 100%; height: 100px; border-radius: 8px; border: 1px solid var(--gray-color); padding: 10px; font-family: inherit; background: var(--card-bg); color: var(--text-color); }
-        .tool-button { background: var(--primary-color); color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 10px; font-weight: 600; font-family: inherit; transition: filter .15s, transform .1s; }
-        .tool-button:hover { filter: brightness(1.07); }
+        textarea {
+            width: 100%; height: 120px; border-radius: 12px; border: 1px solid var(--gray);
+            padding: 12px; font-family: inherit; background: var(--card-bg); color: var(--text); resize: vertical; font-size: 14px;
+        }
+        textarea:focus { outline: 2px solid rgba(var(--primary-rgb), .4); border-color: transparent; }
+        .row { display: flex; align-items: center; gap: 8px; margin-top: 12px; color: var(--muted); font-weight: 600; flex-wrap: wrap; }
+        input[type="number"] { width: 56px; padding: 7px; border: 1px solid var(--gray); border-radius: 8px; background: var(--card-bg); color: var(--text); text-align: center; font-family: inherit; }
+        .tool-button {
+            background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; border: none;
+            padding: 13px 20px; border-radius: 12px; cursor: pointer; width: 100%; margin-top: 14px;
+            font-weight: 700; font-family: inherit; font-size: 15px; box-shadow: 0 8px 20px rgba(var(--primary-rgb), .35);
+            transition: filter .15s, transform .1s; display: inline-flex; justify-content: center; align-items: center; gap: 9px;
+        }
+        .tool-button:hover { filter: brightness(1.06); }
         .tool-button:active { transform: scale(.98); }
+        .hint { font-size: 12px; color: var(--muted); margin-top: 8px; text-align: center; }
 
-        /* ===== SHUFFLE (picker suspense) ===== */
-        .shuffle-name {
-            font-size: 7vw; font-weight: 800; color: var(--text-color);
-            opacity: .85; letter-spacing: 1px;
-            animation: shuffleFlip .12s ease;
-        }
-        @keyframes shuffleFlip {
-            from { transform: translateY(14px) scale(.96); opacity: 0; }
-            to   { transform: translateY(0) scale(1); opacity: .85; }
-        }
+        /* ===== MINI (results) VIEW ===== */
+        .mini-view { display: none; height: 100vh; width: 100vw; align-items: stretch; justify-content: center; }
+        #mini-content { width: 100%; height: 100vh; overflow: hidden; padding: 16px 16px 84px; display: flex; flex-direction: column; }
 
-        /* ===== WINNER CARD ===== */
+        /* Picker winner */
         .winner-card {
-            display: inline-flex; flex-direction: column; align-items: center; gap: 10px;
-            padding: 5vh 7vw; border-radius: 24px;
-            background: linear-gradient(160deg, var(--card-bg), rgba(var(--primary-color-rgb), .12));
-            box-shadow: 0 18px 50px rgba(var(--primary-color-rgb), .35);
-            border: 2px solid rgba(var(--primary-color-rgb), .5);
-            animation: winnerPop .6s cubic-bezier(.18,.89,.32,1.28);
+            margin: auto; display: inline-flex; flex-direction: column; align-items: center; gap: 14px;
+            padding: clamp(20px, 5vh, 48px) clamp(24px, 7vw, 80px); border-radius: 28px;
+            background: linear-gradient(160deg, var(--card-bg), rgba(var(--primary-rgb), .14));
+            box-shadow: 0 20px 60px rgba(var(--primary-rgb), .35); border: 2px solid rgba(var(--primary-rgb), .5);
+            animation: pop .6s cubic-bezier(.18,.89,.32,1.28); max-width: 92vw;
         }
-        .winner-label { font-size: 2.4vw; font-weight: 700; letter-spacing: 4px; color: var(--primary-color); }
-        .winner-name  { font-size: 7vw; font-weight: 800; line-height: 1.05; color: var(--text-color); }
-        @keyframes winnerPop {
-            0%   { transform: scale(.3) rotate(-6deg); opacity: 0; }
-            60%  { transform: scale(1.08) rotate(2deg); opacity: 1; }
-            100% { transform: scale(1) rotate(0); }
-        }
-        .winner-card .winner-name { animation: glowPulse 1.8s ease-in-out infinite; }
-        @keyframes glowPulse {
-            0%,100% { text-shadow: 0 0 0 rgba(var(--primary-color-rgb), 0); }
-            50%     { text-shadow: 0 0 22px rgba(var(--primary-color-rgb), .55); }
-        }
+        .winner-label { font-size: clamp(.9rem, 2.6vmin, 1.6rem); font-weight: 800; letter-spacing: 5px; color: var(--primary); }
+        .winner-name { font-size: clamp(2.2rem, 12vmin, 9rem); font-weight: 800; line-height: 1.02; word-break: break-word; animation: glow 1.8s ease-in-out infinite; }
+        @keyframes pop { 0% { transform: scale(.3) rotate(-6deg); opacity: 0; } 60% { transform: scale(1.08) rotate(2deg); opacity: 1; } 100% { transform: scale(1) rotate(0); } }
+        @keyframes glow { 0%,100% { text-shadow: 0 0 0 rgba(var(--primary-rgb), 0); } 50% { text-shadow: 0 0 26px rgba(var(--primary-rgb), .55); } }
 
-        /* ===== GROUP / PAIR CARDS ===== */
-        .cards-wrap { display: flex; flex-direction: column; gap: 12px; max-width: 760px; margin: 0 auto; }
+        .shuffle-name { margin: auto; font-size: clamp(2rem, 9vmin, 7rem); font-weight: 800; opacity: .85; animation: flip .12s ease; }
+        @keyframes flip { from { transform: translateY(14px) scale(.96); opacity: 0; } to { transform: translateY(0) scale(1); opacity: .85; } }
+
+        /* Results stage (groups / pairs) — responsive, fits up to 10 without scroll */
+        .results-stage { height: 100%; display: flex; flex-direction: column; min-height: 0; }
+        .results-title { flex: 0 0 auto; text-align: center; font-weight: 800; color: var(--primary);
+            font-size: clamp(1.05rem, 3.2vmin, 1.7rem); margin: 0 0 12px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .results-grid { flex: 1 1 auto; display: grid; grid-template-columns: repeat(var(--cols, 2), 1fr); gap: clamp(7px, 1.4vmin, 14px); min-height: 0; }
+        .results-grid.fit { grid-auto-rows: 1fr; overflow: hidden; }
+        .results-grid.scroll { grid-auto-rows: minmax(112px, 1fr); overflow-y: auto; padding-right: 4px; }
+
         .reveal-card {
-            text-align: left; border-radius: 16px; padding: 14px 16px;
-            background: var(--card-bg);
-            border-left: 6px solid var(--g-color, var(--primary-color));
-            box-shadow: 0 8px 22px rgba(0,0,0,.10);
-            opacity: 0; transform: translateY(22px) scale(.96);
+            text-align: left; border-radius: 14px; padding: clamp(8px, 1.5vmin, 16px); background: var(--card-bg);
+            border-left: 6px solid var(--g, var(--primary)); box-shadow: 0 8px 20px rgba(0,0,0,.12);
+            display: flex; flex-direction: column; min-height: 0; overflow: hidden;
+            opacity: 0; transform: translateY(18px) scale(.97);
         }
-        .reveal-card.in { animation: cardIn .5s cubic-bezier(.18,.89,.32,1.28) forwards; }
-        @keyframes cardIn { to { opacity: 1; transform: translateY(0) scale(1); } }
-        .reveal-card .card-head {
-            display: flex; align-items: center; gap: 8px; margin-bottom: 9px;
-            font-size: 1.05rem; font-weight: 800; color: var(--g-color, var(--primary-color));
-        }
-        .reveal-card .card-head .dot {
-            width: 26px; height: 26px; border-radius: 50%; flex: 0 0 auto;
-            background: var(--g-color, var(--primary-color)); color: #fff;
-            display: flex; align-items: center; justify-content: center; font-size: .8rem;
-        }
-        .chips { display: flex; flex-wrap: wrap; gap: 7px; }
-        .chip {
-            background: rgba(var(--primary-color-rgb), .12); color: var(--text-color);
-            padding: 6px 12px; border-radius: 20px; font-size: .95rem; font-weight: 600;
-            opacity: 0; animation: chipIn .35s ease forwards;
-        }
+        .reveal-card.in { animation: cardIn .45s cubic-bezier(.18,.89,.32,1.28) forwards; }
+        @keyframes cardIn { to { opacity: 1; transform: none; } }
+        .card-head { display: flex; align-items: center; gap: 8px; margin-bottom: clamp(4px, 1vmin, 9px);
+            font-weight: 800; color: var(--g, var(--primary)); font-size: clamp(.82rem, 2.2vmin, 1.2rem); flex: 0 0 auto; }
+        .card-head .dot { width: clamp(20px, 3.4vmin, 30px); height: clamp(20px, 3.4vmin, 30px); border-radius: 50%; flex: 0 0 auto;
+            background: var(--g, var(--primary)); color: #fff; display: flex; align-items: center; justify-content: center; font-size: clamp(.62rem, 1.7vmin, .9rem); }
+        .card-head .count { color: var(--muted); font-weight: 700; font-size: .8em; }
+        .chips { display: flex; flex-wrap: wrap; gap: clamp(4px, 1vmin, 8px); overflow: hidden; align-content: flex-start; }
+        .chip { background: rgba(var(--primary-rgb), .13); color: var(--text); border-radius: 20px; font-weight: 700;
+            font-size: clamp(.62rem, 1.85vmin, 1.05rem); padding: clamp(2px, .8vmin, 7px) clamp(7px, 1.5vmin, 13px);
+            opacity: 0; animation: chipIn .3s ease forwards; }
         @keyframes chipIn { from { opacity: 0; transform: scale(.8); } to { opacity: 1; transform: scale(1); } }
-        .result-title { font-size: 1.3rem; font-weight: 800; margin: 4px 0 16px; color: var(--primary-color); }
 
-        #status { font-size: 0.8em; color: #888; margin-top: 15px; text-align: center; min-height: 1.1em; }
+        /* Contextual action bar */
+        .result-actions { position: fixed; left: 0; right: 0; bottom: 16px; z-index: 950; display: none; gap: 10px; justify-content: center; flex-wrap: wrap; padding: 0 12px; }
+        .result-actions button { font-family: inherit; font-weight: 700; font-size: .95rem; cursor: pointer; padding: 11px 20px; border-radius: 40px; border: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 6px 18px rgba(0,0,0,.2); transition: transform .1s, filter .15s; }
+        .result-actions button:active { transform: scale(.96); }
+        .result-actions .again { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; }
+        .result-actions .setup { background: var(--card-bg); color: var(--text); border: 1px solid var(--gray); }
+
+        /* ===== SPINNER ===== */
+        .spin-stage { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        #wheelWrap { position: relative; display: inline-block; margin-top: 4px; filter: drop-shadow(0 12px 16px rgba(0,0,0,.28)); }
+        #wheelCanvas { display: block; border-radius: 50%; }
+        .pointer { position: absolute; top: 50%; right: -8px; transform: translateY(-50%); width: 0; height: 0;
+            border-top: 16px solid transparent; border-bottom: 16px solid transparent; border-right: 30px solid var(--danger);
+            filter: drop-shadow(2px 3px 3px rgba(0,0,0,.4)); z-index: 10; }
+        .spin-controls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; align-items: center; }
+        .spin-controls .tool-button { width: auto; margin: 0; padding: 11px 22px; }
+        .spin-controls .mini-btn { background: var(--card-bg); color: var(--text); border: 1px solid var(--gray); border-radius: 30px; padding: 10px 16px; font-family: inherit; font-weight: 700; cursor: pointer; display: inline-flex; gap: 7px; align-items: center; }
+        .spin-check { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-weight: 600; font-size: 13px; }
+        #spin-winner { min-height: 1.4em; font-weight: 800; font-size: clamp(1.1rem, 3vmin, 1.8rem); color: var(--primary); }
+        #spin-winner .name { animation: pop .5s cubic-bezier(.18,.89,.32,1.28) inline-block; }
+        .history { width: 100%; max-width: 460px; background: var(--card-bg); border: 1px solid var(--gray); border-radius: 12px; padding: 10px 14px; }
+        .history h3 { margin: 0 0 6px; font-size: 13px; color: var(--muted); font-weight: 700; }
+        .history ul { list-style: none; margin: 0; padding: 0; max-height: 90px; overflow-y: auto; font-size: 13px; }
+        .history li { padding: 3px 0; border-bottom: 1px dashed var(--gray); }
     </style>
 </head>
 <body>
+    <canvas id="confetti"></canvas>
 
     <div class="view-toggle">
-        <button onclick="document.body.classList.toggle('dark-mode')" title="Dark mode"><i class="fas fa-moon"></i></button>
-        <button id="muteBtn" onclick="toggleMute()" title="Sound on/off"><i class="fas fa-volume-high"></i></button>
+        <button onclick="toggleDark()" id="darkBtn" title="Dark mode"><i class="fas fa-moon"></i></button>
+        <button onclick="toggleMute()" id="muteBtn" title="Sound on/off"><i class="fas fa-volume-high"></i></button>
         <button onclick="setView('full')">Setup</button>
         <button onclick="setView('mini')">Results</button>
     </div>
 
-    <!-- SETTINGS VIEW (FULL) -->
+    <!-- SETUP VIEW -->
     <div id="full-view" class="full-view">
+        <div class="brand"><div class="logo"><i class="fas fa-dice"></i></div><h1>Classroom Picker</h1></div>
+
         <div class="tab-container">
-            <button class="tab-button active" onclick="openTab(event, 'picker')">Picker</button>
-            <button class="tab-button" onclick="openTab(event, 'groups')">Groups</button>
-            <button class="tab-button" onclick="openTab(event, 'pairs')">Pairs</button>
+            <button class="tab-button active" onclick="openTab(event,'picker')"><i class="fas fa-wand-magic-sparkles"></i> Picker</button>
+            <button class="tab-button" onclick="openTab(event,'groups')"><i class="fas fa-users"></i> Groups</button>
+            <button class="tab-button" onclick="openTab(event,'pairs')"><i class="fas fa-user-group"></i> Pairs</button>
+            <button class="tab-button" onclick="openTab(event,'spinner')"><i class="fas fa-life-ring"></i> Spinner</button>
         </div>
 
-        <!-- Student Picker -->
         <div id="picker" class="tab-content active">
             <textarea id="list-picker" placeholder="Enter names here (one per line)..."></textarea>
-            <button class="tool-button" onclick="runPicker()"><i class="fas fa-wand-magic-sparkles"></i>&nbsp; Pick Random Student</button>
+            <button class="tool-button" onclick="runPicker()"><i class="fas fa-wand-magic-sparkles"></i> Pick Random Student</button>
         </div>
 
-        <!-- Group Generator -->
         <div id="groups" class="tab-content">
             <textarea id="list-groups" placeholder="Enter names here (one per line)..."></textarea>
-            <div style="margin-top:10px">
-                Groups: <input type="number" id="num-groups" value="2" min="1" style="width:50px">
-            </div>
-            <button class="tool-button" onclick="runGroups()"><i class="fas fa-users"></i>&nbsp; Generate Groups</button>
+            <div class="row">Number of groups: <input type="number" id="num-groups" value="2" min="1"></div>
+            <button class="tool-button" onclick="runGroups()"><i class="fas fa-users"></i> Generate Groups</button>
+            <div class="hint">Up to 10 groups fit on screen without scrolling.</div>
         </div>
 
-        <!-- Pairs -->
         <div id="pairs" class="tab-content">
             <textarea id="list-pairs" placeholder="Enter names here (one per line)..."></textarea>
-            <button class="tool-button" onclick="runPairs()"><i class="fas fa-user-group"></i>&nbsp; Generate Pairs</button>
+            <button class="tool-button" onclick="runPairs()"><i class="fas fa-user-group"></i> Generate Pairs</button>
         </div>
 
-        <div id="status">Result will show in Results view</div>
+        <div id="spinner" class="tab-content">
+            <textarea id="list-spinner" placeholder="Enter names here (one per line)..." oninput="spinnerSetNames()"></textarea>
+            <div class="spin-stage">
+                <div id="wheelWrap"><canvas id="wheelCanvas"></canvas><div class="pointer"></div></div>
+                <div id="spin-winner"></div>
+                <div class="spin-controls">
+                    <button class="tool-button" onclick="spinWheel()"><i class="fas fa-rotate-right"></i> Spin</button>
+                    <label class="spin-check"><input type="checkbox" id="excludeWinners"> Remove winners</label>
+                    <button class="mini-btn" onclick="resetWheel()"><i class="fas fa-eraser"></i> Reset</button>
+                </div>
+                <div class="history"><h3>Winner history</h3><ul id="history-list"></ul></div>
+            </div>
+        </div>
+
+        <div id="status" class="hint">Results show in the Results view.</div>
     </div>
 
-    <!-- MINI DISPLAY VIEW -->
+    <!-- RESULTS VIEW -->
     <div id="mini-view" class="mini-view">
-        <canvas id="confetti"></canvas>
         <div id="mini-content">Ready...</div>
         <div id="result-actions" class="result-actions"></div>
     </div>
 
     <script>
-        /* ============================================================
-           SOUND ENGINE  — gentle, low-volume Web Audio (no files)
-           ============================================================ */
+        /* ===================== THEME (synced across pages) ===================== */
+        const THEME_KEY = 'ct-theme';
+        function readDark() { try { return localStorage.getItem(THEME_KEY) === 'dark'; } catch (e) { return false; } }
+        function applyTheme(dark) {
+            document.body.classList.toggle('dark-mode', dark);
+            const b = document.getElementById('darkBtn');
+            if (b) b.innerHTML = dark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            if (typeof drawWheel === 'function' && names.length) renderWheel();
+        }
+        function toggleDark() {
+            const dark = !document.body.classList.contains('dark-mode');
+            try { localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light'); } catch (e) {}
+            applyTheme(dark);
+        }
+        window.addEventListener('storage', e => { if (e.key === THEME_KEY) applyTheme(e.newValue === 'dark'); });
+
+        /* ===================== SOUND (gentle, low volume) ===================== */
         let audioCtx = null, masterGain = null, muted = false;
         function ensureAudio() {
             if (!audioCtx) {
                 const AC = window.AudioContext || window.webkitAudioContext;
-                audioCtx = new AC();
-                masterGain = audioCtx.createGain();
-                masterGain.gain.value = 0.16;          // keep it soft / not too loud
-                masterGain.connect(audioCtx.destination);
+                audioCtx = new AC(); masterGain = audioCtx.createGain();
+                masterGain.gain.value = 0.16; masterGain.connect(audioCtx.destination);
             }
             if (audioCtx.state === 'suspended') audioCtx.resume();
         }
-        // A single soft, enveloped note (marimba/chime-like)
-        function note(freq, dur, type, vol, when) {
-            if (muted) return;
-            ensureAudio();
+        function tone(freq, dur, type, vol, when) {
+            if (muted) return; ensureAudio();
             const t0 = audioCtx.currentTime + (when || 0);
-            const osc = audioCtx.createOscillator();
-            const g = audioCtx.createGain();
-            osc.type = type || 'sine';
-            osc.frequency.value = freq;
+            const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+            o.type = type || 'sine'; o.frequency.value = freq;
             g.gain.setValueAtTime(0.0001, t0);
-            g.gain.exponentialRampToValueAtTime(vol || 0.5, t0 + 0.012);   // soft attack
-            g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);         // smooth decay
-            osc.connect(g); g.connect(masterGain);
-            osc.start(t0); osc.stop(t0 + dur + 0.03);
+            g.gain.exponentialRampToValueAtTime(vol || 0.5, t0 + 0.012);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+            o.connect(g); g.connect(masterGain); o.start(t0); o.stop(t0 + dur + 0.03);
         }
-        // Warm note = fundamental + soft octave shimmer
-        function marimba(freq, when, vol) {
-            note(freq, 0.45, 'triangle', (vol || 0.55), when);
-            note(freq * 2, 0.30, 'sine', (vol || 0.55) * 0.22, when);
-        }
-        const PENTA = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50, 1174.66]; // C D E G A C6 D6
-        function playTick()  { note(1300, 0.025, 'triangle', 0.07); }              // subtle shuffle tick
-        function playPop(i)  { marimba(PENTA[i % PENTA.length], 0, 0.5); }          // each card
-        function playReveal(){                                                       // winner fanfare
-            marimba(523.25, 0.00, 0.55);  // C5
-            marimba(659.25, 0.09, 0.55);  // E5
-            marimba(783.99, 0.18, 0.55);  // G5
-            marimba(1046.50, 0.30, 0.6);  // C6
-        }
-        function playFinish(){ marimba(783.99, 0, 0.5); marimba(1046.50, 0.12, 0.55); } // groups/pairs done
-        function playClick(){ note(660, 0.06, 'sine', 0.3); }                          // button tap
+        function marimba(f, when, vol) { tone(f, .45, 'triangle', vol || .55, when); tone(f * 2, .3, 'sine', (vol || .55) * .22, when); }
+        const PENTA = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66];
+        function playTick()   { tone(1300, .025, 'triangle', .07); }
+        function playPop(i)   { marimba(PENTA[i % PENTA.length], 0, .5); }
+        function playReveal() { marimba(523.25,0,.55); marimba(659.25,.09,.55); marimba(783.99,.18,.55); marimba(1046.5,.3,.6); }
+        function playFinish() { marimba(783.99, 0, .5); marimba(1046.5, .12, .55); }
+        function playClick()  { tone(660, .06, 'sine', .3); }
+        function playSpinTick(){ tone(900, .02, 'square', .05); }
         function toggleMute() {
-            muted = !muted;
-            const b = document.getElementById('muteBtn');
+            muted = !muted; const b = document.getElementById('muteBtn');
             b.classList.toggle('muted', muted);
             b.innerHTML = muted ? '<i class="fas fa-volume-xmark"></i>' : '<i class="fas fa-volume-high"></i>';
-            if (!muted) { ensureAudio(); marimba(880, 0, 0.4); }
+            if (!muted) { ensureAudio(); marimba(880, 0, .4); }
         }
 
-        /* ============================================================
-           CONFETTI — lightweight canvas burst (gentle)
-           ============================================================ */
+        /* ===================== CONFETTI (viewport overlay) ===================== */
         function confetti(duration) {
             const canvas = document.getElementById('confetti');
-            const mv = document.getElementById('mini-view');
-            const W = canvas.width = mv.clientWidth;
-            const H = canvas.height = mv.clientHeight;
+            const W = canvas.width = window.innerWidth, H = canvas.height = window.innerHeight;
             const ctx = canvas.getContext('2d');
-            const colors = ['#15c4c4', '#ffb703', '#fb5607', '#8338ec', '#3a86ff', '#ff006e'];
-            const N = 90, parts = [];
-            for (let i = 0; i < N; i++) {
-                parts.push({
-                    x: W / 2 + (Math.random() - 0.5) * W * 0.3,
-                    y: H * 0.35 + (Math.random() - 0.5) * 40,
-                    vx: (Math.random() - 0.5) * 9,
-                    vy: Math.random() * -9 - 4,
-                    g: 0.22 + Math.random() * 0.12,
-                    s: 5 + Math.random() * 6,
-                    rot: Math.random() * Math.PI,
-                    vr: (Math.random() - 0.5) * 0.3,
-                    color: colors[i % colors.length]
-                });
-            }
+            const colors = PALETTE, N = 100, parts = [];
+            for (let i = 0; i < N; i++) parts.push({
+                x: W / 2 + (Math.random() - .5) * W * .3, y: H * .35 + (Math.random() - .5) * 40,
+                vx: (Math.random() - .5) * 9, vy: Math.random() * -9 - 4, g: .22 + Math.random() * .12,
+                s: 5 + Math.random() * 6, rot: Math.random() * Math.PI, vr: (Math.random() - .5) * .3, color: colors[i % colors.length]
+            });
             const end = performance.now() + (duration || 1800);
             (function frame(now) {
                 ctx.clearRect(0, 0, W, H);
-                parts.forEach(p => {
-                    p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
-                    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
-                    ctx.fillStyle = p.color; ctx.globalAlpha = 0.9;
-                    ctx.fillRect(-p.s / 2, -p.s / 2, p.s, p.s * 0.6);
-                    ctx.restore();
-                });
-                if (now < end) requestAnimationFrame(frame);
-                else ctx.clearRect(0, 0, W, H);
+                parts.forEach(p => { p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+                    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.color; ctx.globalAlpha = .9;
+                    ctx.fillRect(-p.s / 2, -p.s / 2, p.s, p.s * .6); ctx.restore(); });
+                if (now < end) requestAnimationFrame(frame); else ctx.clearRect(0, 0, W, H);
             })(performance.now());
         }
 
-        /* ============================================================
-           VIEW + TABS  (original behaviour preserved)
-           ============================================================ */
+        /* ===================== VIEW + UTILS ===================== */
+        const PALETTE = ['#06b6d4','#8b5cf6','#f59e0b','#ec4899','#10b981','#3b82f6','#ef4444','#f97316','#14b8a6','#a855f7'];
         function setView(v) {
             document.getElementById('full-view').style.display = v === 'full' ? 'block' : 'none';
             document.getElementById('mini-view').style.display = v === 'mini' ? 'flex' : 'none';
@@ -294,147 +293,188 @@
             document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
             document.getElementById(name).classList.add('active');
             evt.currentTarget.classList.add('active');
+            if (name === 'spinner') { sizeWheel(); renderWheel(); }
         }
-        function getList(id) {
-            return document.getElementById(id).value.split('\n').map(n => n.trim()).filter(n => n !== '');
-        }
-        function escapeHtml(s) {
-            return s.replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
-        }
+        function getList(id) { return document.getElementById(id).value.split('\n').map(n => n.trim()).filter(n => n !== ''); }
+        function escapeHtml(s) { return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
         function flashStatus(msg) {
-            const s = document.getElementById('status');
-            s.textContent = msg; s.style.color = '#e63946';
-            setTimeout(() => { s.textContent = 'Result will show in Results view'; s.style.color = '#888'; }, 2200);
+            const s = document.getElementById('status'); s.textContent = msg; s.style.color = 'var(--danger)';
+            setTimeout(() => { s.textContent = 'Results show in the Results view.'; s.style.color = ''; }, 2200);
         }
-        const PALETTE = ['#15c4c4', '#fb5607', '#8338ec', '#3a86ff', '#ff006e', '#ffb703', '#2a9d8f', '#e76f51'];
-
-        /* Contextual results action bar — keeps every result reversible/repeatable */
         function hideActions() { document.getElementById('result-actions').style.display = 'none'; }
-        function showActions(againLabel, againFn) {
-            const bar = document.getElementById('result-actions');
-            bar.innerHTML = '';
-            const again = document.createElement('button');
-            again.className = 'again';
-            again.innerHTML = '<i class="fas fa-rotate-right"></i> ' + againLabel;
-            again.onclick = function () { playClick(); againFn(); };
-            const setup = document.createElement('button');
-            setup.className = 'setup';
+        function showActions(label, fn) {
+            const bar = document.getElementById('result-actions'); bar.innerHTML = '';
+            const again = document.createElement('button'); again.className = 'again';
+            again.innerHTML = '<i class="fas fa-rotate-right"></i> ' + label;
+            again.onclick = () => { playClick(); fn(); };
+            const setup = document.createElement('button'); setup.className = 'setup';
             setup.innerHTML = '<i class="fas fa-sliders"></i> Back to Setup';
-            setup.onclick = function () { playClick(); hideActions(); setView('full'); };
-            bar.appendChild(again);
-            bar.appendChild(setup);
-            bar.style.display = 'flex';
+            setup.onclick = () => { playClick(); setView('full'); };
+            bar.appendChild(again); bar.appendChild(setup); bar.style.display = 'flex';
+        }
+        // responsive layout: <=10 items fit (no scroll); >10 scrolls
+        function layoutFor(n) {
+            if (n <= 3) return { cols: 1, fit: true };
+            if (n <= 10) return { cols: 2, fit: true };
+            return { cols: Math.min(4, Math.ceil(n / 5)), fit: false };
         }
 
-        /* ============================================================
-           PICKER — suspense shuffle + reveal + confetti
-           ============================================================ */
+        /* ===================== PICKER ===================== */
         function runPicker() {
             const list = getList('list-picker');
-            if (list.length === 0) { flashStatus('Add some names first.'); return; }
-            ensureAudio();
-            setView('mini');
-            hideActions();
+            if (!list.length) { flashStatus('Add some names first.'); return; }
+            ensureAudio(); setView('mini'); hideActions();
             const content = document.getElementById('mini-content');
-            const start = performance.now();
-            let delay = 55;
+            const start = performance.now(); let delay = 55;
             (function cycle() {
-                const name = list[Math.floor(Math.random() * list.length)];
-                content.innerHTML = '<div class="shuffle-name">' + escapeHtml(name) + '</div>';
-                playTick();
-                const elapsed = performance.now() - start;
-                delay *= 1.12;                                  // decelerate
-                if (delay < 320 && elapsed < 2200) setTimeout(cycle, delay);
-                else reveal();
+                content.innerHTML = '<div class="shuffle-name">' + escapeHtml(list[Math.floor(Math.random() * list.length)]) + '</div>';
+                playTick(); delay *= 1.12;
+                if (delay < 320 && performance.now() - start < 2200) setTimeout(cycle, delay); else reveal();
             })();
             function reveal() {
                 const picked = list[Math.floor(Math.random() * list.length)];
-                content.innerHTML =
-                    '<div class="winner-card">' +
-                        '<span class="winner-label">SELECTED</span>' +
-                        '<span class="winner-name">' + escapeHtml(picked) + '</span>' +
-                    '</div>';
-                playReveal();
-                confetti(1900);
-                showActions('Pick Again', runPicker);
+                content.innerHTML = '<div class="winner-card"><span class="winner-label">SELECTED</span><span class="winner-name">' + escapeHtml(picked) + '</span></div>';
+                playReveal(); confetti(1900); showActions('Pick Again', runPicker);
             }
         }
 
-        /* ============================================================
-           GROUPS — staggered animated cards
-           ============================================================ */
+        /* ===================== GROUPS ===================== */
         function runGroups() {
-            const list = getList('list-groups').sort(() => Math.random() - 0.5);
+            const list = getList('list-groups').sort(() => Math.random() - .5);
             const num = Math.max(1, parseInt(document.getElementById('num-groups').value) || 1);
-            if (list.length === 0) { flashStatus('Add some names first.'); return; }
-            ensureAudio();
-            setView('mini');
-            hideActions();
-
+            if (!list.length) { flashStatus('Add some names first.'); return; }
+            ensureAudio(); setView('mini'); hideActions();
             const groups = [];
             for (let i = 0; i < num; i++) groups.push(list.filter((_, idx) => idx % num === i));
-
-            let html = '<div class="result-title"><i class="fas fa-users"></i> Groups</div><div class="cards-wrap" id="cards-wrap"></div>';
-            document.getElementById('mini-content').innerHTML = html;
-            const wrap = document.getElementById('cards-wrap');
-
-            groups.forEach((members, i) => {
-                const color = PALETTE[i % PALETTE.length];
-                const card = document.createElement('div');
-                card.className = 'reveal-card';
-                card.style.setProperty('--g-color', color);
-                const chips = members.map((m, j) =>
-                    '<span class="chip" style="animation-delay:' + (j * 0.05) + 's">' + escapeHtml(m) + '</span>'
-                ).join('');
-                card.innerHTML =
-                    '<div class="card-head"><span class="dot">' + (i + 1) + '</span> Group ' + (i + 1) +
-                    ' <span style="font-weight:600;color:#999;font-size:.85rem">(' + members.length + ')</span></div>' +
-                    '<div class="chips">' + chips + '</div>';
-                wrap.appendChild(card);
-                setTimeout(() => {
-                    card.classList.add('in');
-                    playPop(i);
-                    if (i === groups.length - 1) setTimeout(() => { playFinish(); confetti(1400); showActions('Shuffle Again', runGroups); }, 250);
-                }, 120 + i * 280);
-            });
+            renderCards('Groups', 'fa-users', groups.map((m, i) => ({ title: 'Group ' + (i + 1), members: m })), runGroups, 'Shuffle Again');
         }
 
-        /* ============================================================
-           PAIRS — staggered animated cards
-           ============================================================ */
+        /* ===================== PAIRS ===================== */
         function runPairs() {
-            const list = getList('list-pairs').sort(() => Math.random() - 0.5);
+            const list = getList('list-pairs').sort(() => Math.random() - .5);
             if (list.length < 2) { flashStatus('Add at least two names.'); return; }
-            ensureAudio();
-            setView('mini');
-            hideActions();
-
+            ensureAudio(); setView('mini'); hideActions();
             const pairs = [];
-            for (let i = 0; i < list.length; i += 2) pairs.push([list[i], list[i + 1] || null]);
+            for (let i = 0; i < list.length; i += 2) pairs.push({ title: 'Pair ' + (i / 2 + 1), members: list[i + 1] ? [list[i], list[i + 1]] : [list[i], 'solo'] });
+            renderCards('Pairs', 'fa-user-group', pairs, runPairs, 'Shuffle Again');
+        }
 
-            document.getElementById('mini-content').innerHTML =
-                '<div class="result-title"><i class="fas fa-user-group"></i> Pairs</div><div class="cards-wrap" id="cards-wrap"></div>';
-            const wrap = document.getElementById('cards-wrap');
-
-            pairs.forEach((p, i) => {
+        // Shared responsive card renderer
+        function renderCards(title, icon, items, againFn, againLabel) {
+            const n = items.length, lay = layoutFor(n);
+            const content = document.getElementById('mini-content');
+            content.innerHTML =
+                '<div class="results-stage"><div class="results-title"><i class="fas ' + icon + '"></i> ' + title +
+                ' <span style="color:var(--muted);font-weight:700">(' + n + ')</span></div>' +
+                '<div class="results-grid ' + (lay.fit ? 'fit' : 'scroll') + '" id="results-grid" style="--cols:' + lay.cols + '"></div></div>';
+            const grid = document.getElementById('results-grid');
+            items.forEach((it, i) => {
                 const color = PALETTE[i % PALETTE.length];
-                const card = document.createElement('div');
-                card.className = 'reveal-card';
-                card.style.setProperty('--g-color', color);
-                const body = p[1]
-                    ? '<span class="chip">' + escapeHtml(p[0]) + '</span><span class="chip">' + escapeHtml(p[1]) + '</span>'
-                    : '<span class="chip">' + escapeHtml(p[0]) + '</span><span class="chip" style="opacity:.6">solo</span>';
-                card.innerHTML =
-                    '<div class="card-head"><span class="dot"><i class="fas fa-handshake"></i></span> Pair ' + (i + 1) + '</div>' +
-                    '<div class="chips">' + body + '</div>';
-                wrap.appendChild(card);
+                const card = document.createElement('div'); card.className = 'reveal-card'; card.style.setProperty('--g', color);
+                const chips = it.members.map((m, j) => '<span class="chip" style="animation-delay:' + (j * .04) + 's">' + escapeHtml(m) + '</span>').join('');
+                card.innerHTML = '<div class="card-head"><span class="dot">' + (i + 1) + '</span> ' + escapeHtml(it.title) +
+                    ' <span class="count">' + it.members.length + '</span></div><div class="chips">' + chips + '</div>';
+                grid.appendChild(card);
                 setTimeout(() => {
-                    card.classList.add('in');
-                    playPop(i);
-                    if (i === pairs.length - 1) setTimeout(() => { playFinish(); confetti(1400); showActions('Shuffle Again', runPairs); }, 250);
-                }, 120 + i * 240);
+                    card.classList.add('in'); playPop(i);
+                    if (i === n - 1) setTimeout(() => { playFinish(); confetti(1400); showActions(againLabel, againFn); }, 220);
+                }, 90 + i * Math.min(260, 1600 / n));
             });
         }
+
+        /* ===================== SPINNER ===================== */
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        let names = [], history = [], spinning = false, rotation = 0, spinVelocity = 0, lastTickIdx = -1;
+        function spinnerSetNames() { names = getList('list-spinner'); renderWheel(); }
+        function sizeWheel() {
+            const wrap = document.getElementById('wheelWrap');
+            const avail = Math.max(180, Math.min(wrap.parentElement.clientWidth - 10, window.innerHeight * 0.5, 460));
+            const dpr = window.devicePixelRatio || 1;
+            canvas.style.width = avail + 'px'; canvas.style.height = avail + 'px';
+            canvas.width = Math.round(avail * dpr); canvas.height = Math.round(avail * dpr);
+        }
+        function wheelColors() {
+            return PALETTE.map(c => c);
+        }
+        function drawWheel() {
+            const cols = wheelColors(), n = names.length;
+            ctx.clearRect(0, 0, 400, 400);
+            const rim = getComputedStyle(document.body).getPropertyValue('--card-bg') || '#fff';
+            if (n === 0) {
+                ctx.beginPath(); ctx.arc(200, 200, 190, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(125,125,125,.15)'; ctx.fill();
+                ctx.fillStyle = '#999'; ctx.font = '600 18px Montserrat, Arial'; ctx.textAlign = 'center';
+                ctx.fillText('Add names', 200, 205); return;
+            }
+            const ang = (2 * Math.PI) / n;
+            for (let i = 0; i < n; i++) {
+                ctx.beginPath(); ctx.moveTo(200, 200); ctx.arc(200, 200, 190, i * ang, (i + 1) * ang);
+                const base = cols[i % cols.length];
+                const grad = ctx.createRadialGradient(200, 200, 40, 200, 200, 190);
+                grad.addColorStop(0, base); grad.addColorStop(1, shade(base, -28));
+                ctx.fillStyle = grad; ctx.fill();
+                ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.stroke();
+                ctx.save(); ctx.translate(200, 200); ctx.rotate(i * ang + ang / 2);
+                ctx.fillStyle = '#fff'; ctx.font = '700 ' + Math.max(11, Math.min(18, 220 / n)) + 'px Montserrat, Arial';
+                ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+                ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 3;
+                ctx.fillText(names[i].length > 14 ? names[i].slice(0, 13) + '…' : names[i], 178, 0);
+                ctx.restore();
+            }
+            ctx.beginPath(); ctx.arc(200, 200, 18, 0, Math.PI * 2);
+            ctx.fillStyle = rim.trim() || '#fff'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,.15)'; ctx.stroke();
+        }
+        function shade(hex, amt) {
+            const n = parseInt(hex.slice(1), 16); let r = (n >> 16) + amt, g = ((n >> 8) & 255) + amt, b = (n & 255) + amt;
+            r = Math.max(0, Math.min(255, r)); g = Math.max(0, Math.min(255, g)); b = Math.max(0, Math.min(255, b));
+            return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+        }
+        function renderWheel() {
+            const s = canvas.width / 400;
+            ctx.setTransform(s, 0, 0, s, 0, 0);
+            ctx.clearRect(0, 0, 400, 400);
+            ctx.save(); ctx.translate(200, 200); ctx.rotate(rotation * Math.PI / 180); ctx.translate(-200, -200);
+            drawWheel(); ctx.restore();
+        }
+        function spinWheel() {
+            if (spinning || names.length === 0) { if (!names.length) flashStatus('Add names for the wheel.'); return; }
+            ensureAudio(); spinning = true; spinVelocity = Math.random() * 18 + 22; lastTickIdx = -1;
+            document.getElementById('spin-winner').textContent = '';
+            animateSpin();
+        }
+        function animateSpin() {
+            if (spinVelocity > 0.25) {
+                rotation += spinVelocity; spinVelocity *= 0.987; renderWheel();
+                const n = names.length, idx = Math.floor(((360 - (rotation % 360)) % 360) / (360 / n)) % n;
+                if (idx !== lastTickIdx) { playSpinTick(); lastTickIdx = idx; }
+                requestAnimationFrame(animateSpin);
+            } else { determineWinner(); }
+        }
+        function determineWinner() {
+            const n = names.length, ang = 360 / n;
+            const pointerAngle = (360 - (rotation % 360)) % 360;
+            const idx = Math.floor(pointerAngle / ang) % n;
+            const winner = names[idx];
+            history.push(winner);
+            document.getElementById('history-list').innerHTML += '<li>' + escapeHtml(winner) + '</li>';
+            document.getElementById('spin-winner').innerHTML = '🎉 <span class="name">' + escapeHtml(winner) + '</span>';
+            playReveal(); confetti(1700);
+            if (document.getElementById('excludeWinners').checked) { names.splice(idx, 1); }
+            spinning = false; renderWheel();
+        }
+        function resetWheel() {
+            playClick(); names = []; history = []; rotation = 0;
+            document.getElementById('history-list').innerHTML = '';
+            document.getElementById('list-spinner').value = '';
+            document.getElementById('spin-winner').textContent = '';
+            renderWheel();
+        }
+        window.addEventListener('resize', () => { if (document.getElementById('spinner').classList.contains('active')) { sizeWheel(); renderWheel(); } });
+
+        /* ===================== INIT ===================== */
+        applyTheme(readDark());
+        sizeWheel(); renderWheel();
     </script>
 </body>
 </html>
