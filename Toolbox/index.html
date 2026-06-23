@@ -6,11 +6,11 @@
     <title>ClassTools</title>
     <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root{--bg:#f4f1ff;--bg-2:#e7fbff;--surface:#fff;--ink:#241b4e;--muted:#6b6790;--line:#e7e3f5;
             --primary:#6d28d9;--primary-2:#9333ea;--primary-rgb:109,40,217;--radius:18px;--gold:#ffb020;
-            --font-head:'Fredoka',sans-serif;--font-body:'Nunito',sans-serif;}
+            --font-head:'Bricolage Grotesque',sans-serif;--font-body:'Hanken Grotesk',sans-serif;}
         .dark-mode{--bg:#14122e;--bg-2:#0e1330;--surface:#211d44;--ink:#efeaff;--muted:#a9a3d6;--line:#352f63;--primary:#a78bfa;--primary-2:#c084fc;--primary-rgb:167,139,250;}
         *{box-sizing:border-box;}
         body{font-family:var(--font-body);margin:0;min-height:100vh;color:var(--ink);background:radial-gradient(1200px 700px at 85% -15%,var(--bg-2),var(--bg)) fixed;overflow-x:hidden;transition:background .3s,color .3s;}
@@ -66,11 +66,7 @@
     </div>
 
     <div id="tool-view">
-        <div class="tool-bar">
-            <button class="back" onclick="closeTool()"><i class="fas fa-arrow-left"></i> Tools</button>
-            <span class="tool-title" id="tool-title"></span>
-        </div>
-        <iframe id="tool-frame" title="Active tool" allow="clipboard-write"></iframe>
+        <iframe id="tool-frame" title="Active tool" allow="clipboard-write; camera"></iframe>
     </div>
 
     <script>
@@ -102,14 +98,15 @@
         });
 
         function openUrl(url, title) {
-            document.getElementById('tool-title').textContent = title || 'Tool';
             document.getElementById('tool-frame').src = url;
+            document.querySelector('.topbar').style.display = 'none';
             document.getElementById('menu-view').style.display = 'none';
             document.getElementById('tool-view').style.display = 'flex';
         }
         function closeTool() {
             document.getElementById('tool-view').style.display = 'none';
             document.getElementById('tool-frame').src = 'about:blank';
+            document.querySelector('.topbar').style.display = 'flex';
             document.getElementById('menu-view').style.display = 'block';
             refreshPinned();
         }
@@ -139,6 +136,7 @@
         window.addEventListener('message', function (e) {
             const d = e.data; if (!d || d.ns !== 'classtools') return;
             if (d.cmd === 'bookmark') { settingsSet('ct-bookmark', d.url ? JSON.stringify({ url: d.url, label: d.label || 'Bookmarked tool' }) : null); refreshPinned(); }
+            if (d.cmd === 'close') closeTool();
         });
 
         /* ===== THEME ===== */

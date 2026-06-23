@@ -4,16 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Classroom Timer</title>
-    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #f4f1ff; --bg-2: #e7fbff; --surface: #ffffff; --surface-2: #f6f5ff;
             --ink: #241b4e; --muted: #6b6790; --line: #e7e3f5;
             --primary: #6d28d9; --primary-2: #9333ea; --primary-rgb: 109, 40, 217;
             --danger: #ff3d7f; --radius: 18px;
-            --font-head: 'Fredoka', sans-serif; --font-body: 'Nunito', sans-serif;
+            --font-head: 'Bricolage Grotesque', sans-serif; --font-body: 'Hanken Grotesk', sans-serif;
         }
         .dark-mode {
             --bg: #14122e; --bg-2: #0e1330; --surface: #211d44; --surface-2: #2a2552;
@@ -113,6 +112,7 @@
 </head>
 <body>
     <div class="topbar">
+        <button class="icon-btn" id="backBtn" onclick="goBackHub()" title="Back to tools" style="display:none"><i class="fas fa-arrow-left"></i></button>
         <div class="brand"><i class="fas fa-stopwatch"></i> Timer</div>
         <div class="spacer"></div>
         <button class="icon-btn" id="starBtn" onclick="toggleBookmark()" title="Bookmark to this slide"><i class="far fa-star"></i></button>
@@ -283,8 +283,10 @@
         }
         async function saveText(filename,text){ if(window.showSaveFilePicker){ try{ const h=await showSaveFilePicker({suggestedName:filename,types:[{description:'Text file',accept:{'text/plain':['.txt']}}]}); const w=await h.createWritable(); await w.write(text); await w.close(); return; }catch(e){ if(e&&e.name==='AbortError') return; } } const blob=new Blob([text],{type:'text/plain'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
 
-        /* ===== BOOKMARK ===== */
+        /* ===== HUB NAV + BOOKMARK ===== */
         const EMBEDDED = window.parent && window.parent !== window;
+        function goBackHub(){ playClick(); try{ window.parent.postMessage({ns:'classtools',cmd:'close'},'*'); }catch(e){} }
+        if(EMBEDDED){ const b=document.getElementById('backBtn'); if(b) b.style.display='inline-flex'; }
         let bookmarked = false;
         function toggleBookmark(){
             if(!timers.length){ showAlert('Add a timer first, then bookmark.','Bookmark'); return; }

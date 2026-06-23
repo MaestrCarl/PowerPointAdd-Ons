@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scoreboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root{--bg:#f4f1ff;--bg-2:#e7fbff;--surface:#fff;--ink:#241b4e;--muted:#6b6790;--line:#e7e3f5;
             --primary:#6d28d9;--primary-2:#9333ea;--primary-rgb:109,40,217;--danger:#ff3d7f;--ok:#22c55e;--gold:#ffb020;--radius:18px;
-            --font-head:'Fredoka',sans-serif;--font-body:'Nunito',sans-serif;}
+            --font-head:'Bricolage Grotesque',sans-serif;--font-body:'Hanken Grotesk',sans-serif;}
         .dark-mode{--bg:#14122e;--bg-2:#0e1330;--surface:#211d44;--ink:#efeaff;--muted:#a9a3d6;--line:#352f63;--primary:#a78bfa;--primary-2:#c084fc;--primary-rgb:167,139,250;--danger:#ff5c93;}
         *{box-sizing:border-box;}html,body{height:100%;}
         body{margin:0;font-family:var(--font-body);color:var(--ink);height:100vh;display:flex;flex-direction:column;overflow:hidden;background:radial-gradient(1200px 700px at 85% -15%,var(--bg-2),var(--bg)) fixed;transition:background .3s,color .3s;}
@@ -51,8 +52,10 @@
 <body>
     <canvas id="confetti"></canvas>
     <div class="topbar">
+        <button class="icon-btn" id="backBtn" onclick="goBackHub()" title="Back to tools" style="display:none"><i class="fas fa-arrow-left"></i></button>
         <div class="brand"><i class="fas fa-ranking-star"></i> Scoreboard</div>
         <div class="spacer"></div>
+        <button class="icon-btn" id="shareBtn" onclick="openShare()" title="Share link & QR"><i class="fas fa-share-nodes"></i></button>
         <button class="icon-btn" id="starBtn" onclick="toggleBookmark()" title="Bookmark to this slide"><i class="far fa-star"></i></button>
         <button class="icon-btn" id="setupBtn" onclick="toggleSetup()" title="Show/hide setup"><i class="fas fa-sliders"></i></button>
         <button class="icon-btn" id="muteBtn" onclick="toggleMute()" title="Sound"><i class="fas fa-volume-high"></i></button>
@@ -69,6 +72,16 @@
     </div>
 
     <main><div class="board" id="board"></div><div class="empty" id="empty">Add teams to start scoring.</div></main>
+
+    <div class="modal" id="shareModal" style="display:none;position:fixed;inset:0;background:rgba(10,8,30,.6);z-index:2000;align-items:center;justify-content:center;padding:16px;">
+        <div style="background:var(--surface);border-radius:18px;padding:22px;max-width:360px;width:100%;text-align:center;">
+            <h3 style="font-family:var(--font-head);margin:.2em 0"><i class="fas fa-share-nodes" style="color:var(--primary)"></i> Share scoreboard</h3>
+            <div id="qrBox" style="display:flex;justify-content:center;margin:12px 0;"></div>
+            <p style="font-size:12px;color:var(--muted);margin:0">Scan to open this scoreboard (with teams &amp; scores) on another device.</p>
+            <div style="display:flex;gap:8px;margin-top:8px"><input type="text" id="shareLink" readonly onclick="this.select()" style="flex:1;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:9px;font-size:12px"><button class="btn btn-soft" onclick="copyShare()"><i class="fas fa-copy"></i></button></div>
+            <div style="margin-top:14px"><button class="btn btn-soft" onclick="document.getElementById('shareModal').style.display='none'">Close</button></div>
+        </div>
+    </div>
 
     <script>
         const PAL=['#6d28d9','#ff3d7f','#14d6c4','#ffb020','#2f6bff','#22c55e','#ef4444','#f97316','#a855f7','#06b6d4'];
@@ -136,6 +149,8 @@
 
         /* BOOKMARK BRIDGE */
         const EMBEDDED=window.parent&&window.parent!==window;
+        function goBackHub(){ try{ window.parent.postMessage({ns:'classtools',cmd:'close'},'*'); }catch(e){} }
+        if(EMBEDDED){ const b=document.getElementById('backBtn'); if(b) b.style.display='inline-flex'; }
         let bookmarked=false;
         function toggleBookmark(){
             if(!teams.length){ document.getElementById('empty').textContent='Add at least one team before bookmarking.'; setTimeout(()=>document.getElementById('empty').textContent='Add teams to start scoring.',2200); return; }
@@ -146,6 +161,10 @@
         }
         function updateStar(){ const b=document.getElementById('starBtn'); b.classList.toggle('on',bookmarked); b.innerHTML=bookmarked?'<i class="fas fa-star"></i>':'<i class="far fa-star"></i>'; }
         function updateStarHint(){ const b=document.getElementById('starBtn'); b.classList.toggle('star-hint', teams.length>0 && !bookmarked); }
+
+        /* SHARE + QR */
+        function openShare(){ if(!teams.length){ document.getElementById('empty').textContent='Add at least one team first.'; setTimeout(()=>document.getElementById('empty').textContent='Add teams to start scoring.',2000); return; } save(); const url=location.href; document.getElementById('shareLink').value=url; const box=document.getElementById('qrBox'); box.innerHTML=''; try{ new QRCode(box,{text:url,width:188,height:188,colorDark:'#241b4e',colorLight:'#ffffff'}); }catch(e){ box.innerHTML='<span style="font-size:12px;color:var(--muted)">QR unavailable offline.</span>'; } document.getElementById('shareModal').style.display='flex'; }
+        function copyShare(){ const i=document.getElementById('shareLink'); i.select(); try{navigator.clipboard.writeText(i.value);}catch(e){} }
 
         /* BOOT */
         applyTheme(readDark());
