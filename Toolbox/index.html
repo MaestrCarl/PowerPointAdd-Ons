@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classroom Toolbox - Mr. Carlo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent-color-value: #15c4c4; --bg-color: #fdfdfd; --text-color: #333; --text-color-light: #666;
+            --card-bg: #ffffff; --primary-color: var(--accent-color-value);
+            --gray-color: #e0e0e0; --border-radius: 14px; --primary-color-rgb: 21, 196, 196;
+        }
+        .dark-mode {
+            --bg-color: #212529; --text-color: #dee2e6; --text-color-light: #adb5bd;
+            --card-bg: #2c3034; --primary-color: #15c4c4; --gray-color: #495057;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Montserrat', sans-serif; margin: 0; min-height: 100vh;
+            background-color: var(--bg-color); color: var(--text-color);
+            overflow-x: hidden; transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Floating toolbar (matches the other tools) */
+        .view-toggle {
+            position: fixed; top: 10px; right: 10px; z-index: 1000;
+            display: flex; gap: 5px; opacity: 0.35; transition: 0.3s;
+        }
+        .view-toggle:hover { opacity: 1; }
+        .view-toggle button {
+            background: var(--primary-color); color: white; border: none;
+            padding: 6px 11px; border-radius: 6px; cursor: pointer; font-size: 11px;
+        }
+
+        /* ---------- MENU VIEW ---------- */
+        #menu-view { padding: 26px 22px 40px; }
+        .hub-header { text-align: center; margin-bottom: 26px; }
+        .hub-header .logo {
+            width: 54px; height: 54px; border-radius: 14px; margin: 0 auto 12px;
+            background: var(--primary-color); color: #fff; display: flex;
+            align-items: center; justify-content: center; font-size: 26px;
+            box-shadow: 0 6px 18px rgba(var(--primary-color-rgb), 0.35);
+        }
+        .hub-header h1 { margin: 0; font-size: 22px; font-weight: 700; }
+        .hub-header p { margin: 6px 0 0; font-size: 13px; color: var(--text-color-light); }
+
+        .tool-grid {
+            display: grid; gap: 16px;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            max-width: 720px; margin: 0 auto;
+        }
+        .tool-card {
+            background: var(--card-bg); border: 1px solid var(--gray-color);
+            border-radius: var(--border-radius); padding: 22px 16px;
+            text-align: center; cursor: pointer; transition: all 0.2s ease;
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+        }
+        .tool-card:hover {
+            transform: translateY(-4px); border-color: var(--primary-color);
+            box-shadow: 0 10px 24px rgba(var(--primary-color-rgb), 0.22);
+        }
+        .tool-card .icon {
+            width: 56px; height: 56px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; color: #fff;
+            background: var(--primary-color);
+        }
+        .tool-card h3 { margin: 0; font-size: 15px; font-weight: 600; }
+        .tool-card p { margin: 0; font-size: 11.5px; color: var(--text-color-light); line-height: 1.4; }
+
+        /* "Coming soon" placeholder cards */
+        .tool-card.soon { cursor: default; opacity: 0.55; }
+        .tool-card.soon:hover { transform: none; border-color: var(--gray-color); box-shadow: none; }
+        .tool-card.soon .icon { background: var(--gray-color); color: var(--text-color-light); }
+
+        .hub-footer { text-align: center; margin-top: 30px; font-size: 11px; color: var(--text-color-light); }
+
+        /* ---------- TOOL VIEW ---------- */
+        #tool-view { display: none; flex-direction: column; height: 100vh; }
+        .tool-bar {
+            display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+            background: var(--card-bg); border-bottom: 1px solid var(--gray-color); flex: 0 0 auto;
+        }
+        .tool-bar button.back {
+            background: var(--primary-color); color: #fff; border: none;
+            padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 13px;
+            font-family: 'Montserrat', sans-serif; font-weight: 600;
+            display: inline-flex; align-items: center; gap: 7px;
+        }
+        .tool-bar button.back:hover { filter: brightness(1.08); }
+        .tool-bar .tool-title { font-size: 14px; font-weight: 600; }
+        #tool-frame { flex: 1 1 auto; width: 100%; border: none; }
+    </style>
+</head>
+<body>
+    <!-- Floating toolbar -->
+    <div class="view-toggle">
+        <button onclick="toggleDark()" id="darkBtn" title="Toggle dark mode"><i class="fas fa-moon"></i></button>
+    </div>
+
+    <!-- ============ MENU VIEW ============ -->
+    <div id="menu-view">
+        <div class="hub-header">
+            <div class="logo"><i class="fas fa-toolbox"></i></div>
+            <h1>Classroom Toolbox</h1>
+            <p>Pick a tool to launch it right here in your slide.</p>
+        </div>
+
+        <div class="tool-grid" id="tool-grid"><!-- cards injected by JS --></div>
+
+        <div class="hub-footer">Made by Mr. Carlo &middot; More tools coming soon</div>
+    </div>
+
+    <!-- ============ TOOL VIEW ============ -->
+    <div id="tool-view">
+        <div class="tool-bar">
+            <button class="back" onclick="closeTool()"><i class="fas fa-arrow-left"></i> Tools</button>
+            <span class="tool-title" id="tool-title"></span>
+        </div>
+        <iframe id="tool-frame" title="Active tool"></iframe>
+    </div>
+
+    <script>
+        /* =====================================================================
+           TOOL REGISTRY
+           To add a new tool later, just append an object to this array.
+           - title: name shown on the card
+           - desc:  short description
+           - icon:  any Font Awesome 6 class
+           - url:   path to the tool's HTML (relative to this Toolbox folder)
+           - soon:  set true for a disabled "coming soon" placeholder
+           ===================================================================== */
+        const TOOLS = [
+            {
+                title: "Floating Timer",
+                desc: "Movable, resizable countdown & stopwatch.",
+                icon: "fas fa-stopwatch",
+                url: "../MyTimerAddin/timer.html"
+            },
+            {
+                title: "Random Picker",
+                desc: "Pick students, make groups & pairings.",
+                icon: "fas fa-dice",
+                url: "../RandomPicker/picker.html"
+            }
+            // , { title: "New Tool", desc: "Description.", icon: "fas fa-star", url: "../Folder/file.html" }
+        ];
+
+        /* Render the cards */
+        const grid = document.getElementById('tool-grid');
+        TOOLS.forEach(function (t, i) {
+            const card = document.createElement('div');
+            card.className = 'tool-card' + (t.soon ? ' soon' : '');
+            card.innerHTML =
+                '<div class="icon"><i class="' + t.icon + '"></i></div>' +
+                '<h3>' + t.title + '</h3>' +
+                '<p>' + t.desc + '</p>';
+            if (!t.soon) card.addEventListener('click', function () { openTool(i); });
+            grid.appendChild(card);
+        });
+
+        /* Navigation */
+        function openTool(i) {
+            const t = TOOLS[i];
+            document.getElementById('tool-title').textContent = t.title;
+            document.getElementById('tool-frame').src = t.url;
+            document.getElementById('menu-view').style.display = 'none';
+            document.getElementById('tool-view').style.display = 'flex';
+        }
+        function closeTool() {
+            document.getElementById('tool-view').style.display = 'none';
+            document.getElementById('tool-frame').src = 'about:blank';
+            document.getElementById('menu-view').style.display = 'block';
+        }
+
+        /* Dark mode */
+        function toggleDark() {
+            document.body.classList.toggle('dark-mode');
+            const on = document.body.classList.contains('dark-mode');
+            document.getElementById('darkBtn').innerHTML =
+                on ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        }
+    </script>
+</body>
+</html>
