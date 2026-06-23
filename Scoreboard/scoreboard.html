@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scoreboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#f4f1ff;--bg-2:#e7fbff;--surface:#fff;--ink:#241b4e;--muted:#6b6790;--line:#e7e3f5;
+            --primary:#6d28d9;--primary-2:#9333ea;--primary-rgb:109,40,217;--danger:#ff3d7f;--ok:#22c55e;--gold:#ffb020;--radius:18px;
+            --font-head:'Fredoka',sans-serif;--font-body:'Nunito',sans-serif;}
+        .dark-mode{--bg:#14122e;--bg-2:#0e1330;--surface:#211d44;--ink:#efeaff;--muted:#a9a3d6;--line:#352f63;--primary:#a78bfa;--primary-2:#c084fc;--primary-rgb:167,139,250;--danger:#ff5c93;}
+        *{box-sizing:border-box;}html,body{height:100%;}
+        body{margin:0;font-family:var(--font-body);color:var(--ink);height:100vh;display:flex;flex-direction:column;overflow:hidden;background:radial-gradient(1200px 700px at 85% -15%,var(--bg-2),var(--bg)) fixed;transition:background .3s,color .3s;}
+        button{font-family:var(--font-body);}
+        .topbar{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:8px 12px;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;box-shadow:0 4px 16px rgba(var(--primary-rgb),.35);}
+        .brand{display:flex;align-items:center;gap:8px;font-family:var(--font-head);font-weight:700;font-size:clamp(14px,2.6vw,18px);}
+        .spacer{flex:1 1 auto;}
+        .icon-btn{width:34px;height:34px;border-radius:10px;border:none;cursor:pointer;background:rgba(255,255,255,.16);color:#fff;font-size:14px;display:inline-flex;align-items:center;justify-content:center;transition:.15s;}
+        .icon-btn:hover{background:rgba(255,255,255,.3);}.icon-btn:active{transform:scale(.92);}.icon-btn.on{background:#ffd34d;color:#7a4b00;}
+        .icon-btn.star-hint{animation:sp 1.1s ease-in-out infinite;}@keyframes sp{0%,100%{box-shadow:0 0 0 rgba(255,211,77,0);}50%{box-shadow:0 0 0 6px rgba(255,211,77,.5);}}
+        .setup{flex:0 0 auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;background:var(--surface);border-bottom:1px solid var(--line);}
+        .setup input{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:8px 10px;font-family:var(--font-body);font-weight:700;font-size:13px;}
+        .setup input.team{width:130px;} .setup input.mem{width:160px;}
+        .setup .stepbox{display:flex;align-items:center;gap:5px;color:var(--muted);font-weight:800;font-size:13px;}
+        .btn{border:none;cursor:pointer;font-weight:800;border-radius:10px;display:inline-flex;align-items:center;gap:7px;transition:.12s;font-family:var(--font-body);padding:9px 14px;}
+        .btn:active{transform:scale(.96);}
+        .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;box-shadow:0 5px 14px rgba(var(--primary-rgb),.3);}
+        .btn-soft{background:var(--bg);color:var(--ink);border:1px solid var(--line);}
+        main{flex:1 1 auto;min-height:0;overflow:auto;padding:14px;}
+        .board{display:grid;gap:12px;grid-template-columns:repeat(var(--cols,2),1fr);}
+        .team{background:var(--surface);border:1px solid var(--line);border-left:7px solid var(--c,var(--primary));border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:8px;position:relative;transition:transform .2s;}
+        .team.leader{box-shadow:0 12px 28px rgba(255,176,32,.4);border-color:var(--gold);}
+        .team .crown{position:absolute;top:-12px;right:12px;color:var(--gold);font-size:22px;display:none;}
+        .team.leader .crown{display:block;animation:bob .8s ease-in-out infinite;}
+        @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
+        .team .name{font-family:var(--font-head);font-weight:700;font-size:clamp(1rem,2.6vmin,1.5rem);display:flex;align-items:center;gap:8px;}
+        .team .del{margin-left:auto;background:transparent;border:none;color:var(--muted);cursor:pointer;padding:3px 6px;border-radius:6px;}
+        .team .del:hover{background:var(--danger);color:#fff;}
+        .team .mem{font-size:12px;color:var(--muted);font-weight:600;}
+        .score{font-family:var(--font-head);font-weight:700;font-size:clamp(2.4rem,8vmin,5rem);text-align:center;line-height:1;color:var(--c,var(--primary));}
+        .score.bump{animation:bump .3s ease;}@keyframes bump{0%{transform:scale(1);}40%{transform:scale(1.25);}100%{transform:scale(1);}}
+        .pm{display:flex;gap:8px;justify-content:center;}
+        .pm button{width:46px;height:46px;border-radius:50%;border:none;cursor:pointer;font-size:1.1rem;font-weight:800;color:#fff;}
+        .pm .plus{background:var(--ok);}.pm .minus{background:var(--danger);}
+        .empty{color:var(--muted);text-align:center;margin-top:40px;font-weight:700;}
+        #confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:900;}
+    </style>
+</head>
+<body>
+    <canvas id="confetti"></canvas>
+    <div class="topbar">
+        <div class="brand"><i class="fas fa-ranking-star"></i> Scoreboard</div>
+        <div class="spacer"></div>
+        <button class="icon-btn" id="starBtn" onclick="toggleBookmark()" title="Bookmark to this slide"><i class="far fa-star"></i></button>
+        <button class="icon-btn" id="setupBtn" onclick="toggleSetup()" title="Show/hide setup"><i class="fas fa-sliders"></i></button>
+        <button class="icon-btn" id="muteBtn" onclick="toggleMute()" title="Sound"><i class="fas fa-volume-high"></i></button>
+        <button class="icon-btn" id="darkBtn" onclick="toggleDark()" title="Dark mode"><i class="fas fa-moon"></i></button>
+    </div>
+
+    <div class="setup" id="setup">
+        <input class="team" id="tName" placeholder="Team name" onkeydown="if(event.key==='Enter')addTeam()">
+        <input class="mem" id="tMem" placeholder="Members (optional)" onkeydown="if(event.key==='Enter')addTeam()">
+        <button class="btn btn-primary" onclick="addTeam()"><i class="fas fa-plus"></i> Add team</button>
+        <div class="stepbox">Step <input class="team" id="step" type="number" value="1" min="1" style="width:60px" oninput="save()"></div>
+        <button class="btn btn-soft" onclick="resetScores()"><i class="fas fa-rotate-left"></i> Reset scores</button>
+        <button class="btn btn-soft" onclick="clearAll()"><i class="fas fa-trash"></i> Clear</button>
+    </div>
+
+    <main><div class="board" id="board"></div><div class="empty" id="empty">Add teams to start scoring.</div></main>
+
+    <script>
+        const PAL=['#6d28d9','#ff3d7f','#14d6c4','#ffb020','#2f6bff','#22c55e','#ef4444','#f97316','#a855f7','#06b6d4'];
+        const THEME_KEY='ct-theme';
+        let teams=[];
+
+        /* THEME */
+        function readDark(){try{return localStorage.getItem(THEME_KEY)==='dark';}catch(e){return false;}}
+        function applyTheme(d){document.body.classList.toggle('dark-mode',d);document.getElementById('darkBtn').innerHTML=d?'<i class="fas fa-sun"></i>':'<i class="fas fa-moon"></i>';}
+        function toggleDark(){const d=!document.body.classList.contains('dark-mode');try{localStorage.setItem(THEME_KEY,d?'dark':'light');}catch(e){}applyTheme(d);}
+        window.addEventListener('storage',e=>{if(e.key===THEME_KEY)applyTheme(e.newValue==='dark');});
+
+        /* SOUND */
+        let actx=null,mg=null,muted=false;
+        function ea(){if(!actx){const A=window.AudioContext||window.webkitAudioContext;actx=new A();mg=actx.createGain();mg.gain.value=.16;mg.connect(actx.destination);}if(actx.state==='suspended')actx.resume();}
+        function tn(f,d,t,v,w){if(muted)return;ea();const t0=actx.currentTime+(w||0),o=actx.createOscillator(),g=actx.createGain();o.type=t||'sine';o.frequency.value=f;g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(v||.5,t0+.012);g.gain.exponentialRampToValueAtTime(.0001,t0+d);o.connect(g);g.connect(mg);o.start(t0);o.stop(t0+d+.03);}
+        function mar(f,w,v){tn(f,.4,'triangle',v||.5,w);tn(f*2,.28,'sine',(v||.5)*.22,w);}
+        function sUp(){mar(880,0,.45);} function sDown(){tn(330,.12,'sine',.3);}
+        function toggleMute(){muted=!muted;const b=document.getElementById('muteBtn');b.classList.toggle('on',muted);b.innerHTML=muted?'<i class="fas fa-volume-xmark"></i>':'<i class="fas fa-volume-high"></i>';if(!muted){ea();mar(880,0,.4);}}
+
+        /* CONFETTI */
+        function confetti(ms){const c=document.getElementById('confetti'),W=c.width=innerWidth,H=c.height=innerHeight,x=c.getContext('2d'),p=[];for(let i=0;i<80;i++)p.push({x:W/2+(Math.random()-.5)*W*.3,y:H*.35,vx:(Math.random()-.5)*9,vy:Math.random()*-9-4,g:.22+Math.random()*.12,s:5+Math.random()*6,r:Math.random()*6,vr:(Math.random()-.5)*.3,c:PAL[i%PAL.length]});const end=performance.now()+(ms||1400);(function f(n){x.clearRect(0,0,W,H);p.forEach(o=>{o.vy+=o.g;o.x+=o.vx;o.y+=o.vy;o.r+=o.vr;x.save();x.translate(o.x,o.y);x.rotate(o.r);x.fillStyle=o.c;x.globalAlpha=.9;x.fillRect(-o.s/2,-o.s/2,o.s,o.s*.6);x.restore();});if(n<end)requestAnimationFrame(f);else x.clearRect(0,0,W,H);})(performance.now());}
+
+        /* ENCODE for link/bookmark */
+        function enc(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o))));}
+        function dec(s){return JSON.parse(decodeURIComponent(escape(atob(s))));}
+
+        /* DATA */
+        function addTeam(){ const n=document.getElementById('tName').value.trim(); if(!n)return; const m=document.getElementById('tMem').value.trim(); teams.push({n,m,s:0}); document.getElementById('tName').value=''; document.getElementById('tMem').value=''; document.getElementById('tName').focus(); sUp(); save(); draw(); }
+        function step(){ return Math.max(1, parseInt(document.getElementById('step').value)||1); }
+        function change(i,d){ teams[i].s+=d*step(); if(teams[i].s<0)teams[i].s=0; if(d>0)sUp();else sDown(); save(); draw(true,i); const lead=Math.max(...teams.map(t=>t.s)); if(d>0 && teams[i].s===lead && lead>0 && teams.filter(t=>t.s===lead).length===1) confetti(900); }
+        function removeTeam(i){ teams.splice(i,1); save(); draw(); }
+        function resetScores(){ teams.forEach(t=>t.s=0); save(); draw(); }
+        function clearAll(){ teams=[]; save(); draw(); }
+        function toggleSetup(){ const s=document.getElementById('setup'); s.style.display = s.style.display==='none'?'flex':'none'; document.getElementById('setupBtn').classList.toggle('on', s.style.display==='none'); }
+
+        function draw(bumpFlag,bumpIdx){
+            const board=document.getElementById('board'), empty=document.getElementById('empty');
+            empty.style.display=teams.length?'none':'block';
+            const cols = teams.length<=1?1:teams.length<=2?2:teams.length<=9?Math.ceil(teams.length/2):Math.ceil(teams.length/3);
+            board.style.setProperty('--cols',Math.min(4,cols));
+            const lead=teams.length?Math.max(...teams.map(t=>t.s)):0;
+            board.innerHTML='';
+            teams.forEach((t,i)=>{
+                const div=document.createElement('div'); div.className='team'+(t.s===lead&&lead>0?' leader':''); div.style.setProperty('--c',PAL[i%PAL.length]);
+                div.innerHTML='<i class="fas fa-crown crown"></i>'+
+                    '<div class="name"><span>'+esc(t.n)+'</span><button class="del" onclick="removeTeam('+i+')" title="Remove"><i class="fas fa-xmark"></i></button></div>'+
+                    (t.m?'<div class="mem"><i class="fas fa-user-group"></i> '+esc(t.m)+'</div>':'')+
+                    '<div class="score'+(bumpFlag&&bumpIdx===i?' bump':'')+'" id="sc-'+i+'">'+t.s+'</div>'+
+                    '<div class="pm"><button class="minus" onclick="change('+i+',-1)">−</button><button class="plus" onclick="change('+i+',1)">+</button></div>';
+                board.appendChild(div);
+            });
+            updateStarHint();
+        }
+        function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+        /* PERSIST (localStorage + link hash so it can travel via bookmark) */
+        function save(){ const data={teams,step:step()}; try{localStorage.setItem('ct-scoreboard',JSON.stringify(data));}catch(e){} try{history.replaceState(null,'','#d='+enc(data));}catch(e){} updateStarHint(); }
+        function load(){
+            let data=null; const m=location.hash.match(/d=(.+)$/);
+            if(m){ try{data=dec(m[1]);}catch(e){} }
+            if(!data){ try{data=JSON.parse(localStorage.getItem('ct-scoreboard'));}catch(e){} }
+            if(data){ teams=data.teams||[]; if(data.step)document.getElementById('step').value=data.step; }
+        }
+
+        /* BOOKMARK BRIDGE */
+        const EMBEDDED=window.parent&&window.parent!==window;
+        let bookmarked=false;
+        function toggleBookmark(){
+            if(!teams.length){ document.getElementById('empty').textContent='Add at least one team before bookmarking.'; setTimeout(()=>document.getElementById('empty').textContent='Add teams to start scoring.',2200); return; }
+            bookmarked=!bookmarked; const url=bookmarked?location.href:null; const label='Scoreboard ('+teams.length+' teams)';
+            if(EMBEDDED){ try{window.parent.postMessage({ns:'classtools',cmd:'bookmark',url,label},'*');}catch(e){} }
+            else { try{ url?localStorage.setItem('ct-bookmark',JSON.stringify({url,label})):localStorage.removeItem('ct-bookmark'); }catch(e){} }
+            updateStar();
+        }
+        function updateStar(){ const b=document.getElementById('starBtn'); b.classList.toggle('on',bookmarked); b.innerHTML=bookmarked?'<i class="fas fa-star"></i>':'<i class="far fa-star"></i>'; }
+        function updateStarHint(){ const b=document.getElementById('starBtn'); b.classList.toggle('star-hint', teams.length>0 && !bookmarked); }
+
+        /* BOOT */
+        applyTheme(readDark());
+        load();
+        draw();
+    </script>
+</body>
+</html>

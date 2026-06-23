@@ -4,55 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ClassTools</title>
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg: #f4f1ff; --bg-2: #e7fbff; --surface: #ffffff; --ink: #241b4e; --muted: #6b6790; --line: #e7e3f5;
-            --primary: #6d28d9; --primary-2: #9333ea; --primary-rgb: 109, 40, 217; --radius: 18px;
-            --font-head: 'Fredoka', sans-serif; --font-body: 'Nunito', sans-serif;
-        }
-        .dark-mode {
-            --bg: #14122e; --bg-2: #0e1330; --surface: #211d44; --ink: #efeaff; --muted: #a9a3d6; --line: #352f63;
-            --primary: #a78bfa; --primary-2: #c084fc; --primary-rgb: 167, 139, 250;
-        }
-        * { box-sizing: border-box; }
-        body { font-family: var(--font-body); margin: 0; min-height: 100vh; color: var(--ink);
-            background: radial-gradient(1200px 700px at 85% -15%, var(--bg-2), var(--bg)) fixed; overflow-x: hidden; transition: background .3s, color .3s; }
+        :root{--bg:#f4f1ff;--bg-2:#e7fbff;--surface:#fff;--ink:#241b4e;--muted:#6b6790;--line:#e7e3f5;
+            --primary:#6d28d9;--primary-2:#9333ea;--primary-rgb:109,40,217;--radius:18px;--gold:#ffb020;
+            --font-head:'Fredoka',sans-serif;--font-body:'Nunito',sans-serif;}
+        .dark-mode{--bg:#14122e;--bg-2:#0e1330;--surface:#211d44;--ink:#efeaff;--muted:#a9a3d6;--line:#352f63;--primary:#a78bfa;--primary-2:#c084fc;--primary-rgb:167,139,250;}
+        *{box-sizing:border-box;}
+        body{font-family:var(--font-body);margin:0;min-height:100vh;color:var(--ink);background:radial-gradient(1200px 700px at 85% -15%,var(--bg-2),var(--bg)) fixed;overflow-x:hidden;transition:background .3s,color .3s;}
+        .topbar{display:flex;align-items:center;gap:10px;padding:9px 14px;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;box-shadow:0 4px 16px rgba(var(--primary-rgb),.35);}
+        .topbar .brand{display:flex;align-items:center;gap:9px;font-family:var(--font-head);font-weight:700;font-size:18px;}
+        .topbar .spacer{flex:1 1 auto;}
+        .icon-btn{width:34px;height:34px;border-radius:10px;border:none;cursor:pointer;background:rgba(255,255,255,.16);color:#fff;font-size:14px;display:inline-flex;align-items:center;justify-content:center;transition:.15s;}
+        .icon-btn:hover{background:rgba(255,255,255,.3);}.icon-btn:active{transform:scale(.92);}
 
-        .topbar { display: flex; align-items: center; gap: 10px; padding: 9px 14px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; box-shadow: 0 4px 16px rgba(var(--primary-rgb), .35); }
-        .topbar .brand { display: flex; align-items: center; gap: 9px; font-family: var(--font-head); font-weight: 700; font-size: 18px; }
-        .topbar .spacer { flex: 1 1 auto; }
-        .icon-btn { width: 34px; height: 34px; border-radius: 10px; border: none; cursor: pointer; background: rgba(255,255,255,.16); color: #fff; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; transition: background .15s, transform .1s; }
-        .icon-btn:hover { background: rgba(255,255,255,.3); } .icon-btn:active { transform: scale(.92); }
+        #menu-view{padding:22px 22px 40px;}
+        .hub-header{text-align:center;margin-bottom:18px;}
+        .hub-header h1{margin:0;font-family:var(--font-head);font-size:26px;font-weight:700;}
+        .hub-header p{margin:6px 0 0;font-size:13px;color:var(--muted);}
+        .pinned{max-width:720px;margin:0 auto 18px;display:none;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--gold);border-radius:14px;padding:10px 14px;}
+        .pinned i.star{color:var(--gold);} .pinned .lbl{font-weight:800;} .pinned .go{margin-left:auto;}
+        .pinned button{border:none;cursor:pointer;font-family:var(--font-body);font-weight:800;border-radius:10px;padding:8px 13px;}
+        .pinned .open{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;}
+        .pinned .clear{background:var(--bg);color:var(--muted);border:1px solid var(--line);}
+        .section{max-width:720px;margin:0 auto 18px;}
+        .section h2{font-family:var(--font-head);font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:0 0 10px 4px;}
+        .tool-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}
+        .tool-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px 14px;text-align:center;cursor:pointer;transition:all .2s ease;display:flex;flex-direction:column;align-items:center;gap:10px;}
+        .tool-card:hover{transform:translateY(-5px);border-color:transparent;box-shadow:0 14px 30px rgba(var(--primary-rgb),.28);}
+        .tool-card .icon{width:58px;height:58px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:25px;color:#fff;background:linear-gradient(135deg,var(--c1,var(--primary)),var(--c2,var(--primary-2)));box-shadow:0 8px 18px rgba(var(--primary-rgb),.4);}
+        .tool-card h3{margin:0;font-family:var(--font-head);font-size:15px;font-weight:600;}
+        .tool-card p{margin:0;font-size:12px;color:var(--muted);line-height:1.4;}
+        .hub-footer{text-align:center;margin-top:24px;font-size:11px;color:var(--muted);}
 
-        /* MENU */
-        #menu-view { padding: 26px 22px 40px; }
-        .hub-header { text-align: center; margin-bottom: 24px; }
-        .hub-header h1 { margin: 0; font-family: var(--font-head); font-size: 26px; font-weight: 700; }
-        .hub-header p { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
-
-        .tool-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); max-width: 720px; margin: 0 auto; }
-        .tool-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px 16px;
-            text-align: center; cursor: pointer; transition: all .2s ease; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        .tool-card:hover { transform: translateY(-5px); border-color: transparent; box-shadow: 0 14px 30px rgba(var(--primary-rgb), .28); }
-        .tool-card .icon { width: 60px; height: 60px; border-radius: 18px; display: flex; align-items: center; justify-content: center;
-            font-size: 26px; color: #fff; background: linear-gradient(135deg, var(--primary), var(--primary-2)); box-shadow: 0 8px 18px rgba(var(--primary-rgb), .4); }
-        .tool-card h3 { margin: 0; font-family: var(--font-head); font-size: 16px; font-weight: 600; }
-        .tool-card p { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.4; }
-        .tool-card.soon { cursor: default; opacity: .5; }
-        .tool-card.soon:hover { transform: none; box-shadow: none; border-color: var(--line); }
-        .tool-card.soon .icon { background: var(--line); color: var(--muted); box-shadow: none; }
-        .hub-footer { text-align: center; margin-top: 28px; font-size: 11px; color: var(--muted); }
-
-        /* TOOL VIEW */
-        #tool-view { display: none; flex-direction: column; height: 100vh; }
-        .tool-bar { display: flex; align-items: center; gap: 12px; padding: 9px 14px; background: var(--surface); border-bottom: 1px solid var(--line); flex: 0 0 auto; }
-        .tool-bar button.back { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; border: none; padding: 9px 15px;
-            border-radius: 30px; cursor: pointer; font-family: var(--font-body); font-weight: 800; display: inline-flex; align-items: center; gap: 7px; }
-        .tool-bar .tool-title { font-family: var(--font-head); font-weight: 600; font-size: 15px; }
-        #tool-frame { flex: 1 1 auto; width: 100%; border: none; }
+        #tool-view{display:none;flex-direction:column;height:100vh;}
+        .tool-bar{display:flex;align-items:center;gap:12px;padding:9px 14px;background:var(--surface);border-bottom:1px solid var(--line);flex:0 0 auto;}
+        .tool-bar button.back{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;border:none;padding:9px 15px;border-radius:30px;cursor:pointer;font-family:var(--font-body);font-weight:800;display:inline-flex;align-items:center;gap:7px;}
+        .tool-bar .tool-title{font-family:var(--font-head);font-weight:600;font-size:15px;}
+        #tool-frame{flex:1 1 auto;width:100%;border:none;}
     </style>
 </head>
 <body>
@@ -63,12 +54,15 @@
     </div>
 
     <div id="menu-view">
-        <div class="hub-header">
-            <h1>ClassTools</h1>
-            <p>Pick a tool to launch it right here in your slide.</p>
+        <div class="hub-header"><h1>ClassTools</h1><p>Pick a tool to launch it right here in your slide.</p></div>
+        <div class="pinned" id="pinned">
+            <i class="fas fa-star star"></i><span class="lbl" id="pinnedLbl"></span>
+            <span class="go"></span>
+            <button class="open" onclick="openPinned()"><i class="fas fa-play"></i> Open</button>
+            <button class="clear" onclick="clearPinned()" title="Remove bookmark"><i class="fas fa-xmark"></i></button>
         </div>
-        <div class="tool-grid" id="tool-grid"></div>
-        <div class="hub-footer">Made by Mr. Carlo &middot; More tools coming soon</div>
+        <div id="sections"></div>
+        <div class="hub-footer">Made by Mr. Carlo &middot; Bookmark a tool (⭐) to auto-open it on this slide.</div>
     </div>
 
     <div id="tool-view">
@@ -76,30 +70,40 @@
             <button class="back" onclick="closeTool()"><i class="fas fa-arrow-left"></i> Tools</button>
             <span class="tool-title" id="tool-title"></span>
         </div>
-        <iframe id="tool-frame" title="Active tool"></iframe>
+        <iframe id="tool-frame" title="Active tool" allow="clipboard-write"></iframe>
     </div>
 
     <script>
-        /* TOOL REGISTRY — append an object to add a tool later. */
-        const TOOLS = [
-            { title: "Classroom Timer", desc: "Countdown, stopwatch, pomodoro, race & more.", icon: "fas fa-stopwatch", url: "../MyTimerAddin/timer.html" },
-            { title: "Random Picker", desc: "Pick students, groups, pairs & a spinner.", icon: "fas fa-dice", url: "../RandomPicker/picker.html" }
-            // , { title: "New Tool", desc: "Description.", icon: "fas fa-star", url: "../Folder/file.html" }
+        /* TOOL REGISTRY — grouped into sections. Append to add more. */
+        const SECTIONS = [
+            { name: 'Classroom Tools', tools: [
+                { title: 'Classroom Timer', desc: 'Countdown, stopwatch, pomodoro, race & more.', icon: 'fas fa-stopwatch', url: '../MyTimerAddin/timer.html', c1:'#6d28d9', c2:'#9333ea' },
+                { title: 'Random Picker', desc: 'Pick students, groups, pairs & a spinner.', icon: 'fas fa-dice', url: '../RandomPicker/picker.html', c1:'#2f6bff', c2:'#14d6c4' }
+            ]},
+            { name: 'Gaming Tools', tools: [
+                { title: 'Word Games', desc: 'Hangman, scramble & sentence unscramble.', icon: 'fas fa-spell-check', url: '../WordGames/games.html', c1:'#ff3d7f', c2:'#f97316' },
+                { title: 'Scoreboard', desc: 'Teams, members & live scoring.', icon: 'fas fa-ranking-star', url: '../Scoreboard/scoreboard.html', c1:'#22c55e', c2:'#14d6c4' }
+            ]}
         ];
 
-        const grid = document.getElementById('tool-grid');
-        TOOLS.forEach(function (t, i) {
-            const card = document.createElement('div');
-            card.className = 'tool-card' + (t.soon ? ' soon' : '');
-            card.innerHTML = '<div class="icon"><i class="' + t.icon + '"></i></div><h3>' + t.title + '</h3><p>' + t.desc + '</p>';
-            if (!t.soon) card.addEventListener('click', function () { openTool(i); });
-            grid.appendChild(card);
+        const sectionsEl = document.getElementById('sections');
+        SECTIONS.forEach(sec => {
+            const wrap = document.createElement('div'); wrap.className = 'section';
+            wrap.innerHTML = '<h2>' + sec.name + '</h2>';
+            const grid = document.createElement('div'); grid.className = 'tool-grid';
+            sec.tools.forEach(t => {
+                const card = document.createElement('div'); card.className = 'tool-card';
+                card.style.setProperty('--c1', t.c1 || 'var(--primary)'); card.style.setProperty('--c2', t.c2 || 'var(--primary-2)');
+                card.innerHTML = '<div class="icon"><i class="' + t.icon + '"></i></div><h3>' + t.title + '</h3><p>' + t.desc + '</p>';
+                card.addEventListener('click', () => openUrl(t.url, t.title));
+                grid.appendChild(card);
+            });
+            wrap.appendChild(grid); sectionsEl.appendChild(wrap);
         });
 
-        function openTool(i) {
-            const t = TOOLS[i];
-            document.getElementById('tool-title').textContent = t.title;
-            document.getElementById('tool-frame').src = t.url;
+        function openUrl(url, title) {
+            document.getElementById('tool-title').textContent = title || 'Tool';
+            document.getElementById('tool-frame').src = url;
             document.getElementById('menu-view').style.display = 'none';
             document.getElementById('tool-view').style.display = 'flex';
         }
@@ -107,15 +111,52 @@
             document.getElementById('tool-view').style.display = 'none';
             document.getElementById('tool-frame').src = 'about:blank';
             document.getElementById('menu-view').style.display = 'block';
+            refreshPinned();
         }
 
-        /* Dark mode — synced across all tools */
+        /* ===== SETTINGS (bookmark saved in the .pptx when available) ===== */
+        let officeReady = false;
+        function settingsGet(key) {
+            if (officeReady) { try { const v = Office.context.document.settings.get(key); if (v != null) return v; } catch (e) {} }
+            try { return localStorage.getItem(key); } catch (e) { return null; }
+        }
+        function settingsSet(key, val) {
+            try { val == null ? localStorage.removeItem(key) : localStorage.setItem(key, val); } catch (e) {}
+            if (officeReady) { try { if (val == null) Office.context.document.settings.remove(key); else Office.context.document.settings.set(key, val); Office.context.document.settings.saveAsync(); } catch (e) {} }
+        }
+
+        /* ===== BOOKMARK ===== */
+        function getBookmark() { const raw = settingsGet('ct-bookmark'); if (!raw) return null; try { return JSON.parse(raw); } catch (e) { return null; } }
+        function refreshPinned() {
+            const bm = getBookmark(), box = document.getElementById('pinned');
+            if (bm && bm.url) { box.style.display = 'flex'; document.getElementById('pinnedLbl').textContent = bm.label || 'Bookmarked tool'; }
+            else box.style.display = 'none';
+        }
+        function openPinned() { const bm = getBookmark(); if (bm && bm.url) openUrl(bm.url, bm.label); }
+        function clearPinned() { settingsSet('ct-bookmark', null); refreshPinned(); }
+
+        // tools (in the iframe) post their bookmark up to here
+        window.addEventListener('message', function (e) {
+            const d = e.data; if (!d || d.ns !== 'classtools') return;
+            if (d.cmd === 'bookmark') { settingsSet('ct-bookmark', d.url ? JSON.stringify({ url: d.url, label: d.label || 'Bookmarked tool' }) : null); refreshPinned(); }
+        });
+
+        /* ===== THEME ===== */
         const THEME_KEY = 'ct-theme';
         function readDark() { try { return localStorage.getItem(THEME_KEY) === 'dark'; } catch (e) { return false; } }
         function applyTheme(dark) { document.body.classList.toggle('dark-mode', dark); document.getElementById('darkBtn').innerHTML = dark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>'; }
         function toggleDark() { const d = !document.body.classList.contains('dark-mode'); try { localStorage.setItem(THEME_KEY, d ? 'dark' : 'light'); } catch (e) {} applyTheme(d); }
         window.addEventListener('storage', function (e) { if (e.key === THEME_KEY) applyTheme(e.newValue === 'dark'); });
-        applyTheme(readDark());
+
+        /* ===== BOOT — auto-open the bookmarked tool ===== */
+        function boot() {
+            applyTheme(readDark());
+            refreshPinned();
+            const bm = getBookmark();
+            if (bm && bm.url) openUrl(bm.url, bm.label);
+        }
+        if (window.Office && Office.onReady) { Office.onReady(function (info) { officeReady = !!(info && info.host); boot(); }); }
+        else { boot(); }
     </script>
 </body>
 </html>

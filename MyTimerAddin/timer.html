@@ -22,7 +22,7 @@
         }
         * { box-sizing: border-box; }
         html, body { height: 100%; }
-        body { margin: 0; font-family: var(--font-body); color: var(--ink);
+        body { margin: 0; font-family: var(--font-body); color: var(--ink); height: 100vh;
             background: radial-gradient(1200px 700px at 85% -15%, var(--bg-2), var(--bg)) fixed;
             display: flex; flex-direction: column; overflow: hidden; transition: background .3s, color .3s; }
         button { font-family: var(--font-body); }
@@ -32,7 +32,9 @@
         .topbar .brand { display: flex; align-items: center; gap: 8px; font-family: var(--font-head); font-weight: 700; font-size: clamp(14px, 2.6vw, 18px); }
         .topbar .spacer { flex: 1 1 auto; }
         .icon-btn { width: 34px; height: 34px; border-radius: 10px; border: none; cursor: pointer; background: rgba(255,255,255,.16); color: #fff; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; transition: background .15s, transform .1s; }
-        .icon-btn:hover { background: rgba(255,255,255,.3); } .icon-btn:active { transform: scale(.92); } .icon-btn.on { background: #fff; color: var(--primary); }
+        .icon-btn:hover { background: rgba(255,255,255,.3); } .icon-btn:active { transform: scale(.92); } .icon-btn.on { background: #ffd34d; color: #7a4b00; }
+        .icon-btn.star-hint { animation: starPulse 1.1s ease-in-out infinite; }
+        @keyframes starPulse { 0%,100% { box-shadow: 0 0 0 rgba(255,211,77,0); } 50% { box-shadow: 0 0 0 6px rgba(255,211,77,.5); } }
 
         .classbar { flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; background: var(--surface-2); border-bottom: 1px solid var(--line); }
         .classbar .field { display: flex; flex-direction: column; flex: 1 1 120px; min-width: 0; }
@@ -40,8 +42,8 @@
         .classbar input { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 9px; padding: 7px 9px; font-family: var(--font-body); font-size: 13px; font-weight: 600; min-width: 0; }
         .classbar input:focus { outline: 2px solid rgba(var(--primary-rgb), .4); border-color: transparent; }
 
-        main { flex: 1 1 auto; position: relative; overflow: hidden; }
-        .pane { position: absolute; inset: 0; overflow: auto; padding: 12px; }
+        main { flex: 1 1 auto; min-height: 0; overflow: hidden; }
+        .pane { height: 100%; overflow: auto; padding: 12px; }
         #presentView { display: none; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center; }
         #presentView.show { display: flex; }
 
@@ -113,6 +115,7 @@
     <div class="topbar">
         <div class="brand"><i class="fas fa-stopwatch"></i> Timer</div>
         <div class="spacer"></div>
+        <button class="icon-btn" id="starBtn" onclick="toggleBookmark()" title="Bookmark to this slide"><i class="far fa-star"></i></button>
         <button class="icon-btn" id="modeBtn" onclick="toggleMode()" title="Edit / Present"><i class="fas fa-display"></i></button>
         <button class="icon-btn" id="exportBtn" onclick="exportResults()" title="Export times (.txt)"><i class="fas fa-file-arrow-down"></i></button>
         <button class="icon-btn" id="muteBtn" onclick="toggleMute()" title="Sound on/off"><i class="fas fa-volume-high"></i></button>
@@ -189,7 +192,7 @@
             if(s.tab){ const b=[...document.querySelectorAll('.tab')].find(x=>x.getAttribute('onclick').includes("'"+s.tab+"'")); if(b) b.click(); }
         }
         function saveNow(){ const j=JSON.stringify(collectState()); try{localStorage.setItem(STATE_KEY,j);}catch(e){} if(officeReady){ try{ Office.context.document.settings.set(STATE_KEY,j); Office.context.document.settings.saveAsync(); }catch(e){} } }
-        function saveSoon(){ clearTimeout(saveTimer); saveTimer=setTimeout(saveNow,500); }
+        function saveSoon(){ clearTimeout(saveTimer); saveTimer=setTimeout(saveNow,500); try{ updateStarHint(); }catch(e){} }
         function loadState(){ let raw=null; if(officeReady){ try{raw=Office.context.document.settings.get(STATE_KEY);}catch(e){} } if(raw==null){ try{raw=localStorage.getItem(STATE_KEY);}catch(e){} } if(raw){ try{ applyState(JSON.parse(raw)); return true; }catch(e){} } return false; }
 
         /* ===== THEME ===== */
@@ -280,11 +283,24 @@
         }
         async function saveText(filename,text){ if(window.showSaveFilePicker){ try{ const h=await showSaveFilePicker({suggestedName:filename,types:[{description:'Text file',accept:{'text/plain':['.txt']}}]}); const w=await h.createWritable(); await w.write(text); await w.close(); return; }catch(e){ if(e&&e.name==='AbortError') return; } } const blob=new Blob([text],{type:'text/plain'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
 
+        /* ===== BOOKMARK ===== */
+        const EMBEDDED = window.parent && window.parent !== window;
+        let bookmarked = false;
+        function toggleBookmark(){
+            if(!timers.length){ showAlert('Add a timer first, then bookmark.','Bookmark'); return; }
+            bookmarked=!bookmarked; const url=bookmarked?location.href:null; const label='Classroom Timer'+(val('ci-activity')?' — '+val('ci-activity'):'');
+            if(EMBEDDED){ try{ window.parent.postMessage({ns:'classtools',cmd:'bookmark',url,label},'*'); }catch(e){} }
+            else { try{ url?localStorage.setItem('ct-bookmark',JSON.stringify({url,label})):localStorage.removeItem('ct-bookmark'); }catch(e){} }
+            updateStar();
+        }
+        function updateStar(){ const b=document.getElementById('starBtn'); b.classList.toggle('on',bookmarked); b.innerHTML=bookmarked?'<i class="fas fa-star"></i>':'<i class="far fa-star"></i>'; updateStarHint(); }
+        function updateStarHint(){ const b=document.getElementById('starBtn'); if(b) b.classList.toggle('star-hint', timers.length>0 && !bookmarked); }
+
         /* ===== BOOT ===== */
-        let booted = false;
-        function boot(){ if(booted) return; booted = true; if(!loadState()){ applyTheme(readDark()); addTimer('stopwatch'); } }
-        if(window.Office && Office.onReady){ Office.onReady(function(info){ officeReady=!!(info&&info.host); boot(); }); } else { boot(); }
-        setTimeout(function(){ if(!officeReady && !timers.length) boot(); }, 1500);
+        // Render immediately (works even when embedded in the hub iframe, where Office never inits).
+        if(!loadState()){ applyTheme(readDark()); addTimer('stopwatch'); }
+        // Upgrade to in-file persistence if running as a real Office add-in.
+        if(window.Office && Office.onReady){ Office.onReady(function(info){ officeReady=!!(info&&info.host); if(officeReady) loadState(); }); }
     </script>
 </body>
 </html>
