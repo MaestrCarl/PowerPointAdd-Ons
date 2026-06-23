@@ -44,6 +44,11 @@
         .icon-btn.on { background: #ffd34d; color: #7a4b00; }
         .icon-btn.star-hint { animation: starPulse 1.1s ease-in-out infinite; }
         @keyframes starPulse { 0%,100% { box-shadow: 0 0 0 rgba(255,211,77,0); } 50% { box-shadow: 0 0 0 6px rgba(255,211,77,.5); } }
+        .star-wrap { display: flex; align-items: center; gap: 7px; min-width: 0; }
+        .star-lg { width: 40px; height: 40px; border-radius: 11px; border: none; cursor: pointer; background: rgba(255,255,255,.16); color: #fff; font-size: 19px; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; transition: .15s; }
+        .star-lg:hover { background: rgba(255,255,255,.3); } .star-lg.on { background: #ffd34d; color: #7a4b00; } .star-lg.star-hint { animation: starPulse 1.1s ease-in-out infinite; }
+        .star-tip { font-size: 10.5px; font-weight: 700; color: rgba(255,255,255,.92); line-height: 1.05; max-width: 132px; }
+        @media (max-width: 540px) { .star-tip { display: none; } }
 
         /* ===== CLASS INFO BAR ===== */
         .classbar { flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; background: var(--surface-2); border-bottom: 1px solid var(--line); }
@@ -150,8 +155,11 @@
     <div class="topbar">
         <button class="icon-btn" id="backBtn" onclick="goBackHub()" title="Back to tools" style="display:none"><i class="fas fa-arrow-left"></i></button>
         <div class="brand"><i class="fas fa-dice"></i> Picker</div>
+        <div class="star-wrap">
+            <button class="star-lg" id="starBtn" onclick="toggleBookmark()" title="Bookmark"><i class="far fa-star"></i></button>
+            <span class="star-tip">Click to bookmark — reopens here automatically.</span>
+        </div>
         <div class="spacer"></div>
-        <button class="icon-btn" id="starBtn" onclick="toggleBookmark()" title="Bookmark to this slide"><i class="far fa-star"></i></button>
         <button class="icon-btn" id="modeBtn" onclick="toggleMode()" title="Edit / Present"><i class="fas fa-display"></i></button>
         <button class="icon-btn" id="exportBtn" onclick="exportResults()" title="Export results (.txt)"><i class="fas fa-file-arrow-down"></i></button>
         <button class="icon-btn" id="muteBtn" onclick="toggleMute()" title="Sound on/off"><i class="fas fa-volume-high"></i></button>
@@ -162,7 +170,7 @@
     <div class="classbar">
         <div class="field"><label>Activity</label><input id="ci-activity" placeholder="e.g. Quiz Bee" oninput="saveSoon()"></div>
         <div class="field"><label>Grade</label><input id="ci-grade" placeholder="e.g. Grade 7" oninput="saveSoon()"></div>
-        <div class="field"><label>Section</label><input id="ci-section" placeholder="e.g. Rizal" oninput="saveSoon()"></div>
+        <div class="field"><label>Section</label><input id="ci-section" placeholder="e.g. Section 1" oninput="saveSoon()"></div>
         <div class="field"><label>Subject</label><input id="ci-subject" placeholder="e.g. Science" oninput="saveSoon()"></div>
     </div>
 
@@ -430,56 +438,72 @@
 
         /* ============ SPINNER ============ */
         const canvas = document.getElementById('wheelCanvas'); const ctx = canvas.getContext('2d');
-        let names = [], spinning = false, rotation = 0, spinVelocity = 0, lastTickIdx = -1;
+        let names = [], spinning = false, rotation = 0, lastTickIdx = -1, R = 320;
         function spinnerSetNames() { names = getList('list-spinner'); sizeWheel(); renderWheel(); saveSoon(); }
         function sizeWheel() {
-            const wrap = document.getElementById('wheelWrap'); const host = wrap.parentElement;
-            const avail = Math.max(180, Math.min((host.clientWidth || 300) - 4, window.innerHeight * 0.62, 520));
+            const host = document.getElementById('wheelWrap').parentElement; // .spin-right
+            const maxW = (host.clientWidth || 340) - 2;
+            const size = Math.max(200, Math.min(maxW, window.innerHeight * 0.82, 820));
+            R = size;
             const dpr = window.devicePixelRatio || 1;
-            canvas.style.width = avail + 'px'; canvas.style.height = avail + 'px';
-            canvas.width = Math.round(avail * dpr); canvas.height = Math.round(avail * dpr);
+            canvas.style.width = size + 'px'; canvas.style.height = size + 'px';
+            canvas.width = Math.round(size * dpr); canvas.height = Math.round(size * dpr);
         }
         function shade(hex, amt) { const n = parseInt(hex.slice(1), 16); let r=(n>>16)+amt,g=((n>>8)&255)+amt,b=(n&255)+amt; r=Math.max(0,Math.min(255,r));g=Math.max(0,Math.min(255,g));b=Math.max(0,Math.min(255,b)); return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1); }
         function drawWheel() {
-            const n = names.length; ctx.clearRect(0, 0, 400, 400);
+            const n = names.length, C = R/2, rad = R/2 - 6;
+            ctx.clearRect(0, 0, R, R);
             const rim = (getComputedStyle(document.body).getPropertyValue('--surface') || '#fff').trim();
-            if (n === 0) { ctx.beginPath(); ctx.arc(200,200,190,0,Math.PI*2); ctx.fillStyle='rgba(125,125,125,.15)'; ctx.fill(); ctx.fillStyle='#999'; ctx.font='600 18px Hanken Grotesk,Arial'; ctx.textAlign='center'; ctx.fillText('Add names', 200, 205); return; }
-            const ang = (2 * Math.PI) / n;
+            if (n === 0) { ctx.beginPath(); ctx.arc(C,C,rad,0,Math.PI*2); ctx.fillStyle='rgba(125,125,125,.15)'; ctx.fill(); ctx.fillStyle='#999'; ctx.font='600 '+Math.round(R*0.05)+'px Hanken Grotesk,Arial'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('Add names', C, C); return; }
+            const ang = (2*Math.PI)/n, fs = Math.max(12, Math.min(R*0.06, R*0.62/n));
             for (let i = 0; i < n; i++) {
-                ctx.beginPath(); ctx.moveTo(200,200); ctx.arc(200,200,190,i*ang,(i+1)*ang);
-                const base = PALETTE[i % PALETTE.length], grad = ctx.createRadialGradient(200,200,40,200,200,190);
+                ctx.beginPath(); ctx.moveTo(C,C); ctx.arc(C,C,rad,i*ang,(i+1)*ang); ctx.closePath();
+                const base = PALETTE[i % PALETTE.length], grad = ctx.createRadialGradient(C,C,rad*0.2,C,C,rad);
                 grad.addColorStop(0, base); grad.addColorStop(1, shade(base, -30)); ctx.fillStyle = grad; ctx.fill();
-                ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.stroke();
-                ctx.save(); ctx.translate(200,200); ctx.rotate(i*ang + ang/2);
-                ctx.fillStyle = '#fff'; ctx.font = '700 ' + Math.max(11, Math.min(18, 220/n)) + 'px Hanken Grotesk, Arial'; ctx.textAlign='right'; ctx.textBaseline='middle';
-                ctx.shadowColor='rgba(0,0,0,.35)'; ctx.shadowBlur=3;
-                ctx.fillText(names[i].length > 14 ? names[i].slice(0,13)+'…' : names[i], 178, 0); ctx.restore();
+                ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.stroke();
+                ctx.save(); ctx.translate(C,C); ctx.rotate(i*ang + ang/2);
+                ctx.fillStyle = '#fff'; ctx.font = '700 '+fs+'px Hanken Grotesk, Arial'; ctx.textAlign='right'; ctx.textBaseline='middle';
+                ctx.shadowColor='rgba(0,0,0,.4)'; ctx.shadowBlur=2; ctx.shadowOffsetY=1;
+                const nm = names[i].length > 16 ? names[i].slice(0,15)+'…' : names[i];
+                ctx.fillText(nm, rad*0.93, 0); ctx.restore();
             }
-            ctx.beginPath(); ctx.arc(200,200,18,0,Math.PI*2); ctx.fillStyle = rim || '#fff'; ctx.fill(); ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.15)'; ctx.stroke();
+            ctx.shadowColor='transparent';
+            ctx.beginPath(); ctx.arc(C,C,Math.max(14,R*0.05),0,Math.PI*2); ctx.fillStyle = rim || '#fff'; ctx.fill(); ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.15)'; ctx.stroke();
         }
-        function renderWheel() { const s = canvas.width / 400; ctx.setTransform(s,0,0,s,0,0); ctx.clearRect(0,0,400,400); ctx.save(); ctx.translate(200,200); ctx.rotate(rotation*Math.PI/180); ctx.translate(-200,-200); drawWheel(); ctx.restore(); }
+        function renderWheel() {
+            const dpr = window.devicePixelRatio || 1;
+            ctx.setTransform(dpr,0,0,dpr,0,0);
+            ctx.clearRect(0,0,R,R);
+            ctx.save(); ctx.translate(R/2,R/2); ctx.rotate(rotation*Math.PI/180); ctx.translate(-R/2,-R/2);
+            drawWheel(); ctx.restore();
+        }
         function spinWheel() {
             if (spinning || names.length === 0) { if (!names.length) flashStatus('Add names for the wheel.'); return; }
-            ensureAudio(); spinning = true; spinVelocity = Math.random()*18 + 22; lastTickIdx = -1; document.getElementById('spin-winner').textContent = ''; animateSpin();
+            ensureAudio(); spinning = true; lastTickIdx = -1; document.getElementById('spin-winner').textContent = '';
+            const startRot = rotation, n = names.length;
+            const target = startRot + (5 + Math.random()*3) * 360 + Math.random()*360;  // several smooth turns
+            const dur = 4200 + Math.random()*900, t0 = performance.now();
+            (function frame(now){
+                const p = Math.min(1, (now - t0)/dur);
+                const e = 1 - Math.pow(1 - p, 3);                 // easeOutCubic — smooth, anticipatable stop
+                rotation = startRot + (target - startRot) * e;
+                renderWheel();
+                const idx = Math.floor(((360-(rotation%360))%360)/(360/n))%n;
+                if (idx !== lastTickIdx) { if (p < 0.997) playSpinTick(); lastTickIdx = idx; }
+                if (p < 1) requestAnimationFrame(frame); else finishSpin();
+            })(t0);
         }
-        function animateSpin() {
-            if (spinVelocity > .25) {
-                rotation += spinVelocity; spinVelocity *= .987; renderWheel();
-                const n = names.length, idx = Math.floor(((360-(rotation%360))%360)/(360/n))%n;
-                if (idx !== lastTickIdx) { playSpinTick(); lastTickIdx = idx; } requestAnimationFrame(animateSpin);
-            } else determineWinner();
-        }
-        function determineWinner() {
-            const n = names.length, ang = 360 / n, pa = (360-(rotation%360))%360, idx = Math.floor(pa/ang)%n, winner = names[idx];
+        function finishSpin() {
+            const n = names.length, ang = 360/n, pa = (360-(rotation%360))%360, idx = Math.floor(pa/ang)%n, winner = names[idx];
             document.getElementById('history-list').innerHTML += '<li>' + esc(winner) + '</li>';
             document.getElementById('spin-winner').innerHTML = '🎉 ' + esc(winner);
             playReveal(); confetti(1700);
             lastResult = { label: 'Spinner', body: 'Winner: ' + winner };
-            if (document.getElementById('excludeWinners').checked) names.splice(idx, 1);
-            spinning = false; renderWheel();
+            spinning = false;
+            if (document.getElementById('excludeWinners').checked) { names.splice(idx, 1); sizeWheel(); renderWheel(); }
         }
-        function resetWheel() { playClick(); names = getList('list-spinner'); rotation = 0; document.getElementById('spin-winner').textContent = ''; document.getElementById('history-list').innerHTML = ''; renderWheel(); flashStatus('All names restored.'); }
-        window.addEventListener('resize', () => { if (document.getElementById('spinner').classList.contains('active')) { sizeWheel(); renderWheel(); } else if (document.getElementById('confetti')) {} });
+        function resetWheel() { playClick(); names = getList('list-spinner'); rotation = 0; document.getElementById('spin-winner').textContent = ''; document.getElementById('history-list').innerHTML = ''; sizeWheel(); renderWheel(); flashStatus('All names restored.'); }
+        window.addEventListener('resize', () => { if (document.getElementById('spinner').classList.contains('active')) { sizeWheel(); renderWheel(); } });
 
         /* ============ HUB NAV + BOOKMARK ============ */
         const EMBEDDED = window.parent && window.parent !== window;
