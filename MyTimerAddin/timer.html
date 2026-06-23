@@ -5,73 +5,127 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Timer Toolbox - Mr. Carlo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --accent-color-value: #15c4c4; --bg-color: #fdfdfd; --text-color: #333; --text-color-light: #555;
             --header-bg-color: #ffffff; --panel-bg-color: #f8f9fa; --primary-color: var(--accent-color-value);
             --gray-color: #e0e0e0; --border-radius: 12px; --primary-color-rgb: 21, 196, 196;
+            --danger: #e63946;
         }
         .dark-mode {
             --bg-color: #212529; --text-color: #dee2e6; --header-bg-color: #2c3034; --panel-bg-color: #343a40;
             --primary-color: #15c4c4; --gray-color: #495057;
         }
 
-        body { font-family: 'Montserrat', sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-color); overflow-x: hidden; }
-        
+        * { box-sizing: border-box; }
+        body { font-family: 'Montserrat', sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-color); overflow-x: hidden; transition: background-color .3s, color .3s; }
+
         /* PowerPoint Floating Toolbar */
         .view-toggle {
             position: fixed; top: 10px; right: 10px; z-index: 1000;
             display: flex; gap: 5px; opacity: 0.4; transition: 0.3s;
         }
         .view-toggle:hover { opacity: 1; }
-        .view-toggle button { 
-            background: var(--primary-color); color: white; border: none; 
-            padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 10px;
+        .view-toggle button {
+            background: var(--primary-color); color: white; border: none;
+            padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 10px; font-family: inherit;
         }
+        .view-toggle button.muted { background: var(--danger); }
 
         /* Container & Layout */
-        .container { padding: 15px; max-width: 100%; box-sizing: border-box; }
+        .container { padding: 15px; max-width: 100%; }
         .full-view { display: block; }
-        .mini-view { display: none; height: 100vh; width: 100vw; justify-content: center; align-items: center; text-align: center; }
-        
+        .mini-view { display: none; height: 100vh; width: 100vw; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 18px; }
+
         /* Tabs */
         .tab-container { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 10px; border-bottom: 1px solid var(--gray-color); margin-bottom: 15px; }
-        .tab-button { background: none; border: none; padding: 8px 12px; cursor: pointer; color: var(--text-color-light); font-weight: 600; white-space: nowrap; }
+        .tab-button { background: none; border: none; padding: 8px 12px; cursor: pointer; color: var(--text-color-light); font-weight: 600; white-space: nowrap; font-family: inherit; }
         .tab-button.active { color: var(--primary-color); border-bottom: 2px solid var(--primary-color); }
         .tab-content { display: none; animation: fadeIn 0.3s ease; }
         .tab-content.active { display: block; }
 
-        /* Timer UI Elements */
-        .timer-wrapper { background: var(--panel-bg-color); padding: 15px; border-radius: var(--border-radius); margin-bottom: 10px; position: relative; }
-        .timer-display { font-size: 2.2em; font-weight: 300; text-align: center; margin: 10px 0; }
-        .mini-display-text { font-size: 20vw; font-weight: 700; color: var(--primary-color); }
-        
+        /* Timer cards */
+        .timer-wrapper {
+            background: var(--panel-bg-color); padding: 15px 15px 12px; border-radius: var(--border-radius);
+            margin-bottom: 12px; position: relative; border: 1px solid transparent;
+            animation: cardIn .45s cubic-bezier(.18,.89,.32,1.28);
+        }
+        .timer-wrapper.removing { animation: cardOut .3s ease forwards; }
+        @keyframes cardIn  { from { opacity: 0; transform: translateY(18px) scale(.97); } to { opacity: 1; transform: none; } }
+        @keyframes cardOut { to { opacity: 0; transform: translateX(40px) scale(.95); height: 0; padding: 0; margin: 0; } }
+        .timer-wrapper.flash { animation: flashCard 1.6s ease; }
+        @keyframes flashCard {
+            0%,100% { box-shadow: 0 0 0 rgba(var(--primary-color-rgb), 0); border-color: transparent; }
+            25%, 75% { box-shadow: 0 0 26px rgba(var(--primary-color-rgb), .55); border-color: var(--primary-color); }
+        }
+
+        .timer-display { font-size: 2.2em; font-weight: 300; text-align: center; margin: 10px 0; transition: color .2s; }
+        .timer-display.ending { color: var(--danger); animation: tick 1s ease infinite; }
+        @keyframes tick { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+        .state-label { text-align: center; font-weight: 700; font-size: .8em; letter-spacing: 1px; text-transform: uppercase; color: var(--primary-color); min-height: 1em; }
+
+        .mini-display-text { font-size: 18vw; font-weight: 800; color: var(--primary-color); line-height: 1; }
+        .mini-display-text.ending { color: var(--danger); animation: tick 1s ease infinite; }
+        #mini-state { font-size: 3vw; font-weight: 700; letter-spacing: 3px; color: var(--text-color-light); text-transform: uppercase; min-height: 1em; }
+
         .timer-controls { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
-        .timer-controls button, .add-btn { background: var(--primary-color); color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.9em; }
-        
-        input[type="number"], input[type="text"] { padding: 5px; border: 1px solid var(--gray-color); border-radius: 5px; background: var(--bg-color); color: var(--text-color); width: 50px; text-align: center; }
-        .timer-name { width: 100%; border: none; background: transparent; font-weight: 600; border-bottom: 1px dashed var(--gray-color); margin-bottom: 10px; color: var(--text-color); }
+        .timer-controls button, .add-btn {
+            background: var(--primary-color); color: white; border: none; padding: 8px 15px;
+            border-radius: 8px; cursor: pointer; font-size: 0.9em; font-family: inherit; font-weight: 600;
+            display: inline-flex; align-items: center; gap: 6px; transition: filter .15s, transform .1s;
+        }
+        .timer-controls button:hover, .add-btn:hover { filter: brightness(1.08); }
+        .timer-controls button:active, .add-btn:active { transform: scale(.96); }
+        .timer-controls button.ghost { background: transparent; color: var(--text-color-light); border: 1px solid var(--gray-color); }
+
+        .delete-btn {
+            position: absolute; top: 8px; right: 8px; background: transparent; border: none;
+            color: var(--text-color-light); cursor: pointer; font-size: .95em; padding: 4px 6px;
+            border-radius: 6px; transition: color .15s, background .15s;
+        }
+        .delete-btn:hover { color: #fff; background: var(--danger); }
+
+        input[type="number"], input[type="text"] { padding: 5px; border: 1px solid var(--gray-color); border-radius: 5px; background: var(--bg-color); color: var(--text-color); width: 52px; text-align: center; font-family: inherit; }
+        .timer-name { width: 100%; border: none; background: transparent; font-weight: 700; border-bottom: 1px dashed var(--gray-color); margin-bottom: 10px; color: var(--text-color); font-family: inherit; padding-right: 28px; }
+        .input-row { display: flex; justify-content: center; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; font-size: .9em; color: var(--text-color-light); }
 
         /* Progress Bars (Silent/Race) */
-        .progress-track { height: 15px; width: 100%; background: var(--gray-color); border-radius: 10px; margin: 10px 0; overflow: hidden; position: relative; }
-        .progress-bar { height: 100%; background: var(--primary-color); width: 0%; transition: 0.3s; }
-        .race-runner { position: absolute; top: -5px; transition: 0.1s; font-size: 1.2em; }
+        .progress-track { height: 16px; width: 100%; background: var(--gray-color); border-radius: 10px; margin: 12px 0; overflow: hidden; position: relative; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary-color), #4fe3e3); width: 0%; transition: width .35s linear; }
+        .race-runner { position: absolute; top: -6px; transition: left .35s linear; font-size: 1.3em; }
 
-        /* Laps */
-        .split-list { list-style: none; padding: 0; max-height: 80px; overflow-y: auto; font-size: 0.8em; }
-        
+        .split-list { list-style: none; padding: 0; max-height: 90px; overflow-y: auto; font-size: 0.82em; margin: 8px 0 0; }
+        .split-list li { padding: 3px 0; border-bottom: 1px dashed var(--gray-color); animation: cardIn .3s ease; }
+
+        /* Mini controls */
+        .mini-controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .mini-controls button {
+            font-family: inherit; font-weight: 700; font-size: 1rem; cursor: pointer;
+            padding: 12px 22px; border-radius: 40px; border: none; color: #fff; background: var(--primary-color);
+            display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 6px 16px rgba(0,0,0,.18);
+            transition: transform .1s, filter .15s;
+        }
+        .mini-controls button:active { transform: scale(.96); }
+        .mini-controls button.ghost { background: var(--card-bg, #fff); color: var(--text-color); border: 1px solid var(--gray-color); }
+        .dark-mode .mini-controls button.ghost { background: #2c3034; }
+
         /* Modal */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center; }
-        .modal-content { background: var(--bg-color); padding: 20px; border-radius: 12px; text-align: center; width: 80%; }
-
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-content { background: var(--bg-color); padding: 26px; border-radius: 16px; text-align: center; width: 80%; max-width: 360px; animation: winnerPop .5s cubic-bezier(.18,.89,.32,1.28); }
+        .modal-content h2 { margin: 0 0 6px; }
+        .modal-content .bell { font-size: 2.4em; color: var(--primary-color); margin-bottom: 6px; animation: ring .8s ease infinite; transform-origin: top center; }
+        @keyframes ring { 0%,100% { transform: rotate(0); } 20% { transform: rotate(14deg); } 40% { transform: rotate(-12deg); } 60% { transform: rotate(8deg); } 80% { transform: rotate(-5deg); } }
+        @keyframes winnerPop { 0% { transform: scale(.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .hint { font-size: .78em; color: var(--text-color-light); text-align: center; margin-top: 6px; }
     </style>
 </head>
 <body>
 
     <div class="view-toggle">
-        <button onclick="toggleDarkMode()"><i class="fas fa-moon"></i></button>
+        <button onclick="toggleDarkMode()" title="Dark mode"><i class="fas fa-moon"></i></button>
+        <button id="muteBtn" onclick="toggleMute()" title="Sound on/off"><i class="fas fa-volume-high"></i></button>
         <button onclick="switchView('full')">Full</button>
         <button onclick="switchView('mini')">Mini</button>
     </div>
@@ -89,57 +143,127 @@
             <button class="tab-button" onclick="openTab('quiz')">Quiz</button>
         </div>
 
-        <!-- Stopwatch -->
         <div id="stopwatch" class="tab-content active">
-            <button class="add-btn" onclick="addTimer('stopwatch')">+ Add Stopwatch</button>
+            <button class="add-btn" onclick="addTimer('stopwatch')"><i class="fas fa-plus"></i> Add Stopwatch</button>
             <div id="stopwatch-list"></div>
         </div>
-
-        <!-- Countdown -->
         <div id="countdown" class="tab-content">
-            <button class="add-btn" onclick="addTimer('countdown')">+ Add Countdown</button>
+            <button class="add-btn" onclick="addTimer('countdown')"><i class="fas fa-plus"></i> Add Countdown</button>
             <div id="countdown-list"></div>
         </div>
-
-        <!-- Other tabs follow same pattern -->
-        <div id="loop" class="tab-content"><button class="add-btn" onclick="addTimer('loop')">+ Add Loop</button><div id="loop-list"></div></div>
-        <div id="pomodoro" class="tab-content"><button class="add-btn" onclick="addTimer('pomodoro')">+ Add Pomodoro</button><div id="pomodoro-list"></div></div>
-        <div id="split" class="tab-content"><button class="add-btn" onclick="addTimer('split')">+ Add Split</button><div id="split-list-container"></div></div>
-        <div id="silent" class="tab-content"><button class="add-btn" onclick="addTimer('silent')">+ Add Silent</button><div id="silent-list"></div></div>
-        <div id="race" class="tab-content"><button class="add-btn" onclick="addTimer('race')">+ Add Race</button><div id="race-list"></div></div>
+        <div id="loop" class="tab-content">
+            <button class="add-btn" onclick="addTimer('loop')"><i class="fas fa-plus"></i> Add Loop</button>
+            <div class="hint">Counts down, then restarts automatically each round.</div>
+            <div id="loop-list"></div>
+        </div>
+        <div id="pomodoro" class="tab-content">
+            <button class="add-btn" onclick="addTimer('pomodoro')"><i class="fas fa-plus"></i> Add Pomodoro</button>
+            <div class="hint">Alternates Work and Break automatically.</div>
+            <div id="pomodoro-list"></div>
+        </div>
+        <div id="split" class="tab-content">
+            <button class="add-btn" onclick="addTimer('split')"><i class="fas fa-plus"></i> Add Split</button>
+            <div id="split-list"></div>
+        </div>
+        <div id="silent" class="tab-content">
+            <button class="add-btn" onclick="addTimer('silent')"><i class="fas fa-plus"></i> Add Silent</button>
+            <div class="hint">Visual-only countdown — gentle end cue, no ticking.</div>
+            <div id="silent-list"></div>
+        </div>
+        <div id="race" class="tab-content">
+            <button class="add-btn" onclick="addTimer('race')"><i class="fas fa-plus"></i> Add Race</button>
+            <div id="race-list"></div>
+        </div>
         <div id="quiz" class="tab-content" style="text-align: center; padding: 20px;">
-            <button id="quiz-buzzer" style="width:150px; height:150px; border-radius:50%; background:var(--primary-color); color:white; border:none; font-size:2em; cursor:pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">BUZZ!</button>
+            <button id="quiz-buzzer" onclick="pressBuzzer()" style="width:150px; height:150px; border-radius:50%; background:var(--primary-color); color:white; border:none; font-size:2em; cursor:pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-family:inherit; font-weight:800;">BUZZ!</button>
+            <div class="hint">Tap for a buzzer sound &amp; flash.</div>
         </div>
     </div>
 
     <!-- MINI DISPLAY VIEW -->
     <div id="mini-view" class="mini-view">
+        <div id="mini-state"></div>
         <div id="mini-display-content" class="mini-display-text">00:00</div>
+        <div class="mini-controls" id="mini-controls">
+            <button onclick="miniStart()"><i class="fas fa-play"></i> Start</button>
+            <button onclick="miniPause()"><i class="fas fa-pause"></i> Pause</button>
+            <button onclick="miniReset()" class="ghost"><i class="fas fa-rotate-left"></i> Reset</button>
+            <button onclick="switchView('full')" class="ghost"><i class="fas fa-table-cells-large"></i> Full</button>
+        </div>
     </div>
 
     <!-- Alert Modal -->
     <div id="alertModal" class="modal">
         <div class="modal-content">
-            <h2 id="modalTitle">Time Up!</h2>
+            <div class="bell"><i class="fas fa-bell"></i></div>
+            <h2 id="modalTitle">Time's Up!</h2>
             <p id="modalMsg"></p>
             <button class="add-btn" onclick="closeModal()">OK</button>
         </div>
     </div>
 
     <script>
-        // --- GLOBAL LOGIC ---
+        /* ============================================================
+           SOUND ENGINE — gentle, low-volume Web Audio (no files)
+           ============================================================ */
+        let audioCtx = null, masterGain = null, muted = false;
+        function ensureAudio() {
+            if (!audioCtx) {
+                const AC = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AC();
+                masterGain = audioCtx.createGain();
+                masterGain.gain.value = 0.16;        // soft / not too loud
+                masterGain.connect(audioCtx.destination);
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+        function note(freq, dur, type, vol, when) {
+            if (muted) return;
+            ensureAudio();
+            const t0 = audioCtx.currentTime + (when || 0);
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = type || 'sine';
+            osc.frequency.value = freq;
+            g.gain.setValueAtTime(0.0001, t0);
+            g.gain.exponentialRampToValueAtTime(vol || 0.5, t0 + 0.012);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+            osc.connect(g); g.connect(masterGain);
+            osc.start(t0); osc.stop(t0 + dur + 0.03);
+        }
+        function marimba(freq, when, vol) {
+            note(freq, 0.45, 'triangle', (vol || 0.55), when);
+            note(freq * 2, 0.30, 'sine', (vol || 0.55) * 0.22, when);
+        }
+        function playClick()  { note(660, 0.06, 'sine', 0.3); }
+        function playStart()  { marimba(659.25, 0, 0.5); }
+        function playPause()  { note(392, 0.16, 'sine', 0.35); }
+        function playTick()   { note(880, 0.03, 'triangle', 0.06); }                  // last seconds, very soft
+        function playFinish() { marimba(523.25,0,.55); marimba(659.25,.09,.55); marimba(783.99,.18,.55); marimba(1046.5,.30,.6); }
+        function playSoftEnd(){ marimba(659.25, 0, 0.4); }                            // silent timer end
+        function playLoop()   { marimba(880, 0, 0.45); }                             // loop round
+        function playWork()   { marimba(659.25, 0, 0.5); marimba(880, 0.12, 0.5); }  // -> work
+        function playBreak()  { marimba(587.33, 0, 0.5); marimba(440, 0.12, 0.5); }  // -> break
+        function playBuzzer() { note(220, 0.28, 'sawtooth', 0.3); note(330, 0.28, 'square', 0.12); }
+        function toggleMute() {
+            muted = !muted;
+            const b = document.getElementById('muteBtn');
+            b.classList.toggle('muted', muted);
+            b.innerHTML = muted ? '<i class="fas fa-volume-xmark"></i>' : '<i class="fas fa-volume-high"></i>';
+            if (!muted) { ensureAudio(); marimba(880, 0, 0.4); }
+        }
+
+        /* ============================================================
+           GLOBAL STATE + VIEW
+           ============================================================ */
         let timers = [];
         let activeMiniTimerId = null;
 
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-        }
-
+        function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
         function switchView(view) {
             document.getElementById('full-view').style.display = view === 'full' ? 'block' : 'none';
             document.getElementById('mini-view').style.display = view === 'mini' ? 'flex' : 'none';
         }
-
         function openTab(name) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
@@ -147,112 +271,185 @@
             event.currentTarget.classList.add('active');
         }
 
-        // --- TIMER CREATION ---
+        const COUNTDOWNISH = ['countdown', 'silent', 'race', 'loop'];
+
+        /* ============================================================
+           TIMER CREATION
+           ============================================================ */
         function addTimer(type) {
-            const id = Date.now();
-            const timerObj = {
-                id, type, 
-                running: false, 
-                elapsed: 0, 
-                total: 0, 
-                interval: null,
-                laps: [],
-                pomoState: 'Work'
-            };
-            timers.push(timerObj);
-            renderTimer(timerObj);
+            playClick();
+            const id = Date.now() + Math.floor(Math.random() * 999);
+            timers.push({ id, type, running: false, elapsed: 0, total: 0, interval: null, laps: [], round: 1, phase: 'Work' });
+            renderTimer(timers.find(t => t.id === id));
         }
 
         function renderTimer(t) {
-            const container = document.getElementById(`${t.type}-list`) || document.getElementById(`${t.type}-list-container`);
+            const container = document.getElementById(`${t.type}-list`);
             const div = document.createElement('div');
             div.className = 'timer-wrapper';
             div.id = `wrapper-${t.id}`;
-            
-            let specialUI = '';
-            if(t.type === 'countdown' || t.type === 'silent' || t.type === 'race') {
-                specialUI = `<div class="timer-controls"><input type="number" id="m-${t.id}" placeholder="M"> : <input type="number" id="s-${t.id}" placeholder="S"></div>`;
+
+            let inputs = '';
+            if (COUNTDOWNISH.includes(t.type)) {
+                inputs = `<div class="input-row">Set <input type="number" id="m-${t.id}" placeholder="M" min="0"> :
+                          <input type="number" id="s-${t.id}" placeholder="S" min="0" max="59"></div>`;
             }
-            if(t.type === 'silent' || t.type === 'race') {
-                specialUI += `<div class="progress-track"><div class="progress-bar" id="bar-${t.id}"></div>${t.type==='race'?'<div class="race-runner" id="run-'+t.id+'">🚀</div>':''}</div>`;
+            if (t.type === 'pomodoro') {
+                inputs = `<div class="input-row">Work <input type="number" id="work-${t.id}" value="25" min="1"> min &nbsp;·&nbsp;
+                          Break <input type="number" id="break-${t.id}" value="5" min="1"> min</div>`;
+            }
+            let bar = '';
+            if (t.type === 'silent' || t.type === 'race') {
+                bar = `<div class="progress-track"><div class="progress-bar" id="bar-${t.id}"></div>` +
+                      (t.type === 'race' ? `<div class="race-runner" id="run-${t.id}">🚀</div>` : '') + `</div>`;
             }
 
             div.innerHTML = `
-                <input class="timer-name" value="${t.type.toUpperCase()}">
+                <button class="delete-btn" onclick="removeTimer(${t.id})" title="Delete"><i class="fas fa-xmark"></i></button>
+                <input class="timer-name" value="${t.type.charAt(0).toUpperCase() + t.type.slice(1)}">
+                <div class="state-label" id="state-${t.id}"></div>
                 <div class="timer-display" id="disp-${t.id}">00:00</div>
-                ${specialUI}
+                ${inputs}
+                ${bar}
                 <div class="timer-controls">
-                    <button onclick="startTimer(${t.id})">Start</button>
-                    <button onclick="pauseTimer(${t.id})">Pause</button>
-                    <button onclick="resetTimer(${t.id})">Reset</button>
-                    ${t.type==='split'?'<button onclick="addLap('+t.id+')">Lap</button>':''}
+                    <button onclick="startTimer(${t.id})"><i class="fas fa-play"></i> Start</button>
+                    <button onclick="pauseTimer(${t.id}, true)"><i class="fas fa-pause"></i> Pause</button>
+                    <button onclick="resetTimer(${t.id})" class="ghost"><i class="fas fa-rotate-left"></i> Reset</button>
+                    ${t.type === 'split' ? `<button onclick="addLap(${t.id})"><i class="fas fa-flag"></i> Lap</button>` : ''}
                 </div>
                 <ul class="split-list" id="laps-${t.id}"></ul>
             `;
             container.appendChild(div);
         }
 
-        // --- CORE ENGINES ---
+        function removeTimer(id) {
+            playClick();
+            const t = timers.find(x => x.id === id);
+            if (t) { clearInterval(t.interval); }
+            if (activeMiniTimerId === id) activeMiniTimerId = null;
+            const w = document.getElementById(`wrapper-${id}`);
+            if (w) { w.classList.add('removing'); setTimeout(() => w.remove(), 300); }
+            timers = timers.filter(x => x.id !== id);
+        }
+
+        /* ============================================================
+           CORE ENGINE
+           ============================================================ */
         function startTimer(id) {
             const t = timers.find(x => x.id === id);
-            if(t.running) return;
-            
-            // Initialization for Countdown/Silent/Race
-            if((t.type === 'countdown' || t.type === 'silent' || t.type === 'race') && t.elapsed === 0) {
+            if (!t || t.running) return;
+            ensureAudio();
+
+            if (COUNTDOWNISH.includes(t.type) && t.elapsed === 0) {
                 const m = parseInt(document.getElementById(`m-${id}`).value) || 0;
                 const s = parseInt(document.getElementById(`s-${id}`).value) || 0;
                 t.total = (m * 60) + s;
                 t.elapsed = t.total;
             }
+            if (t.type === 'pomodoro' && t.elapsed === 0) {
+                t.workSecs = (parseInt(document.getElementById(`work-${id}`).value) || 25) * 60;
+                t.breakSecs = (parseInt(document.getElementById(`break-${id}`).value) || 5) * 60;
+                t.phase = 'Work'; t.total = t.workSecs; t.elapsed = t.workSecs;
+            }
+            if (COUNTDOWNISH.includes(t.type) && t.total === 0 && t.type !== 'stopwatch') {
+                showAlert('Set a time first.', t.type); return;
+            }
 
             t.running = true;
             activeMiniTimerId = id;
-            
-            t.interval = setInterval(() => {
-                if(t.type === 'stopwatch' || t.type === 'split') t.elapsed += 1;
-                else t.elapsed -= 1;
+            playStart();
+            updateUI(t);
 
+            t.interval = setInterval(() => {
+                if (t.type === 'stopwatch' || t.type === 'split') t.elapsed += 1;
+                else t.elapsed -= 1;
                 updateUI(t);
 
-                if(t.elapsed <= 0 && t.type !== 'stopwatch' && t.type !== 'split') {
-                    pauseTimer(id);
-                    showAlert(t.type.toUpperCase() + " Finished!");
-                }
+                // gentle countdown ticks (not for silent)
+                if (t.elapsed > 0 && t.elapsed <= 3 && t.type !== 'silent' && t.type !== 'stopwatch' && t.type !== 'split') playTick();
+
+                if (t.elapsed <= 0 && COUNTDOWNISH.includes(t.type)) handleCountdownEnd(t);
+                else if (t.elapsed <= 0 && t.type === 'pomodoro') handlePomodoroEnd(t);
             }, 1000);
+        }
+
+        function handleCountdownEnd(t) {
+            if (t.type === 'loop') {                    // auto-restart, no dead-end
+                t.round += 1; t.elapsed = t.total;
+                playLoop(); flashCard(t.id); updateUI(t);
+                return;
+            }
+            pauseTimer(t.id);
+            flashCard(t.id);
+            if (t.type === 'silent') { playSoftEnd(); showAlert('Silent timer finished.', t.type); }
+            else { playFinish(); showAlert(`${cap(t.type)} finished!`, t.type); }
+        }
+
+        function handlePomodoroEnd(t) {
+            if (t.phase === 'Work') { t.phase = 'Break'; t.total = t.breakSecs; t.elapsed = t.breakSecs; playBreak(); }
+            else { t.phase = 'Work'; t.round += 1; t.total = t.workSecs; t.elapsed = t.workSecs; playWork(); }
+            flashCard(t.id); updateUI(t);
         }
 
         function updateUI(t) {
             const m = Math.floor(Math.abs(t.elapsed) / 60);
             const s = Math.abs(t.elapsed) % 60;
             const str = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-            
-            document.getElementById(`disp-${t.id}`).innerText = str;
-            if(activeMiniTimerId === t.id) {
-                document.getElementById('mini-display-content').innerText = str;
+            const disp = document.getElementById(`disp-${t.id}`);
+            if (disp) disp.innerText = str;
+
+            // state label (loop round / pomodoro phase)
+            const stateEl = document.getElementById(`state-${t.id}`);
+            let stateTxt = '';
+            if (t.type === 'loop') stateTxt = `Round ${t.round}`;
+            if (t.type === 'pomodoro') stateTxt = `${t.phase} · Round ${t.round}`;
+            if (stateEl) stateEl.innerText = stateTxt;
+
+            // low-time visual emphasis
+            const ending = (COUNTDOWNISH.includes(t.type) || t.type === 'pomodoro') && t.running && t.elapsed <= 5 && t.elapsed > 0 && t.type !== 'silent';
+            if (disp) disp.classList.toggle('ending', ending);
+
+            // mirror to mini view
+            if (activeMiniTimerId === t.id) {
+                const mc = document.getElementById('mini-display-content');
+                mc.innerText = str;
+                mc.classList.toggle('ending', ending);
+                document.getElementById('mini-state').innerText = stateTxt || (t.running ? 'Running' : '');
             }
 
-            // Progress Bar Logic
-            if(t.type === 'silent' || t.type === 'race') {
-                const perc = ((t.total - t.elapsed) / t.total) * 100;
-                document.getElementById(`bar-${t.id}`).style.width = perc + "%";
-                if(t.type === 'race') document.getElementById(`run-${t.id}`).style.left = `calc(${perc}% - 20px)`;
+            // progress bar
+            if ((t.type === 'silent' || t.type === 'race') && t.total > 0) {
+                const perc = Math.min(100, ((t.total - t.elapsed) / t.total) * 100);
+                const barEl = document.getElementById(`bar-${t.id}`);
+                if (barEl) barEl.style.width = perc + '%';
+                if (t.type === 'race') { const r = document.getElementById(`run-${t.id}`); if (r) r.style.left = `calc(${perc}% - 22px)`; }
             }
         }
 
-        function pauseTimer(id) {
+        function pauseTimer(id, manual) {
             const t = timers.find(x => x.id === id);
+            if (!t) return;
+            if (manual && t.running) playPause();
             t.running = false;
             clearInterval(t.interval);
+            updateUI(t);
         }
 
         function resetTimer(id) {
+            playClick();
             const t = timers.find(x => x.id === id);
+            if (!t) return;
             pauseTimer(id);
-            t.elapsed = 0;
+            t.elapsed = 0; t.total = 0; t.round = 1; t.phase = 'Work';
+            const laps = document.getElementById(`laps-${id}`); if (laps) laps.innerHTML = '';
+            t.laps = [];
+            const bar = document.getElementById(`bar-${id}`); if (bar) bar.style.width = '0%';
+            const run = document.getElementById(`run-${id}`); if (run) run.style.left = '-22px';
             updateUI(t);
         }
 
         function addLap(id) {
+            playClick();
             const t = timers.find(x => x.id === id);
             const str = document.getElementById(`disp-${id}`).innerText;
             const li = document.createElement('li');
@@ -261,18 +458,42 @@
             t.laps.push(str);
         }
 
-        // --- UTILS ---
-        function showAlert(msg) {
+        function flashCard(id) {
+            const w = document.getElementById(`wrapper-${id}`);
+            if (!w) return;
+            w.classList.remove('flash'); void w.offsetWidth; w.classList.add('flash');
+        }
+        const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+        /* ============================================================
+           MINI VIEW CONTROLS (operate on active timer)
+           ============================================================ */
+        function miniStart() { if (activeMiniTimerId) startTimer(activeMiniTimerId); else hintNoTimer(); }
+        function miniPause() { if (activeMiniTimerId) pauseTimer(activeMiniTimerId, true); }
+        function miniReset() { if (activeMiniTimerId) resetTimer(activeMiniTimerId); }
+        function hintNoTimer() {
+            document.getElementById('mini-state').innerText = 'Pick a timer in Full view';
+        }
+
+        /* ============================================================
+           QUIZ + MODAL
+           ============================================================ */
+        function pressBuzzer() {
+            ensureAudio(); playBuzzer();
+            const b = document.getElementById('quiz-buzzer');
+            b.style.transform = 'scale(1.12)';
+            setTimeout(() => b.style.transform = 'scale(1)', 150);
+            showAlert('BUZZER PRESSED!', 'quiz');
+        }
+        function showAlert(msg, title) {
+            document.getElementById('modalTitle').innerText = title ? cap(title) : "Time's Up!";
             document.getElementById('modalMsg').innerText = msg;
             document.getElementById('alertModal').style.display = 'flex';
         }
-        function closeModal() { document.getElementById('alertModal').style.display = 'none'; }
-        
-        document.getElementById('quiz-buzzer').onclick = () => showAlert("BUZZER PRESSED!");
+        function closeModal() { playClick(); document.getElementById('alertModal').style.display = 'none'; }
 
         // Start with one stopwatch by default
         window.onload = () => addTimer('stopwatch');
-
     </script>
 </body>
 </html>

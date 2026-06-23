@@ -5,36 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Classroom Tools - PowerPoint</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* --- INTEGRATING YOUR ORIGINAL STYLES --- */
         :root {
             --accent-color-value: #15c4c4; --bg-color: #fdfdfd; --text-color: #333;
             --primary-color: var(--accent-color-value); --gray-color: #e0e0e0; --border-radius: 12px;
+            --card-bg: #ffffff; --primary-color-rgb: 21, 196, 196;
         }
-        .dark-mode { --bg-color: #212529; --text-color: #dee2e6; --primary-color: #15c4c4; }
+        .dark-mode {
+            --bg-color: #212529; --text-color: #dee2e6; --primary-color: #15c4c4;
+            --gray-color: #495057; --card-bg: #2c3034;
+        }
 
-        body { font-family: 'Montserrat', sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-color); overflow-x: hidden; }
-        
+        * { box-sizing: border-box; }
+        body { font-family: 'Montserrat', sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-color); overflow-x: hidden; transition: background-color .3s, color .3s; }
+
         /* Floating Toolbar for PPT */
         .view-toggle {
             position: fixed; top: 10px; right: 10px; z-index: 1000;
             display: flex; gap: 5px; opacity: 0.3; transition: 0.3s;
         }
         .view-toggle:hover { opacity: 1; }
-        .view-toggle button { 
-            background: var(--primary-color); color: white; border: none; 
+        .view-toggle button {
+            background: var(--primary-color); color: white; border: none;
             padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 10px;
+            font-family: inherit;
         }
+        .view-toggle button.muted { background: #b33; }
 
         /* Container & Layout */
         .full-view { display: block; padding: 20px; }
-        .mini-view { 
-            display: none; height: 100vh; width: 100vw; 
-            justify-content: center; align-items: center; 
-            text-align: center; background: var(--bg-color);
+        .mini-view {
+            display: none; height: 100vh; width: 100vw;
+            justify-content: center; align-items: center;
+            text-align: center; background: var(--bg-color); position: relative; overflow: hidden;
         }
-        #mini-content { font-size: 8vw; font-weight: 700; color: var(--primary-color); padding: 20px; }
+        #mini-content { width: 100%; max-height: 100vh; overflow-y: auto; padding: 18px 18px 90px; }
+        #confetti { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+
+        /* Contextual action bar in results (no dead-ends) */
+        .result-actions {
+            position: fixed; left: 0; right: 0; bottom: 16px; z-index: 30;
+            display: none; gap: 10px; justify-content: center; flex-wrap: wrap; padding: 0 12px;
+        }
+        .result-actions button {
+            font-family: inherit; font-weight: 700; font-size: .95rem; cursor: pointer;
+            padding: 11px 20px; border-radius: 40px; border: none;
+            display: inline-flex; align-items: center; gap: 8px;
+            box-shadow: 0 6px 18px rgba(0,0,0,.18); transition: transform .1s, filter .15s;
+        }
+        .result-actions button:active { transform: scale(.96); }
+        .result-actions .again { background: var(--primary-color); color: #fff; }
+        .result-actions .again:hover { filter: brightness(1.08); }
+        .result-actions .setup {
+            background: var(--card-bg); color: var(--text-color); border: 1px solid var(--gray-color);
+        }
+        .result-actions .setup:hover { border-color: var(--primary-color); color: var(--primary-color); }
 
         /* Original Tab Styles */
         .tab-container { display: flex; gap: 5px; overflow-x: auto; margin-bottom: 15px; border-bottom: 1px solid var(--gray-color); }
@@ -44,16 +70,81 @@
         .tab-content.active { display: block; }
 
         /* Inputs & Cards */
-        textarea { width: 100%; height: 100px; border-radius: 8px; border: 1px solid var(--gray-color); padding: 10px; font-family: inherit; }
-        .tool-button { background: var(--primary-color); color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 10px; font-weight: 600; }
-        .group-card { background: #eee; padding: 10px; border-radius: 8px; margin-bottom: 5px; text-align: left; }
-        .dark-mode .group-card { background: #333; }
+        textarea { width: 100%; height: 100px; border-radius: 8px; border: 1px solid var(--gray-color); padding: 10px; font-family: inherit; background: var(--card-bg); color: var(--text-color); }
+        .tool-button { background: var(--primary-color); color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 10px; font-weight: 600; font-family: inherit; transition: filter .15s, transform .1s; }
+        .tool-button:hover { filter: brightness(1.07); }
+        .tool-button:active { transform: scale(.98); }
+
+        /* ===== SHUFFLE (picker suspense) ===== */
+        .shuffle-name {
+            font-size: 7vw; font-weight: 800; color: var(--text-color);
+            opacity: .85; letter-spacing: 1px;
+            animation: shuffleFlip .12s ease;
+        }
+        @keyframes shuffleFlip {
+            from { transform: translateY(14px) scale(.96); opacity: 0; }
+            to   { transform: translateY(0) scale(1); opacity: .85; }
+        }
+
+        /* ===== WINNER CARD ===== */
+        .winner-card {
+            display: inline-flex; flex-direction: column; align-items: center; gap: 10px;
+            padding: 5vh 7vw; border-radius: 24px;
+            background: linear-gradient(160deg, var(--card-bg), rgba(var(--primary-color-rgb), .12));
+            box-shadow: 0 18px 50px rgba(var(--primary-color-rgb), .35);
+            border: 2px solid rgba(var(--primary-color-rgb), .5);
+            animation: winnerPop .6s cubic-bezier(.18,.89,.32,1.28);
+        }
+        .winner-label { font-size: 2.4vw; font-weight: 700; letter-spacing: 4px; color: var(--primary-color); }
+        .winner-name  { font-size: 7vw; font-weight: 800; line-height: 1.05; color: var(--text-color); }
+        @keyframes winnerPop {
+            0%   { transform: scale(.3) rotate(-6deg); opacity: 0; }
+            60%  { transform: scale(1.08) rotate(2deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0); }
+        }
+        .winner-card .winner-name { animation: glowPulse 1.8s ease-in-out infinite; }
+        @keyframes glowPulse {
+            0%,100% { text-shadow: 0 0 0 rgba(var(--primary-color-rgb), 0); }
+            50%     { text-shadow: 0 0 22px rgba(var(--primary-color-rgb), .55); }
+        }
+
+        /* ===== GROUP / PAIR CARDS ===== */
+        .cards-wrap { display: flex; flex-direction: column; gap: 12px; max-width: 760px; margin: 0 auto; }
+        .reveal-card {
+            text-align: left; border-radius: 16px; padding: 14px 16px;
+            background: var(--card-bg);
+            border-left: 6px solid var(--g-color, var(--primary-color));
+            box-shadow: 0 8px 22px rgba(0,0,0,.10);
+            opacity: 0; transform: translateY(22px) scale(.96);
+        }
+        .reveal-card.in { animation: cardIn .5s cubic-bezier(.18,.89,.32,1.28) forwards; }
+        @keyframes cardIn { to { opacity: 1; transform: translateY(0) scale(1); } }
+        .reveal-card .card-head {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 9px;
+            font-size: 1.05rem; font-weight: 800; color: var(--g-color, var(--primary-color));
+        }
+        .reveal-card .card-head .dot {
+            width: 26px; height: 26px; border-radius: 50%; flex: 0 0 auto;
+            background: var(--g-color, var(--primary-color)); color: #fff;
+            display: flex; align-items: center; justify-content: center; font-size: .8rem;
+        }
+        .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+        .chip {
+            background: rgba(var(--primary-color-rgb), .12); color: var(--text-color);
+            padding: 6px 12px; border-radius: 20px; font-size: .95rem; font-weight: 600;
+            opacity: 0; animation: chipIn .35s ease forwards;
+        }
+        @keyframes chipIn { from { opacity: 0; transform: scale(.8); } to { opacity: 1; transform: scale(1); } }
+        .result-title { font-size: 1.3rem; font-weight: 800; margin: 4px 0 16px; color: var(--primary-color); }
+
+        #status { font-size: 0.8em; color: #888; margin-top: 15px; text-align: center; min-height: 1.1em; }
     </style>
 </head>
 <body>
 
     <div class="view-toggle">
-        <button onclick="document.body.classList.toggle('dark-mode')"><i class="fas fa-moon"></i></button>
+        <button onclick="document.body.classList.toggle('dark-mode')" title="Dark mode"><i class="fas fa-moon"></i></button>
+        <button id="muteBtn" onclick="toggleMute()" title="Sound on/off"><i class="fas fa-volume-high"></i></button>
         <button onclick="setView('full')">Setup</button>
         <button onclick="setView('mini')">Results</button>
     </div>
@@ -68,90 +159,281 @@
 
         <!-- Student Picker -->
         <div id="picker" class="tab-content active">
-            <textarea id="list-picker" placeholder="Enter names here..."></textarea>
-            <button class="tool-button" onclick="runPicker()">Pick Random Student</button>
+            <textarea id="list-picker" placeholder="Enter names here (one per line)..."></textarea>
+            <button class="tool-button" onclick="runPicker()"><i class="fas fa-wand-magic-sparkles"></i>&nbsp; Pick Random Student</button>
         </div>
 
         <!-- Group Generator -->
         <div id="groups" class="tab-content">
-            <textarea id="list-groups" placeholder="Enter names here..."></textarea>
+            <textarea id="list-groups" placeholder="Enter names here (one per line)..."></textarea>
             <div style="margin-top:10px">
-                Groups: <input type="number" id="num-groups" value="2" style="width:40px">
+                Groups: <input type="number" id="num-groups" value="2" min="1" style="width:50px">
             </div>
-            <button class="tool-button" onclick="runGroups()">Generate Groups</button>
+            <button class="tool-button" onclick="runGroups()"><i class="fas fa-users"></i>&nbsp; Generate Groups</button>
         </div>
 
         <!-- Pairs -->
         <div id="pairs" class="tab-content">
-            <textarea id="list-pairs" placeholder="Enter names here..."></textarea>
-            <button class="tool-button" onclick="runPairs()">Generate Pairs</button>
+            <textarea id="list-pairs" placeholder="Enter names here (one per line)..."></textarea>
+            <button class="tool-button" onclick="runPairs()"><i class="fas fa-user-group"></i>&nbsp; Generate Pairs</button>
         </div>
 
-        <div id="status" style="font-size: 0.8em; color: #888; margin-top: 15px; text-align: center;">Result will show in Mini View</div>
+        <div id="status">Result will show in Results view</div>
     </div>
 
     <!-- MINI DISPLAY VIEW -->
     <div id="mini-view" class="mini-view">
+        <canvas id="confetti"></canvas>
         <div id="mini-content">Ready...</div>
+        <div id="result-actions" class="result-actions"></div>
     </div>
 
     <script>
+        /* ============================================================
+           SOUND ENGINE  — gentle, low-volume Web Audio (no files)
+           ============================================================ */
+        let audioCtx = null, masterGain = null, muted = false;
+        function ensureAudio() {
+            if (!audioCtx) {
+                const AC = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AC();
+                masterGain = audioCtx.createGain();
+                masterGain.gain.value = 0.16;          // keep it soft / not too loud
+                masterGain.connect(audioCtx.destination);
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+        // A single soft, enveloped note (marimba/chime-like)
+        function note(freq, dur, type, vol, when) {
+            if (muted) return;
+            ensureAudio();
+            const t0 = audioCtx.currentTime + (when || 0);
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = type || 'sine';
+            osc.frequency.value = freq;
+            g.gain.setValueAtTime(0.0001, t0);
+            g.gain.exponentialRampToValueAtTime(vol || 0.5, t0 + 0.012);   // soft attack
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);         // smooth decay
+            osc.connect(g); g.connect(masterGain);
+            osc.start(t0); osc.stop(t0 + dur + 0.03);
+        }
+        // Warm note = fundamental + soft octave shimmer
+        function marimba(freq, when, vol) {
+            note(freq, 0.45, 'triangle', (vol || 0.55), when);
+            note(freq * 2, 0.30, 'sine', (vol || 0.55) * 0.22, when);
+        }
+        const PENTA = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50, 1174.66]; // C D E G A C6 D6
+        function playTick()  { note(1300, 0.025, 'triangle', 0.07); }              // subtle shuffle tick
+        function playPop(i)  { marimba(PENTA[i % PENTA.length], 0, 0.5); }          // each card
+        function playReveal(){                                                       // winner fanfare
+            marimba(523.25, 0.00, 0.55);  // C5
+            marimba(659.25, 0.09, 0.55);  // E5
+            marimba(783.99, 0.18, 0.55);  // G5
+            marimba(1046.50, 0.30, 0.6);  // C6
+        }
+        function playFinish(){ marimba(783.99, 0, 0.5); marimba(1046.50, 0.12, 0.55); } // groups/pairs done
+        function playClick(){ note(660, 0.06, 'sine', 0.3); }                          // button tap
+        function toggleMute() {
+            muted = !muted;
+            const b = document.getElementById('muteBtn');
+            b.classList.toggle('muted', muted);
+            b.innerHTML = muted ? '<i class="fas fa-volume-xmark"></i>' : '<i class="fas fa-volume-high"></i>';
+            if (!muted) { ensureAudio(); marimba(880, 0, 0.4); }
+        }
+
+        /* ============================================================
+           CONFETTI — lightweight canvas burst (gentle)
+           ============================================================ */
+        function confetti(duration) {
+            const canvas = document.getElementById('confetti');
+            const mv = document.getElementById('mini-view');
+            const W = canvas.width = mv.clientWidth;
+            const H = canvas.height = mv.clientHeight;
+            const ctx = canvas.getContext('2d');
+            const colors = ['#15c4c4', '#ffb703', '#fb5607', '#8338ec', '#3a86ff', '#ff006e'];
+            const N = 90, parts = [];
+            for (let i = 0; i < N; i++) {
+                parts.push({
+                    x: W / 2 + (Math.random() - 0.5) * W * 0.3,
+                    y: H * 0.35 + (Math.random() - 0.5) * 40,
+                    vx: (Math.random() - 0.5) * 9,
+                    vy: Math.random() * -9 - 4,
+                    g: 0.22 + Math.random() * 0.12,
+                    s: 5 + Math.random() * 6,
+                    rot: Math.random() * Math.PI,
+                    vr: (Math.random() - 0.5) * 0.3,
+                    color: colors[i % colors.length]
+                });
+            }
+            const end = performance.now() + (duration || 1800);
+            (function frame(now) {
+                ctx.clearRect(0, 0, W, H);
+                parts.forEach(p => {
+                    p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+                    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+                    ctx.fillStyle = p.color; ctx.globalAlpha = 0.9;
+                    ctx.fillRect(-p.s / 2, -p.s / 2, p.s, p.s * 0.6);
+                    ctx.restore();
+                });
+                if (now < end) requestAnimationFrame(frame);
+                else ctx.clearRect(0, 0, W, H);
+            })(performance.now());
+        }
+
+        /* ============================================================
+           VIEW + TABS  (original behaviour preserved)
+           ============================================================ */
         function setView(v) {
             document.getElementById('full-view').style.display = v === 'full' ? 'block' : 'none';
             document.getElementById('mini-view').style.display = v === 'mini' ? 'flex' : 'none';
+            if (v === 'full') hideActions();
         }
-
         function openTab(evt, name) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
             document.getElementById(name).classList.add('active');
             evt.currentTarget.classList.add('active');
         }
-
         function getList(id) {
-            return document.getElementById(id).value.split('\n').filter(n => n.trim() !== '');
+            return document.getElementById(id).value.split('\n').map(n => n.trim()).filter(n => n !== '');
+        }
+        function escapeHtml(s) {
+            return s.replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+        }
+        function flashStatus(msg) {
+            const s = document.getElementById('status');
+            s.textContent = msg; s.style.color = '#e63946';
+            setTimeout(() => { s.textContent = 'Result will show in Results view'; s.style.color = '#888'; }, 2200);
+        }
+        const PALETTE = ['#15c4c4', '#fb5607', '#8338ec', '#3a86ff', '#ff006e', '#ffb703', '#2a9d8f', '#e76f51'];
+
+        /* Contextual results action bar — keeps every result reversible/repeatable */
+        function hideActions() { document.getElementById('result-actions').style.display = 'none'; }
+        function showActions(againLabel, againFn) {
+            const bar = document.getElementById('result-actions');
+            bar.innerHTML = '';
+            const again = document.createElement('button');
+            again.className = 'again';
+            again.innerHTML = '<i class="fas fa-rotate-right"></i> ' + againLabel;
+            again.onclick = function () { playClick(); againFn(); };
+            const setup = document.createElement('button');
+            setup.className = 'setup';
+            setup.innerHTML = '<i class="fas fa-sliders"></i> Back to Setup';
+            setup.onclick = function () { playClick(); hideActions(); setView('full'); };
+            bar.appendChild(again);
+            bar.appendChild(setup);
+            bar.style.display = 'flex';
         }
 
-        // --- PICKER LOGIC ---
+        /* ============================================================
+           PICKER — suspense shuffle + reveal + confetti
+           ============================================================ */
         function runPicker() {
             const list = getList('list-picker');
-            if (list.length === 0) return;
-            const picked = list[Math.floor(Math.random() * list.length)];
-            document.getElementById('mini-content').innerHTML = `<span style="font-size:0.4em">SELECTED:</span><br>${picked}`;
+            if (list.length === 0) { flashStatus('Add some names first.'); return; }
+            ensureAudio();
             setView('mini');
+            hideActions();
+            const content = document.getElementById('mini-content');
+            const start = performance.now();
+            let delay = 55;
+            (function cycle() {
+                const name = list[Math.floor(Math.random() * list.length)];
+                content.innerHTML = '<div class="shuffle-name">' + escapeHtml(name) + '</div>';
+                playTick();
+                const elapsed = performance.now() - start;
+                delay *= 1.12;                                  // decelerate
+                if (delay < 320 && elapsed < 2200) setTimeout(cycle, delay);
+                else reveal();
+            })();
+            function reveal() {
+                const picked = list[Math.floor(Math.random() * list.length)];
+                content.innerHTML =
+                    '<div class="winner-card">' +
+                        '<span class="winner-label">SELECTED</span>' +
+                        '<span class="winner-name">' + escapeHtml(picked) + '</span>' +
+                    '</div>';
+                playReveal();
+                confetti(1900);
+                showActions('Pick Again', runPicker);
+            }
         }
 
-        // --- GROUPS LOGIC ---
+        /* ============================================================
+           GROUPS — staggered animated cards
+           ============================================================ */
         function runGroups() {
             const list = getList('list-groups').sort(() => Math.random() - 0.5);
-            const num = parseInt(document.getElementById('num-groups').value);
-            if (list.length === 0) return;
-            
-            let resultHTML = '';
-            for (let i = 0; i < num; i++) {
-                resultHTML += `<div class="group-card"><strong>Group ${i+1}:</strong> `;
-                const members = list.filter((_, idx) => idx % num === i);
-                resultHTML += members.join(', ') + `</div>`;
-            }
-            document.getElementById('mini-content').innerHTML = `<div style="font-size:0.3em">${resultHTML}</div>`;
+            const num = Math.max(1, parseInt(document.getElementById('num-groups').value) || 1);
+            if (list.length === 0) { flashStatus('Add some names first.'); return; }
+            ensureAudio();
             setView('mini');
+            hideActions();
+
+            const groups = [];
+            for (let i = 0; i < num; i++) groups.push(list.filter((_, idx) => idx % num === i));
+
+            let html = '<div class="result-title"><i class="fas fa-users"></i> Groups</div><div class="cards-wrap" id="cards-wrap"></div>';
+            document.getElementById('mini-content').innerHTML = html;
+            const wrap = document.getElementById('cards-wrap');
+
+            groups.forEach((members, i) => {
+                const color = PALETTE[i % PALETTE.length];
+                const card = document.createElement('div');
+                card.className = 'reveal-card';
+                card.style.setProperty('--g-color', color);
+                const chips = members.map((m, j) =>
+                    '<span class="chip" style="animation-delay:' + (j * 0.05) + 's">' + escapeHtml(m) + '</span>'
+                ).join('');
+                card.innerHTML =
+                    '<div class="card-head"><span class="dot">' + (i + 1) + '</span> Group ' + (i + 1) +
+                    ' <span style="font-weight:600;color:#999;font-size:.85rem">(' + members.length + ')</span></div>' +
+                    '<div class="chips">' + chips + '</div>';
+                wrap.appendChild(card);
+                setTimeout(() => {
+                    card.classList.add('in');
+                    playPop(i);
+                    if (i === groups.length - 1) setTimeout(() => { playFinish(); confetti(1400); showActions('Shuffle Again', runGroups); }, 250);
+                }, 120 + i * 280);
+            });
         }
 
-        // --- PAIRS LOGIC ---
+        /* ============================================================
+           PAIRS — staggered animated cards
+           ============================================================ */
         function runPairs() {
             const list = getList('list-pairs').sort(() => Math.random() - 0.5);
-            if (list.length < 2) return;
-            
-            let resultHTML = '';
-            for (let i = 0; i < list.length; i += 2) {
-                if (list[i+1]) {
-                    resultHTML += `<div class="group-card">${list[i]} & ${list[i+1]}</div>`;
-                } else {
-                    resultHTML += `<div class="group-card">${list[i]} (No Partner)</div>`;
-                }
-            }
-            document.getElementById('mini-content').innerHTML = `<div style="font-size:0.3em">${resultHTML}</div>`;
+            if (list.length < 2) { flashStatus('Add at least two names.'); return; }
+            ensureAudio();
             setView('mini');
+            hideActions();
+
+            const pairs = [];
+            for (let i = 0; i < list.length; i += 2) pairs.push([list[i], list[i + 1] || null]);
+
+            document.getElementById('mini-content').innerHTML =
+                '<div class="result-title"><i class="fas fa-user-group"></i> Pairs</div><div class="cards-wrap" id="cards-wrap"></div>';
+            const wrap = document.getElementById('cards-wrap');
+
+            pairs.forEach((p, i) => {
+                const color = PALETTE[i % PALETTE.length];
+                const card = document.createElement('div');
+                card.className = 'reveal-card';
+                card.style.setProperty('--g-color', color);
+                const body = p[1]
+                    ? '<span class="chip">' + escapeHtml(p[0]) + '</span><span class="chip">' + escapeHtml(p[1]) + '</span>'
+                    : '<span class="chip">' + escapeHtml(p[0]) + '</span><span class="chip" style="opacity:.6">solo</span>';
+                card.innerHTML =
+                    '<div class="card-head"><span class="dot"><i class="fas fa-handshake"></i></span> Pair ' + (i + 1) + '</div>' +
+                    '<div class="chips">' + body + '</div>';
+                wrap.appendChild(card);
+                setTimeout(() => {
+                    card.classList.add('in');
+                    playPop(i);
+                    if (i === pairs.length - 1) setTimeout(() => { playFinish(); confetti(1400); showActions('Shuffle Again', runPairs); }, 250);
+                }, 120 + i * 240);
+            });
         }
     </script>
 </body>
