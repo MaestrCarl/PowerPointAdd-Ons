@@ -317,7 +317,7 @@
         let cfg=null, scores=[], activeGroup=0, idx=0;
         function render(){
             const m=location.hash.replace(/^#/,'').match(/d=(.+)$/);
-            if(m){ let p; try{p=dec(m[1]);}catch(e){p=null;} if(p&&PLAYERS[p.g]){ document.getElementById('gallery').style.display='none'; document.getElementById('form').style.display='none'; document.getElementById('player').style.display='flex'; document.getElementById('editBtn').style.display='inline-flex'; document.getElementById('brandName').textContent=META[p.g]?META[p.g].name:'Word Games'; cfg=p; scores=(p.groups||[]).map(()=>0); activeGroup=0; idx=0; PLAYERS[p.g](); updateStarHint(); return; } }
+            if(m){ let p; try{p=dec(m[1]);}catch(e){p=null;} if(p&&PLAYERS[p.g]){ document.getElementById('gallery').style.display='none'; document.getElementById('form').style.display='none'; document.getElementById('player').style.display='flex'; document.getElementById('editBtn').style.display='inline-flex'; document.getElementById('brandName').textContent=META[p.g]?META[p.g].name:'Word Games'; cfg=p; if(p.g==='hg'||p.g==='sc'){p.words=shuf(p.words,p.seed+777);} else if(p.g==='se'){p.sent=shuf(p.sent,p.seed+777);} scores=(p.groups||[]).map(()=>0); activeGroup=0; idx=0; PLAYERS[p.g](); updateStarHint(); return; } }
             // not playing -> gallery or current form
             document.getElementById('player').style.display='none';
             if(document.getElementById('form').style.display==='block'){ /* stay on form */ }
