@@ -329,7 +329,8 @@
             { id:'se', name:'Sentence Unscramble', icon:'fa-quote-left', c1:'#2f6bff', c2:'#14d6c4', desc:'Put the words in the right order.', label:'Sentences — one per line', ph:'The quick brown fox jumps.', tries:true },
             { id:'cat', name:'Category Sort', icon:'fa-layer-group', c1:'#22c55e', c2:'#14d6c4', desc:'Sort items into the right category.', label:'One category per line:  Category = item1, item2, item3', ph:'Mammals = dog, cat, whale\nBirds = eagle, sparrow, owl', tries:false, kb:false },
             { id:'ws', name:'Word Search', icon:'fa-table-cells', c1:'#a855f7', c2:'#6d28d9', desc:'Find hidden words in the grid.', label:'Words to hide', ph:'planet', tries:false, kb:false, custom:true },
-            { id:'cw', name:'Crossword', icon:'fa-puzzle-piece', c1:'#f59e0b', c2:'#ff3d7f', desc:'Fill the crossword from clues.', label:'Words & clues', tries:false, kb:false, custom:true }
+            { id:'cw', name:'Crossword', icon:'fa-puzzle-piece', c1:'#f59e0b', c2:'#ff3d7f', desc:'Fill the crossword from clues.', label:'Words & clues', tries:false, kb:false, custom:true },
+            { id:'buzz', name:'Quiz Buzzer', icon:'fa-bell', c1:'#ef4444', c2:'#f97316', desc:'Buzz in — first team to press wins the round.', special:true }
         ];
         const META = {}; GAMES.forEach(g=>META[g.id]=g);
         const PLAYERS = { hg:playHangman, sc:playScramble, se:playSentence, cat:playCategory, ws:playWordSearch, cw:playCrossword };
@@ -342,14 +343,15 @@
         window.addEventListener('storage',e=>{if(e.key===THEME_KEY)applyTheme(e.newValue==='dark');});
         const EMBEDDED=window.parent&&window.parent!==window;
         /* Smart, stepwise Back: player/form -> game list, and only the game list -> hub home. */
+        let inBuzzer=false;
         function smartBack(){
             const playing=location.hash.indexOf('d=')>=0;
             const formVisible=document.getElementById('form').style.display==='block';
-            if(playing||formVisible){ showGallery(); return; }
+            if(playing||formVisible||inBuzzer){ showGallery(); return; }
             if(EMBEDDED){ try{window.parent.postMessage({ns:'classtools',cmd:'close'},'*');}catch(e){} }
         }
         function goBackHub(){ smartBack(); }
-        function updateBack(){ const b=document.getElementById('backBtn'); if(!b)return; const playing=location.hash.indexOf('d=')>=0; const formVisible=document.getElementById('form').style.display==='block'; b.style.display=(EMBEDDED||playing||formVisible)?'inline-flex':'none'; }
+        function updateBack(){ const b=document.getElementById('backBtn'); if(!b)return; const playing=location.hash.indexOf('d=')>=0; const formVisible=document.getElementById('form').style.display==='block'; b.style.display=(EMBEDDED||playing||formVisible||inBuzzer)?'inline-flex':'none'; }
         let actx=null,mgn=null,muted=false;
         function ea(){if(!actx){const A=window.AudioContext||window.webkitAudioContext;actx=new A();mgn=actx.createGain();mgn.gain.value=.16;mgn.connect(actx.destination);}if(actx.state==='suspended')actx.resume();}
         function tn(f,d,t,v,w){if(muted)return;ea();const t0=actx.currentTime+(w||0),o=actx.createOscillator(),g=actx.createGain();o.type=t||'sine';o.frequency.value=f;g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(v||.5,t0+.012);g.gain.exponentialRampToValueAtTime(.0001,t0+d);o.connect(g);g.connect(mgn);o.start(t0);o.stop(t0+d+.03);}
@@ -381,8 +383,33 @@
 
         /* ===== GALLERY / FORM NAV ===== */
         let curGame=null, groupsList=[];
-        function buildGallery(){ const g=document.getElementById('galleryGrid'); g.innerHTML=''; GAMES.forEach(m=>{ const t=document.createElement('div'); t.className='gtile'+(m.soon?' soon':''); t.style.setProperty('--gc',m.c1); t.style.setProperty('--gc2',m.c2); t.innerHTML='<div class="ic"><i class="fas '+m.icon+'"></i></div><h3>'+m.name+(m.soon?' <span style="font-size:10px;color:var(--muted)">soon</span>':'')+'</h3><p>'+m.desc+'</p>'; if(!m.soon) t.onclick=()=>openForm(m.id); g.appendChild(t); }); }
-        function showGallery(){ location.hash=''; document.getElementById('gallery').style.display='block'; document.getElementById('form').style.display='none'; document.getElementById('player').style.display='none'; document.getElementById('editBtn').style.display='none'; document.getElementById('brandName').textContent='Word Games & Builders'; updateStarHint(); }
+        function buildGallery(){ const g=document.getElementById('galleryGrid'); g.innerHTML=''; GAMES.forEach(m=>{ const t=document.createElement('div'); t.className='gtile'+(m.soon?' soon':''); t.style.setProperty('--gc',m.c1); t.style.setProperty('--gc2',m.c2); t.innerHTML='<div class="ic"><i class="fas '+m.icon+'"></i></div><h3>'+m.name+(m.soon?' <span style="font-size:10px;color:var(--muted)">soon</span>':'')+'</h3><p>'+m.desc+'</p>'; if(m.special) t.onclick=()=>openBuzzer(); else if(!m.soon) t.onclick=()=>openForm(m.id); g.appendChild(t); }); }
+        function showGallery(){ inBuzzer=false; location.hash=''; document.getElementById('gallery').style.display='block'; document.getElementById('form').style.display='none'; document.getElementById('player').style.display='none'; document.getElementById('editBtn').style.display='none'; document.getElementById('brandName').textContent='Word Games & Builders'; updateBack(); updateStarHint(); }
+
+        /* ===== QUIZ BUZZER (moved here from Timer Tools) ===== */
+        let buzzN=4, buzzWinner=-1;
+        const BUZZ_COL=['#ef4444','#2f6bff','#22c55e','#ffb020','#a855f7','#14d6c4'];
+        function openBuzzer(){ inBuzzer=true; document.getElementById('gallery').style.display='none'; document.getElementById('form').style.display='none'; const p=document.getElementById('player'); p.style.display='flex'; document.getElementById('editBtn').style.display='none'; document.getElementById('brandName').textContent='Quiz Buzzer'; buzzWinner=-1; renderBuzzer(); updateBack(); updateStarHint(); }
+        function buzzSetN(n){ buzzN=Math.max(1,Math.min(6,n)); buzzWinner=-1; renderBuzzer(); }
+        function buzzReset(){ buzzWinner=-1; renderBuzzer(); }
+        function buzzPress(i){ if(buzzWinner>=0)return; buzzWinner=i; ea(); tn(220,.28,'sawtooth',.3); tn(330,.28,'square',.12); sWin(); confetti(1200); renderBuzzer(); }
+        function renderBuzzer(){
+            const p=document.getElementById('player');
+            let pads='';
+            for(let i=0;i<buzzN;i++){
+                const locked=buzzWinner>=0, win=buzzWinner===i, dim=locked&&!win;
+                pads+='<button onclick="buzzPress('+i+')" style="flex:1 1 150px;min-height:130px;border:none;border-radius:20px;cursor:'+(locked?'default':'pointer')+';color:#fff;font-family:var(--font-head);font-weight:700;font-size:1.5rem;background:'+BUZZ_COL[i%BUZZ_COL.length]+';opacity:'+(dim?'.32':'1')+';box-shadow:0 10px 24px rgba(0,0,0,.2);'+(win?'outline:5px solid var(--gold);transform:scale(1.03);':'')+'transition:.15s">'+(win?'<i class=\"fas fa-trophy\"></i><br>':'')+'Team '+(i+1)+(win?'<br><span style=\"font-size:1rem\">Buzzed first!</span>':'')+'</button>';
+            }
+            p.innerHTML=
+                '<div style="width:100%;max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:16px">'+
+                '<div style="display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;color:var(--muted);font-weight:800">'+
+                  'Teams: '+[1,2,3,4,5,6].map(n=>'<button class="btn btn-soft" onclick="buzzSetN('+n+')" style="'+(buzzN===n?'background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;border-color:transparent':'')+'">'+n+'</button>').join('')+
+                '</div>'+
+                '<div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center">'+pads+'</div>'+
+                '<div style="text-align:center;font-family:var(--font-head);font-weight:700;font-size:1.3rem;min-height:1.4em;color:var(--primary)">'+(buzzWinner>=0?'🔔 Team '+(buzzWinner+1)+' buzzed first!':'First team to press wins the buzz.')+'</div>'+
+                '<div style="text-align:center"><button class="btn btn-primary" style="width:auto" onclick="buzzReset()"><i class="fas fa-rotate-left"></i> Reset for next question</button></div>'+
+                '</div>';
+        }
         function openForm(id){ curGame=id; const m=META[id];
             document.getElementById('gallery').style.display='none'; document.getElementById('form').style.display='block'; document.getElementById('player').style.display='none';
             document.getElementById('brandName').textContent=m.name;
@@ -531,6 +558,16 @@
             return {grid:grid.map(r=>r.join('')),size,placed,unplaced};
         }
         function exportPNG(answer){ if(curGame==='ws')exportWsPNG(answer); else if(curGame==='cw')exportCwPNG(answer); }
+        /* ===== Save / load the word list as a text file (item 11) ===== */
+        function exportSetup(){ if(MODE==='rows') rowSync(); const items=val('items'); if(!items.trim()){ flash('Add some words first.'); return; }
+            const name=META[curGame]?META[curGame].name:curGame; const meta='# ClassTools '+name+' | game:'+curGame+' | title:'+(val('title')||'');
+            const base=(val('title')||curGame).replace(/[^a-z0-9-_ ]/gi,'').trim()||curGame;
+            const blob=new Blob([meta+'\n'+items],{type:'text/plain'}); const u=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=u; a.download=base+'.txt'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(u); }
+        function importSetup(){ document.getElementById('setupFile').click(); }
+        document.getElementById('setupFile').addEventListener('change',function(e){ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>{ let text=String(r.result); let lines=text.split('\n');
+            if(lines[0] && lines[0].trim().startsWith('#')){ const mt=lines[0].match(/title:\s*(.*)$/i); if(mt&&mt[1].trim())set('title',mt[1].trim()); lines=lines.slice(1); }
+            try{ const j=JSON.parse(text); if(j.items){ lines=String(j.items).split('\n'); if(j.title)set('title',j.title); } }catch(err){}
+            setMode('paste'); set('items', lines.join('\n').replace(/^\n+/,'')); previewUpdate(); saveDraft&&saveDraft(); flash('List loaded.'); }; r.readAsText(f); e.target.value=''; });
         let _capture=null;
         function dlCanvas(canvas,name){ if(_capture){ _capture.push({canvas,name}); return; } try{ const a=document.createElement('a'); a.href=canvas.toDataURL('image/png'); a.download=name; document.body.appendChild(a); a.click(); a.remove(); }catch(e){ flash('Could not export here — open in a browser tab to download.'); } }
         function printPuzzle(){
