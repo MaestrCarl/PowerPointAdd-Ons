@@ -132,6 +132,51 @@
         .wslist{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
         .wsword{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:5px 12px;font-weight:800;font-size:13px;}
         .wsword.done{text-decoration:line-through;color:var(--muted);background:rgba(34,197,94,.15);border-color:var(--ok);}
+        .wsword .wd{color:var(--muted);font-weight:600;font-size:11px;margin-left:5px;}
+        /* ---- DUAL-PANEL CUSTOM BUILDER (word search / crossword) ---- */
+        .builder2{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;}
+        .b2-left{flex:1 1 320px;min-width:280px;}
+        .b2-right{flex:1 1 300px;min-width:260px;position:sticky;top:0;}
+        .b2-right .card{margin-top:0;}
+        .wrow{display:flex;gap:7px;align-items:center;margin-bottom:7px;}
+        .wrow input.w{flex:0 0 38%;} .wrow input.d{flex:1 1 auto;}
+        .wrow .del{flex:0 0 auto;width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer;}
+        .wrow .del:hover{color:var(--danger);border-color:var(--danger);}
+        .addw{margin-top:4px;}
+        .optnote{font-size:11.5px;color:var(--muted);margin:2px 0 8px 2px;line-height:1.4;}
+        .dirgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;}
+        .seg-toggle{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+        .seg-toggle button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:7px 12px;font-weight:800;font-size:12.5px;cursor:pointer;}
+        .seg-toggle button.on{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;border-color:transparent;}
+        .prevwrap{display:flex;flex-direction:column;align-items:center;gap:8px;}
+        .pvgrid{display:grid;gap:2px;width:100%;max-width:340px;}
+        .pvcell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:700;font-size:clamp(.5rem,2.3vw,1rem);border-radius:4px;background:var(--bg);color:var(--muted);border:1px solid var(--line);}
+        .pvcell.on{background:var(--surface);color:var(--ink);}
+        .pvcell.w0{background:rgba(var(--primary-rgb),.16);color:var(--primary);border-color:transparent;}
+        .pvcell.cw{background:var(--surface);color:var(--ink);border-color:var(--line);position:relative;}
+        .pvcell.cw.blank{background:transparent;border-color:transparent;}
+        .pvcell .num{position:absolute;top:1px;left:2px;font-size:8px;color:var(--muted);font-weight:700;}
+        /* ---- DRAG TILES (scramble / sentence) ---- */
+        .dtiles{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;min-height:52px;padding:8px;border:2px dashed var(--line);border-radius:14px;}
+        .dtile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 15px;font-family:var(--font-head);font-weight:700;font-size:clamp(1.1rem,3vmin,1.8rem);cursor:grab;user-select:none;touch-action:none;transition:transform .12s,box-shadow .12s;}
+        .dtile:active{cursor:grabbing;}
+        .dtile.drag{opacity:.92;box-shadow:0 12px 26px rgba(var(--primary-rgb),.4);border-color:var(--primary);transform:scale(1.06);z-index:50;}
+        .dtile.ghost{opacity:.25;}
+        /* ---- CROSSWORD PLAYER ---- */
+        .cwwrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;align-items:flex-start;width:100%;}
+        .cwgrid{display:grid;gap:2px;}
+        .cwcell{position:relative;width:clamp(24px,5.4vmin,46px);height:clamp(24px,5.4vmin,46px);}
+        .cwcell.blank{visibility:hidden;}
+        .cwcell input{width:100%;height:100%;text-align:center;text-transform:uppercase;font-family:var(--font-head);font-weight:700;font-size:clamp(.8rem,2.6vmin,1.3rem);border:1px solid var(--line);border-radius:5px;padding:0;background:var(--surface);color:var(--ink);}
+        .cwcell input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 2px rgba(var(--primary-rgb),.3);}
+        .cwcell.good input{background:rgba(34,197,94,.22);border-color:var(--ok);}
+        .cwcell.hl input{background:rgba(var(--primary-rgb),.12);}
+        .cwcell .cn{position:absolute;top:0;left:1px;font-size:9px;font-weight:800;color:var(--muted);pointer-events:none;}
+        .cwclues{flex:1 1 240px;max-width:340px;text-align:left;}
+        .cwclues h4{font-family:var(--font-head);margin:6px 0 4px;font-size:14px;}
+        .cwclue{font-size:13px;padding:5px 8px;border-radius:8px;cursor:pointer;display:flex;gap:8px;}
+        .cwclue:hover{background:var(--bg);} .cwclue.done{color:var(--muted);text-decoration:line-through;}
+        .cwclue b{color:var(--primary);min-width:18px;}
         #confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:900;}
         .modal{display:none;position:fixed;inset:0;background:rgba(10,8,30,.6);z-index:2000;align-items:center;justify-content:center;padding:16px;} .modal.show{display:flex;}
         .modal-card{background:var(--surface);border-radius:18px;padding:22px;max-width:380px;width:100%;text-align:center;animation:popm .4s cubic-bezier(.18,.89,.32,1.28);} @keyframes popm{from{transform:scale(.6);opacity:0;}to{transform:scale(1);opacity:1;}}
@@ -169,14 +214,17 @@
         <div id="form" style="display:none">
             <button class="btn btn-soft" onclick="showGallery()" style="margin-bottom:6px"><i class="fas fa-arrow-left"></i> All games</button>
             <h2 id="formTitle">Game</h2>
-            <label class="fld">Title (optional)</label>
-            <input type="text" id="title" placeholder="e.g. Science Vocabulary" oninput="saveDraft()">
+            <input type="text" id="title" placeholder="Title (optional) — e.g. Science Vocabulary" oninput="saveDraft()" style="margin-bottom:4px">
+            <div id="genericForm">
             <div class="mask-row">
                 <span class="lab" id="itemsLabel">Words</span>
                 <button class="eye" id="maskBtn" onclick="toggleMask()"><i class="fas fa-eye-slash"></i> <span id="maskTxt">Hidden</span></button>
             </div>
             <textarea id="items" class="masked" oninput="saveDraft()"></textarea>
             <div id="itemsHelp" class="hint">Hidden by default so students don't see answers. Press Enter for a new line.</div>
+            </div><!-- /genericForm -->
+
+            <div id="customBuilder" style="display:none"></div>
 
             <div class="card">
                 <label class="fld" style="margin-top:0">Options</label>
@@ -186,6 +234,7 @@
                     <span class="hint" style="margin:0">Auto-added when detected.</span>
                 </div>
                 <div class="optrow" id="triesRow"><label class="chk">Tries per item <input type="number" id="optTries" value="3" min="1" max="9" style="width:60px" oninput="saveDraft()"></label></div>
+                <div class="optrow" id="dragRow" style="display:none"><label class="chk"><input type="checkbox" id="optDrag" checked onchange="saveDraft()"> Drag &amp; drop tiles to rearrange</label><span class="hint" style="margin:0">Off = tap to place.</span></div>
                 <div class="optrow"><label class="chk"><input type="checkbox" id="optTimer" onchange="toggleTimerEditor();saveDraft()"> Show a timer</label></div>
                 <div id="timerEditor" style="display:none">
                     <div class="optrow">
@@ -234,6 +283,15 @@
         <div class="modal-actions"><button class="btn btn-soft" onclick="closeModal('shareModal')">Close</button></div>
     </div></div>
 
+    <div class="modal" id="confirmModal"><div class="modal-card">
+        <h3 id="confirmTitle"><i class="fas fa-eye" style="color:var(--gold)"></i> Show answers?</h3>
+        <p class="hint" id="confirmBody" style="margin:6px 0 0;font-size:13.5px"></p>
+        <div class="modal-actions">
+            <button class="btn btn-soft" onclick="confirmNo()">Cancel</button>
+            <button class="btn btn-primary" id="confirmYes" onclick="confirmYes()">Show</button>
+        </div>
+    </div></div>
+
     <script>
         /* =====================================================================
            GAME REGISTRY — add a new game by adding a META entry + a play fn.
@@ -243,11 +301,11 @@
             { id:'sc', name:'Word Scramble', icon:'fa-shuffle', c1:'#ff3d7f', c2:'#f97316', desc:'Unscramble the jumbled letters.', label:'Words to scramble — one per line', ph:'elephant\nrainbow\nvolcano', tries:true },
             { id:'se', name:'Sentence Unscramble', icon:'fa-quote-left', c1:'#2f6bff', c2:'#14d6c4', desc:'Put the words in the right order.', label:'Sentences — one per line', ph:'The quick brown fox jumps.', tries:true },
             { id:'cat', name:'Category Sort', icon:'fa-layer-group', c1:'#22c55e', c2:'#14d6c4', desc:'Sort items into the right category.', label:'One category per line:  Category = item1, item2, item3', ph:'Mammals = dog, cat, whale\nBirds = eagle, sparrow, owl', tries:false, kb:false },
-            { id:'ws', name:'Word Search', icon:'fa-table-cells', c1:'#a855f7', c2:'#6d28d9', desc:'Find hidden words in the grid.', label:'Words to hide — one per line (letters only)', ph:'planet\ncomet\ngalaxy\nmeteor', tries:false, kb:false },
-            { id:'cw', name:'Crossword', icon:'fa-puzzle-piece', c1:'#f59e0b', c2:'#ff3d7f', desc:'Fill the crossword from clues.', soon:true }
+            { id:'ws', name:'Word Search', icon:'fa-table-cells', c1:'#a855f7', c2:'#6d28d9', desc:'Find hidden words in the grid.', label:'Words to hide', ph:'planet', tries:false, kb:false, custom:true },
+            { id:'cw', name:'Crossword', icon:'fa-puzzle-piece', c1:'#f59e0b', c2:'#ff3d7f', desc:'Fill the crossword from clues.', label:'Words & clues', tries:false, kb:false, custom:true }
         ];
         const META = {}; GAMES.forEach(g=>META[g.id]=g);
-        const PLAYERS = { hg:playHangman, sc:playScramble, se:playSentence, cat:playCategory, ws:playWordSearch };
+        const PLAYERS = { hg:playHangman, sc:playScramble, se:playSentence, cat:playCategory, ws:playWordSearch, cw:playCrossword };
 
         /* ===== THEME / SOUND / CONFETTI / ENCODE (core helpers) ===== */
         const THEME_KEY='ct-theme';
@@ -283,11 +341,16 @@
         function set(id,v){const e=document.getElementById(id);if(e&&v!=null)e.value=v;}
         function openModal(id){document.getElementById(id).classList.add('show');}
         function closeModal(id){document.getElementById(id).classList.remove('show');}
+        /* In-page confirm dialog (replaces the ugly native confirm popup) */
+        let _confirmCb=null;
+        function uiConfirm(opts){ _confirmCb=opts.onYes||null; document.getElementById('confirmTitle').innerHTML='<i class="fas fa-'+(opts.icon||'eye')+'" style="color:var(--gold)"></i> '+esc(opts.title||'Are you sure?'); document.getElementById('confirmBody').textContent=opts.body||''; document.getElementById('confirmYes').innerHTML='<i class="fas fa-check"></i> '+esc(opts.yes||'Confirm'); openModal('confirmModal'); }
+        function confirmYes(){ closeModal('confirmModal'); const cb=_confirmCb; _confirmCb=null; if(cb)cb(); }
+        function confirmNo(){ closeModal('confirmModal'); _confirmCb=null; }
 
         /* ===== MASK (always default ON; dots so the teacher can type/Enter unseen) ===== */
         let masked=true;
         function applyMask(){const t=document.getElementById('items');if(t)t.classList.toggle('masked',masked);const b=document.getElementById('maskBtn');if(b){b.classList.toggle('shown',!masked);b.innerHTML=(masked?'<i class="fas fa-eye-slash"></i> ':'<i class="fas fa-eye"></i> ')+'<span id="maskTxt">'+(masked?'Hidden':'Showing')+'</span>';}}
-        function toggleMask(){ if(masked){ if(confirm('You are about to display the words/answers on screen. Show them to the class?')){ masked=false; applyMask(); } } else { masked=true; applyMask(); } }
+        function toggleMask(){ if(masked){ uiConfirm({title:'Show answers?',body:'This will display the words/answers on screen for the whole class. Continue?',yes:'Show answers',icon:'eye',onYes:function(){ masked=false; applyMask(); }}); } else { masked=true; applyMask(); } }
 
         /* ===== GALLERY / FORM NAV ===== */
         let curGame=null, groupsList=[];
@@ -297,11 +360,29 @@
             document.getElementById('gallery').style.display='none'; document.getElementById('form').style.display='block'; document.getElementById('player').style.display='none';
             document.getElementById('brandName').textContent=m.name;
             document.getElementById('formTitle').textContent=m.name;
-            document.getElementById('itemsLabel').textContent = id==='cat'?'Categories':(id==='se'?'Sentences':'Words');
-            document.getElementById('items').placeholder=m.ph||'';
-            document.getElementById('itemsHelp').textContent = m.label + ' · Hidden by default — press Enter for a new line.';
-            document.getElementById('kbRow').style.display = (m.kb===false)?'none':'flex';
-            document.getElementById('triesRow').style.display = m.tries?'flex':'none';
+            const custom = (id==='ws'||id==='cw');
+            document.getElementById('genericForm').style.display = custom?'none':'block';
+            document.getElementById('customBuilder').style.display = custom?'block':'none';
+            // reset generic fields to defaults each open
+            set('title',''); set('items','');
+            document.getElementById('optNums').checked=false; document.getElementById('optSyms').checked=false;
+            set('optTries','3'); document.getElementById('optGroups').checked=false; groupsList=[]; drawGroups(); toggleGroupsEditor();
+            document.getElementById('optTimer').checked=false; toggleTimerEditor();
+            if(!custom){
+                document.getElementById('itemsLabel').textContent = id==='cat'?'Categories':(id==='se'?'Sentences':'Words');
+                document.getElementById('items').placeholder=m.ph||'';
+                document.getElementById('itemsHelp').textContent = m.label + ' · Hidden by default — press Enter for a new line.';
+                document.getElementById('kbRow').style.display = (m.kb===false)?'none':'flex';
+                document.getElementById('triesRow').style.display = m.tries?'flex':'none';
+                document.getElementById('dragRow').style.display = (id==='sc'||id==='se')?'flex':'none';
+            } else {
+                document.getElementById('kbRow').style.display='none';
+                document.getElementById('triesRow').style.display='none';
+                document.getElementById('dragRow').style.display='none';
+                buildCustom(id);
+            }
+            // restore a saved draft for THIS game only
+            if(DRAFT && DRAFT.g===id) applyDraft(DRAFT);
             masked=true; applyMask();
             updateStarHint();
         }
@@ -322,44 +403,121 @@
             return {on:true,mode,secs:total,style:val('optTimerStyle')||'num'};
         }
         function buildPayload(){
-            const t=val('title').trim(), raw=parseItems(); if(!raw.length)return null;
-            const opt=commonOpt(), groups=opt.groups?groupsList.slice():[], seed=Math.floor(Math.random()*1e9), timer=buildTimer();
+            const t=val('title').trim(), seed=Math.floor(Math.random()*1e9), timer=buildTimer();
+            const opt=commonOpt(), groups=opt.groups?groupsList.slice():[];
+            if(curGame==='ws'){ const ws=wsWords(); if(!ws.length)return null; const size=(wsSizeManual&&parseInt(val('wsSize')))?Math.max(parseInt(val('wsSize')),longestOf(ws)):wsAutoSize(ws); const built=buildWordSearch(ws.map(w=>w.w),size,wsDirs(),wsSnake,seed); const defs={}; ws.forEach(w=>{if(w.d)defs[w.w]=w.d;}); return {g:'ws',t,grid:built.grid,list:ws.map(w=>w.w),defs,opt,groups,seed,timer}; }
+            if(curGame==='cw'){ const cws=cwWords(); if(cws.length<2)return null; const cw=buildCrossword(cws.map(w=>({w:w.w,clue:w.clue}))); if(!cw.entries.length)return null; return {g:'cw',t,cells:cw.cells,entries:cw.entries,H:cw.H,W:cw.W,opt,groups,seed,timer}; }
+            const raw=parseItems(); if(!raw.length)return null;
+            const drag=document.getElementById('optDrag')?document.getElementById('optDrag').checked:true;
             if(curGame==='hg'){const words=raw.map(l=>{const p=l.split('|');return{w:(p[0]||'').trim(),h:(p[1]||'').trim()};}).filter(o=>o.w);return{g:'hg',t,words,opt,groups,seed,timer};}
-            if(curGame==='sc'){return{g:'sc',t,words:raw,opt,groups,seed,timer};}
-            if(curGame==='se'){return{g:'se',t,sent:raw,opt,groups,seed,timer};}
+            if(curGame==='sc'){return{g:'sc',t,words:raw,opt,groups,seed,timer,drag};}
+            if(curGame==='se'){return{g:'se',t,sent:raw,opt,groups,seed,timer,drag};}
             if(curGame==='cat'){const cats=raw.map(l=>{const i=l.indexOf('=');if(i<0)return null;const name=l.slice(0,i).trim();const items=l.slice(i+1).split(',').map(s=>s.trim()).filter(Boolean);return items.length?{n:name,items}:null;}).filter(Boolean);return cats.length?{g:'cat',t,cats,opt,groups,seed,timer}:null;}
-            if(curGame==='ws'){const words=raw.map(w=>w.replace(/[^A-Za-z]/g,'').toUpperCase()).filter(w=>w.length>1);if(!words.length)return null;const built=buildWordSearch(words,seed);return{g:'ws',t,grid:built.grid,list:words,opt,groups,seed,timer};}
         }
-        function buildWordSearch(words,seed){
-            const rng=mulberry(seed);
-            const longest=Math.max.apply(null,words.map(w=>w.length));
-            const totalLetters=words.reduce((a,w)=>a+w.length,0);
-            let size=Math.max(longest,Math.ceil(Math.sqrt(totalLetters*2.2)),8); size=Math.min(size,18);
-            const grid=Array.from({length:size},()=>Array(size).fill(''));
-            const dirs=[[0,1],[1,0],[1,1],[1,-1],[0,-1],[-1,0],[-1,-1],[-1,1]];
-            words.slice().sort((a,b)=>b.length-a.length).forEach(w=>{
-                let ok=false;
-                for(let att=0;att<250&&!ok;att++){
-                    const d=dirs[Math.floor(rng()*dirs.length)],dr=d[0],dc=d[1];
-                    const r=Math.floor(rng()*size),c=Math.floor(rng()*size);
-                    const er=r+dr*(w.length-1),ecc=c+dc*(w.length-1);
-                    if(er<0||er>=size||ecc<0||ecc>=size)continue;
-                    let fits=true;
-                    for(let k=0;k<w.length;k++){const cur=grid[r+dr*k][c+dc*k];if(cur&&cur!==w[k]){fits=false;break;}}
-                    if(!fits)continue;
-                    for(let k=0;k<w.length;k++)grid[r+dr*k][c+dc*k]=w[k];
-                    ok=true;
-                }
-            });
-            const A='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            for(let r=0;r<size;r++)for(let c=0;c<size;c++)if(!grid[r][c])grid[r][c]=A[Math.floor(rng()*26)];
-            return{grid:grid.map(row=>row.join('')),size};
+
+        /* ===== CUSTOM BUILDERS (Word Search + Crossword) — left form, right live preview ===== */
+        let ROWS=[], wsSnake=false, wsSizeManual=false;
+        function escAttr(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+        function buildCustom(id){
+            ROWS=[{w:'',d:''}]; wsSnake=false; wsSizeManual=false;
+            const isCw=id==='cw';
+            const wsOpts = id==='ws' ? (
+                '<label class="fld">Directions</label>'+
+                '<div class="dirgrid">'+
+                  '<label class="chk"><input type="checkbox" id="wsH" checked onchange="customChanged()"> Horizontal</label>'+
+                  '<label class="chk"><input type="checkbox" id="wsV" checked onchange="customChanged()"> Vertical</label>'+
+                  '<label class="chk"><input type="checkbox" id="wsD" onchange="customChanged()"> Diagonal</label>'+
+                  '<label class="chk"><input type="checkbox" id="wsR" onchange="customChanged()"> Reverse</label>'+
+                '</div>'+
+                '<div class="optnote">Horizontal &amp; vertical are easiest to spot. Diagonal adds slanted words. Reverse lets words read backwards.</div>'+
+                '<label class="fld">Word path</label>'+
+                '<div class="seg-toggle"><button type="button" id="wsStraight" class="on" onclick="wsShape(false)">Straight</button><button type="button" id="wsSnake" onclick="wsShape(true)">Allow turns</button></div>'+
+                '<div class="optnote">Straight keeps every word in one line. Allow turns lets a word bend around corners while its letters stay connected.</div>'+
+                '<label class="fld">Grid size (squares per side)</label>'+
+                '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><input type="number" id="wsSize" min="5" max="22" style="width:72px" oninput="wsSizeManual=true;wsRender();saveDraft()"><span class="optnote" style="margin:0;flex:1 1 160px">Auto-sizes to your longest word + 2 squares of padding. Bump it up for a harder search.</span></div>'
+            ) : '<div class="optnote" style="margin-top:10px">Tip: add words that share letters so they can cross. Each clue is what students read to solve.</div>';
+            document.getElementById('customBuilder').innerHTML=
+                '<div class="builder2"><div class="b2-left">'+
+                  '<label class="fld" style="margin-top:0">Words &amp; '+(isCw?'clues':'definitions')+'</label>'+
+                  '<div class="optnote">One word per row. '+(isCw?'Write a clue beside each word.':'The definition is an optional hint shown beside the word.')+' Click <b>Add word</b> for more.</div>'+
+                  '<div id="wrows"></div>'+
+                  '<button type="button" class="btn btn-soft addw" onclick="wrAdd()"><i class="fas fa-plus"></i> Add word</button>'+
+                  wsOpts+
+                '</div>'+
+                '<div class="b2-right"><div class="card"><label class="fld" style="margin-top:0"><i class="fas fa-eye"></i> Live preview</label><div id="b2preview" class="prevwrap"></div></div></div>'+
+                '</div>';
+            wrRender();
+            if(id==='ws')wsRender(); else cwPreview();
         }
+        function wrRender(){ const host=document.getElementById('wrows'); if(!host)return; const isCw=curGame==='cw';
+            host.innerHTML=ROWS.map((r,i)=>'<div class="wrow"><input class="w" type="text" placeholder="word" value="'+escAttr(r.w)+'" oninput="wrSync();customChanged()"><input class="d" type="text" placeholder="'+(isCw?'clue':'definition (optional)')+'" value="'+escAttr(r.d)+'" oninput="wrSync();customChanged()"><button type="button" class="del" onclick="wrRemove('+i+')" title="Remove"><i class="fas fa-xmark"></i></button></div>').join(''); }
+        function wrSync(){ const rows=document.querySelectorAll('#wrows .wrow'); ROWS=Array.from(rows).map(row=>({w:row.querySelector('.w').value,d:row.querySelector('.d').value})); }
+        function wrAdd(){ wrSync(); ROWS.push({w:'',d:''}); wrRender(); const ins=document.querySelectorAll('#wrows .wrow input.w'); if(ins.length)ins[ins.length-1].focus(); customChanged(); }
+        function wrRemove(i){ wrSync(); ROWS.splice(i,1); if(!ROWS.length)ROWS.push({w:'',d:''}); wrRender(); customChanged(); }
+        function customChanged(){ if(curGame==='ws')wsRender(); else if(curGame==='cw')cwPreview(); saveDraft(); }
+        function gv(id){const e=document.getElementById(id);return e?e.checked:false;}
+        function setChk(id,v){const e=document.getElementById(id);if(e)e.checked=v;}
+        function wsDirs(){ const H=gv('wsH'),V=gv('wsV'),D=gv('wsD'),R=gv('wsR'); let d=[]; if(H){d.push([0,1]); if(R)d.push([0,-1]);} if(V){d.push([1,0]); if(R)d.push([-1,0]);} if(D){d.push([1,1],[1,-1]); if(R)d.push([-1,-1],[-1,1]);} if(!d.length)d=[[0,1],[1,0]]; return d; }
+        function wsWords(){ wrSync(); return ROWS.map(r=>({w:(r.w||'').replace(/[^A-Za-z]/g,'').toUpperCase(),d:(r.d||'').trim()})).filter(o=>o.w.length>1); }
+        function longestOf(words){ return words.length?Math.max.apply(null,words.map(w=>w.w.length)):5; }
+        function wsAutoSize(words){ if(!words.length)return 8; const longest=longestOf(words); const total=words.reduce((a,w)=>a+w.w.length,0); let s=Math.max(longest,Math.ceil(Math.sqrt(total*1.8))); return Math.min(22,s+2); }
+        function wsShape(on){ wsSnake=on; const a=document.getElementById('wsStraight'),b=document.getElementById('wsSnake'); if(a)a.classList.toggle('on',!on); if(b)b.classList.toggle('on',on); wsRender(); saveDraft(); }
+        function wsRender(){ if(curGame!=='ws')return; const words=wsWords(); const auto=wsAutoSize(words); const sizeEl=document.getElementById('wsSize'); let size=auto; if(wsSizeManual&&sizeEl&&parseInt(sizeEl.value)){ size=Math.max(parseInt(sizeEl.value),longestOf(words)); } else if(sizeEl){ sizeEl.value=auto; } const built=buildWordSearch(words.map(w=>w.w),size,wsDirs(),wsSnake,12345); renderWsPreview(built,words); }
+        function renderWsPreview(built,words){ const host=document.getElementById('b2preview'); if(!host)return; if(!words.length){ host.innerHTML='<div class="optnote" style="text-align:center">Add a word to see the grid.</div>'; return; } const size=built.size; const on={}; Object.keys(built.placed).forEach(w=>built.placed[w].forEach(p=>on[p[0]+','+p[1]]=true)); const g=built.grid.map(r=>r.split('')); let html='<div class="pvgrid" style="grid-template-columns:repeat('+size+',1fr)">'; for(let r=0;r<size;r++)for(let c=0;c<size;c++){ html+='<div class="pvcell '+(on[r+','+c]?'w0':'on')+'">'+g[r][c]+'</div>'; } html+='</div>'; if(built.unplaced.length)html+='<div class="optnote" style="color:var(--danger);text-align:center">Couldn\'t fit: '+built.unplaced.map(esc).join(', ')+' — try a bigger grid or more directions.</div>'; host.innerHTML=html; }
+        function buildWordSearch(words,size,dirs,snake,seed){
+            const rng=mulberry(seed); size=Math.max(size,words.length?Math.max.apply(null,words.map(w=>w.length)):5);
+            const grid=Array.from({length:size},()=>Array(size).fill('')); const placed={},unplaced=[];
+            const inb=(r,c)=>r>=0&&r<size&&c>=0&&c<size;
+            function tryStraight(w){ for(let att=0;att<500;att++){ const d=dirs[Math.floor(rng()*dirs.length)]; const r=Math.floor(rng()*size),c=Math.floor(rng()*size); const er=r+d[0]*(w.length-1),ec=c+d[1]*(w.length-1); if(!inb(er,ec))continue; let ok=true;const cells=[]; for(let k=0;k<w.length;k++){const rr=r+d[0]*k,cc=c+d[1]*k;const cur=grid[rr][cc];if(cur&&cur!==w[k]){ok=false;break;}cells.push([rr,cc]);} if(!ok)continue; cells.forEach((p,k)=>grid[p[0]][p[1]]=w[k]); placed[w]=cells; return true; } return false; }
+            function trySnake(w){ for(let att=0;att<800;att++){ const r=Math.floor(rng()*size),c=Math.floor(rng()*size); if(grid[r][c]&&grid[r][c]!==w[0])continue; const path=[[r,c]],used={}; used[r+','+c]=true; let ok=true; for(let k=1;k<w.length;k++){ const cur=path[k-1]; const opts=shuf(dirs.slice(),(seed+att*7+k)|0); let moved=false; for(let oi=0;oi<opts.length;oi++){ const d=opts[oi],rr=cur[0]+d[0],cc=cur[1]+d[1]; if(!inb(rr,cc)||used[rr+','+cc])continue; const gch=grid[rr][cc]; if(gch&&gch!==w[k])continue; path.push([rr,cc]); used[rr+','+cc]=true; moved=true; break; } if(!moved){ok=false;break;} } if(!ok)continue; path.forEach((p,k)=>grid[p[0]][p[1]]=w[k]); placed[w]=path; return true; } return false; }
+            words.slice().sort((a,b)=>b.length-a.length).forEach(w=>{ const done=snake?trySnake(w):tryStraight(w); if(!done)unplaced.push(w); });
+            const A='ABCDEFGHIJKLMNOPQRSTUVWXYZ'; for(let r=0;r<size;r++)for(let c=0;c<size;c++)if(!grid[r][c])grid[r][c]=A[Math.floor(rng()*26)];
+            return {grid:grid.map(r=>r.join('')),size,placed,unplaced};
+        }
+        function wsCollect(){ wrSync(); return Object.assign({g:'ws',t:val('title'),rows:ROWS.map(r=>({w:r.w,d:r.d})),wsH:gv('wsH'),wsV:gv('wsV'),wsD:gv('wsD'),wsR:gv('wsR'),snake:wsSnake,size:val('wsSize')},sharedOpts()); }
+        function wsApply(d){ ROWS=(d.rows&&d.rows.length)?d.rows.map(r=>({w:r.w||'',d:r.d||''})):[{w:'',d:''}]; setChk('wsH',d.wsH!==false); setChk('wsV',d.wsV!==false); setChk('wsD',!!d.wsD); setChk('wsR',!!d.wsR); wsSnake=!!d.snake; const a=document.getElementById('wsStraight'),b=document.getElementById('wsSnake'); if(a)a.classList.toggle('on',!wsSnake); if(b)b.classList.toggle('on',wsSnake); if(d.size){wsSizeManual=true;set('wsSize',d.size);} wrRender(); wsRender(); }
+        function cwWords(){ wrSync(); return ROWS.map(r=>({w:(r.w||'').replace(/[^A-Za-z]/g,'').toUpperCase(),clue:(r.d||'').trim()})).filter(o=>o.w.length>1); }
+        function cwCollect(){ wrSync(); return Object.assign({g:'cw',t:val('title'),rows:ROWS.map(r=>({w:r.w,d:r.d}))},sharedOpts()); }
+        function cwApply(d){ ROWS=(d.rows&&d.rows.length)?d.rows.map(r=>({w:r.w||'',d:r.d||''})):[{w:'',d:''}]; wrRender(); cwPreview(); }
+        function cwPreview(){ if(curGame!=='cw')return; const words=cwWords(); const host=document.getElementById('b2preview'); if(!host)return; if(words.length<2){ host.innerHTML='<div class="optnote" style="text-align:center">Add at least two words that share a letter.</div>'; return; } const cw=buildCrossword(words.map(w=>({w:w.w,clue:w.clue}))); let html='<div class="pvgrid" style="grid-template-columns:repeat('+cw.W+',1fr);max-width:300px">'; for(let r=0;r<cw.H;r++)for(let c=0;c<cw.W;c++){ const ch=cw.cells[r][c]; const n=cw.entries.find(e=>e.r===r&&e.c===c); html+='<div class="pvcell '+(ch?'cw':'cw blank')+'">'+(n?'<span class="num">'+n.num+'</span>':'')+(ch||'')+'</div>'; } html+='</div>'; host.innerHTML=html; }
+        function buildCrossword(entries){
+            const words=entries.map(e=>({w:(e.w||'').toUpperCase().replace(/[^A-Z]/g,''),clue:e.clue||''})).filter(e=>e.w.length>1);
+            words.sort((a,b)=>b.w.length-a.w.length);
+            const grid={},placed=[]; const key=(r,c)=>r+','+c;
+            function canPlace(w,r,c,dir){ for(let i=0;i<w.length;i++){ const rr=dir==='A'?r:r+i, cc=dir==='A'?c+i:c; const cur=grid[key(rr,cc)]; if(cur&&cur!==w[i])return false; if(!cur){ if(dir==='A'){ if(grid[key(rr-1,cc)]||grid[key(rr+1,cc)])return false; } else { if(grid[key(rr,cc-1)]||grid[key(rr,cc+1)])return false; } } } if(dir==='A'){ if(grid[key(r,c-1)]||grid[key(r,c+w.length)])return false; } else { if(grid[key(r-1,c)]||grid[key(r+w.length,c)])return false; } return true; }
+            function put(w,clue,r,c,dir){ for(let i=0;i<w.length;i++){const rr=dir==='A'?r:r+i,cc=dir==='A'?c+i:c;grid[key(rr,cc)]=w[i];} placed.push({w,clue,r,c,dir}); }
+            if(!words.length)return {cells:[[]],entries:[],H:0,W:0};
+            put(words[0].w,words[0].clue,0,0,'A');
+            for(let wi=1;wi<words.length;wi++){ const w=words[wi].w; let done=false;
+                for(let pi=0;pi<placed.length&&!done;pi++){ const p=placed[pi]; for(let i=0;i<p.w.length&&!done;i++){ for(let j=0;j<w.length&&!done;j++){ if(p.w[i]!==w[j])continue; const rr=p.dir==='A'?p.r:p.r+i, cc=p.dir==='A'?p.c+i:p.c; const dir=p.dir==='A'?'D':'A'; const r=dir==='A'?rr:rr-j, c=dir==='A'?cc-j:cc; if(canPlace(w,r,c,dir)){ put(w,words[wi].clue,r,c,dir); done=true; } } } }
+                if(!done){ let maxR=0; Object.keys(grid).forEach(k=>{maxR=Math.max(maxR,+k.split(',')[0]);}); put(w,words[wi].clue,maxR+2,0,'A'); }
+            }
+            let minR=Infinity,minC=Infinity,maxR=-Infinity,maxC=-Infinity; Object.keys(grid).forEach(k=>{const a=k.split(',');const r=+a[0],c=+a[1];minR=Math.min(minR,r);minC=Math.min(minC,c);maxR=Math.max(maxR,r);maxC=Math.max(maxC,c);});
+            const H=maxR-minR+1,W=maxC-minC+1; const cells=Array.from({length:H},()=>Array(W).fill(null));
+            Object.keys(grid).forEach(k=>{const a=k.split(',');cells[+a[0]-minR][+a[1]-minC]=grid[k];});
+            const out=placed.map(p=>({w:p.w,clue:p.clue,r:p.r-minR,c:p.c-minC,dir:p.dir}));
+            const starts={}; out.forEach(e=>starts[e.r+','+e.c]=true); let counter=0; const cellNum={};
+            for(let r=0;r<H;r++)for(let c=0;c<W;c++)if(starts[r+','+c]){counter++;cellNum[r+','+c]=counter;}
+            out.forEach(e=>e.num=cellNum[e.r+','+e.c]);
+            return {cells,entries:out,H,W};
+        }
+
+        /* ===== DRAG-TILE SORTING (scramble / sentence) ===== */
+        function makeSortable(container){ const tiles=container.querySelectorAll('.dtile'); tiles.forEach(tile=>{ let active=false;
+            tile.addEventListener('pointerdown',e=>{ active=true; try{tile.setPointerCapture(e.pointerId);}catch(x){} tile.classList.add('drag'); sKey(); });
+            tile.addEventListener('pointermove',e=>{ if(!active)return; const el=document.elementFromPoint(e.clientX,e.clientY); const over=el&&el.closest?el.closest('.dtile'):null; if(over&&over!==tile&&over.parentElement===container){ const kids=Array.from(container.children); const di=kids.indexOf(tile),oi=kids.indexOf(over); if(di<oi)container.insertBefore(tile,over.nextSibling); else container.insertBefore(tile,over); } });
+            tile.addEventListener('pointerup',()=>{ if(!active)return; active=false; tile.classList.remove('drag'); });
+            tile.addEventListener('pointercancel',()=>{ active=false; tile.classList.remove('drag'); });
+        }); }
         function linkFor(p){return location.origin+location.pathname+'#d='+enc(p);}
         function generate(){const p=buildPayload();if(!p){flash('Add at least one item.');return;}location.hash='d='+enc(p);}
         function flash(m){const n=document.getElementById('itemsHelp');const o=n.textContent;n.textContent=m;n.style.color='var(--danger)';setTimeout(()=>{n.textContent=o;n.style.color='';},2400);}
-        function saveDraft(){try{localStorage.setItem('ct-wg-draft',JSON.stringify({g:curGame,t:val('title'),items:val('items'),nums:document.getElementById('optNums').checked,syms:document.getElementById('optSyms').checked,tries:val('optTries'),groupsOn:document.getElementById('optGroups').checked,groups:groupsList,timerOn:document.getElementById('optTimer').checked,timerMode:val('optTimerMode'),timerMin:val('optTimerMin'),timerSec:val('optTimerSec'),timerStyle:val('optTimerStyle')}));}catch(e){}updateStarHint();}
-        function loadDraft(){try{const d=JSON.parse(localStorage.getItem('ct-wg-draft'));if(d&&d.g&&META[d.g]&&!META[d.g].soon){openForm(d.g);set('title',d.t);set('items',d.items);document.getElementById('optNums').checked=!!d.nums;document.getElementById('optSyms').checked=!!d.syms;if(d.tries)set('optTries',d.tries);document.getElementById('optGroups').checked=!!d.groupsOn;groupsList=d.groups||[];drawGroups();toggleGroupsEditor();document.getElementById('optTimer').checked=!!d.timerOn;if(d.timerMode)set('optTimerMode',d.timerMode);if(d.timerMin!=null&&d.timerMin!=='')set('optTimerMin',d.timerMin);if(d.timerSec!=null&&d.timerSec!=='')set('optTimerSec',d.timerSec);if(d.timerStyle)set('optTimerStyle',d.timerStyle);toggleTimerEditor();masked=true;applyMask();}}catch(e){}}
+        let DRAFT=null;
+        function sharedOpts(){ const dg=document.getElementById('optDrag'); return {tries:val('optTries'),drag:dg?dg.checked:true,groupsOn:document.getElementById('optGroups').checked,groups:groupsList,timerOn:document.getElementById('optTimer').checked,timerMode:val('optTimerMode'),timerMin:val('optTimerMin'),timerSec:val('optTimerSec'),timerStyle:val('optTimerStyle')}; }
+        function applyShared(d){ if(d.tries)set('optTries',d.tries); const dg=document.getElementById('optDrag'); if(dg)dg.checked=d.drag!==false; document.getElementById('optGroups').checked=!!d.groupsOn; groupsList=d.groups||[]; drawGroups(); toggleGroupsEditor(); document.getElementById('optTimer').checked=!!d.timerOn; if(d.timerMode)set('optTimerMode',d.timerMode); if(d.timerMin!=null&&d.timerMin!=='')set('optTimerMin',d.timerMin); if(d.timerSec!=null&&d.timerSec!=='')set('optTimerSec',d.timerSec); if(d.timerStyle)set('optTimerStyle',d.timerStyle); toggleTimerEditor(); }
+        function saveDraft(){ if(!curGame)return; try{ let d; if(curGame==='ws')d=wsCollect(); else if(curGame==='cw')d=cwCollect(); else d=Object.assign({g:curGame,t:val('title'),items:val('items'),nums:document.getElementById('optNums').checked,syms:document.getElementById('optSyms').checked},sharedOpts()); DRAFT=d; localStorage.setItem('ct-wg-draft',JSON.stringify(d)); }catch(e){} updateStarHint(); }
+        function loadDraft(){ try{ DRAFT=JSON.parse(localStorage.getItem('ct-wg-draft'))||null; }catch(e){ DRAFT=null; } }
+        function applyDraft(d){ set('title',d.t); if(d.g==='ws'){ wsApply(d); } else if(d.g==='cw'){ cwApply(d); } else { set('items',d.items); document.getElementById('optNums').checked=!!d.nums; document.getElementById('optSyms').checked=!!d.syms; } applyShared(d); }
         function goEdit(){ const wasPlaying=location.hash.indexOf('d=')>=0; const id=cfg?cfg.g:curGame; location.hash=''; if(id&&META[id]) openForm(id); if(wasPlaying) document.getElementById('regenNotice').style.display='block'; }
 
         /* ===== SHARE + QR ===== */
@@ -515,33 +673,55 @@
             timerPaint();
         }
 
-        /* ===== WORD SEARCH ===== */
+        /* ===== WORD SEARCH (path tracing — supports straight & snake words) ===== */
         function playWordSearch(){
-            const grid=cfg.grid.map(r=>r.split('')), size=grid.length, toFind=cfg.list.slice(), found=new Set(); let selStart=null;
+            const grid=cfg.grid.map(r=>r.split('')), size=grid.length, toFind=cfg.list.slice(), found=new Set(), defs=cfg.defs||{}; let path=[];
             const player=document.getElementById('player');
             player.innerHTML=titleBar()+timerBar()+groupsBar()+
                 '<div class="scorebar"><span class="pill score" id="wsScore"><i class="fas fa-check"></i> 0/'+toFind.length+'</span></div>'+
                 '<div class="wswrap"><div class="wsgrid" id="wsgrid" style="--n:'+size+'"></div></div>'+
-                '<div class="wslist" id="wslist"></div><div class="msg" id="wsMsg"></div>'+
-                '<div class="play-actions"><button class="btn btn-soft" onclick="PLAYERS.ws()"><i class="fas fa-rotate-left"></i> Restart</button></div>';
+                '<div class="wslist" id="wslist"></div><div class="msg" id="wsMsg">Tap letters in order to trace a word.</div>'+
+                '<div class="play-actions"><button class="btn btn-soft" onclick="wsClear()"><i class="fas fa-eraser"></i> Clear</button><button class="btn btn-soft" onclick="PLAYERS.ws()"><i class="fas fa-rotate-left"></i> Restart</button></div>';
             const gridEl=document.getElementById('wsgrid'),listEl=document.getElementById('wslist'),msg=document.getElementById('wsMsg'),scoreEl=document.getElementById('wsScore');
-            function drawList(){ listEl.innerHTML=toFind.map(w=>'<span class="wsword'+(found.has(w)?' done':'')+'">'+esc(w)+'</span>').join(''); }
+            function drawList(){ listEl.innerHTML=toFind.map(w=>'<span class="wsword'+(found.has(w)?' done':'')+'">'+esc(w)+(defs[w]?'<span class="wd">'+esc(defs[w])+'</span>':'')+'</span>').join(''); }
             function cellAt(r,c){ return gridEl.querySelector('.wscell[data-r="'+r+'"][data-c="'+c+'"]'); }
-            for(let r=0;r<size;r++)for(let c=0;c<size;c++){const b=document.createElement('button');b.className='wscell';b.textContent=grid[r][c];b.dataset.r=r;b.dataset.c=c;b.onclick=()=>cellClick(r,c,b);gridEl.appendChild(b);}
-            function cellClick(r,c,b){
-                if(!selStart){selStart={r,c};b.classList.add('sel');sKey();return;}
-                const s=selStart; selStart=null; const sc=cellAt(s.r,s.c); if(sc)sc.classList.remove('sel');
-                if(s.r===r&&s.c===c)return;
-                const straight=(s.r===r||s.c===c||Math.abs(r-s.r)===Math.abs(c-s.c));
-                if(!straight){sBad();return;}
-                const dr=Math.sign(r-s.r),dc=Math.sign(c-s.c),len=Math.max(Math.abs(r-s.r),Math.abs(c-s.c))+1;
-                let str='';const cells=[];for(let k=0;k<len;k++){const rr=s.r+dr*k,cc=s.c+dc*k;str+=grid[rr][cc];cells.push([rr,cc]);}
-                const rev=str.split('').reverse().join('');
-                const match=toFind.find(w=>!found.has(w)&&(w===str||w===rev));
-                if(match){found.add(match);cells.forEach(p=>{const el=cellAt(p[0],p[1]);if(el)el.classList.add('found');});scoreEl.innerHTML='<i class="fas fa-check"></i> '+found.size+'/'+toFind.length;sGood();award(1);bumpGroup();drawList();msg.textContent='';if(found.size===toFind.length){msg.textContent='🎉 All found!';msg.className='msg win';sWin();confetti();}}
-                else sBad();
+            for(let r=0;r<size;r++)for(let c=0;c<size;c++){const b=document.createElement('button');b.className='wscell';b.textContent=grid[r][c];b.dataset.r=r;b.dataset.c=c;b.onclick=()=>cellClick(r,c);gridEl.appendChild(b);}
+            function paint(){ gridEl.querySelectorAll('.wscell').forEach(el=>{ const on=path.some(p=>p[0]==el.dataset.r&&p[1]==el.dataset.c); if(!el.classList.contains('found'))el.classList.toggle('sel',on); }); }
+            function clearPath(){ path=[]; paint(); }
+            window.wsClear=clearPath;
+            function adjacent(a,b){ return Math.abs(a[0]-b[0])<=1&&Math.abs(a[1]-b[1])<=1&&!(a[0]===b[0]&&a[1]===b[1]); }
+            function cellClick(r,c){ const last=path[path.length-1];
+                if(path.some(p=>p[0]===r&&p[1]===c)){ if(last&&last[0]===r&&last[1]===c)tryMatch(); else clearPath(); return; }
+                if(path.length&&!adjacent(last,[r,c]))clearPath();
+                path.push([r,c]); sKey(); paint(); tryMatch();
             }
-            drawList();
+            function tryMatch(){ const str=path.map(p=>grid[p[0]][p[1]]).join(''); const rev=str.split('').reverse().join(''); const match=toFind.find(w=>!found.has(w)&&(w===str||w===rev)); if(match){ found.add(match); path.forEach(p=>{const el=cellAt(p[0],p[1]);if(el){el.classList.remove('sel');el.classList.add('found');}}); path=[]; scoreEl.innerHTML='<i class="fas fa-check"></i> '+found.size+'/'+toFind.length; sGood(); award(1); bumpGroup(); drawList(); msg.textContent=''; if(found.size===toFind.length){msg.textContent='🎉 All found!';msg.className='msg win';sWin();confetti();} } }
+            drawList(); timerPaint();
+        }
+
+        /* ===== CROSSWORD ===== */
+        function playCrossword(){
+            const cells=cfg.cells, H=cfg.H, W=cfg.W, entries=cfg.entries;
+            const across=entries.filter(e=>e.dir==='A').sort((a,b)=>a.num-b.num);
+            const down=entries.filter(e=>e.dir==='D').sort((a,b)=>a.num-b.num);
+            const player=document.getElementById('player');
+            player.innerHTML=titleBar()+timerBar()+groupsBar()+
+                '<div class="scorebar"><span class="pill score" id="cwScore"><i class="fas fa-check"></i> 0/'+entries.length+'</span></div>'+
+                '<div class="cwwrap"><div class="cwgrid" id="cwgrid" style="grid-template-columns:repeat('+W+',max-content)"></div>'+
+                '<div class="cwclues"><h4>Across</h4>'+across.map(e=>'<div class="cwclue" id="clue-A-'+e.num+'" onclick="cwFocus(\'A\','+e.num+')"><b>'+e.num+'</b><span>'+esc(e.clue||'—')+'</span></div>').join('')+
+                '<h4>Down</h4>'+down.map(e=>'<div class="cwclue" id="clue-D-'+e.num+'" onclick="cwFocus(\'D\','+e.num+')"><b>'+e.num+'</b><span>'+esc(e.clue||'—')+'</span></div>').join('')+'</div></div>'+
+                '<div class="msg" id="cwMsg"></div><div class="play-actions"><button class="btn btn-soft" onclick="cwCheck()"><i class="fas fa-check-double"></i> Check</button><button class="btn btn-soft" onclick="cwReveal()"><i class="fas fa-eye"></i> Reveal</button><button class="btn btn-soft" onclick="PLAYERS.cw()"><i class="fas fa-rotate-left"></i> Restart</button></div>';
+            const gridEl=document.getElementById('cwgrid'); const numAt={}; entries.forEach(e=>numAt[e.r+','+e.c]=e.num);
+            for(let r=0;r<H;r++)for(let c=0;c<W;c++){ const ch=cells[r][c]; const cell=document.createElement('div'); cell.className='cwcell'+(ch?'':' blank'); if(ch){ const n=numAt[r+','+c]; cell.innerHTML=(n?'<span class="cn">'+n+'</span>':'')+'<input maxlength="1" data-r="'+r+'" data-c="'+c+'" autocomplete="off">'; } gridEl.appendChild(cell); }
+            function cellInput(r,c){ return gridEl.querySelector('input[data-r="'+r+'"][data-c="'+c+'"]'); }
+            let dir='A';
+            gridEl.querySelectorAll('input').forEach(inp=>{ inp.addEventListener('input',()=>{ inp.value=inp.value.toUpperCase().replace(/[^A-Z]/g,''); sKey(); const r=+inp.dataset.r,c=+inp.dataset.c; if(inp.value){ const nx=dir==='A'?cellInput(r,c+1):cellInput(r+1,c); if(nx)nx.focus(); } checkDone(); }); inp.addEventListener('keydown',e=>{ if(e.key==='Backspace'&&!inp.value){ const r=+inp.dataset.r,c=+inp.dataset.c; const pv=dir==='A'?cellInput(r,c-1):cellInput(r-1,c); if(pv){pv.focus();} } }); inp.addEventListener('focus',()=>{ const r=+inp.dataset.r,c=+inp.dataset.c; const e=entries.find(x=>x.dir===dir&&within(x,r,c))||entries.find(x=>within(x,r,c)); if(e){dir=e.dir;highlight(e);} }); });
+            function within(e,r,c){ for(let i=0;i<e.w.length;i++){const rr=e.dir==='A'?e.r:e.r+i,cc=e.dir==='A'?e.c+i:e.c;if(rr===r&&cc===c)return true;} return false; }
+            function highlight(e){ gridEl.querySelectorAll('.cwcell').forEach(x=>x.classList.remove('hl')); for(let i=0;i<e.w.length;i++){const rr=e.dir==='A'?e.r:e.r+i,cc=e.dir==='A'?e.c+i:e.c;const inp=cellInput(rr,cc);if(inp)inp.parentElement.classList.add('hl');} }
+            window.cwFocus=function(d,num){ dir=d; const e=entries.find(x=>x.dir===d&&x.num===num); if(!e)return; const inp=cellInput(e.r,e.c); if(inp)inp.focus(); highlight(e); };
+            function checkDone(){ let correct=0; entries.forEach(e=>{ let ok=true; for(let i=0;i<e.w.length;i++){const rr=e.dir==='A'?e.r:e.r+i,cc=e.dir==='A'?e.c+i:e.c;const inp=cellInput(rr,cc);if(!inp||inp.value!==e.w[i]){ok=false;break;}} const clue=document.getElementById('clue-'+e.dir+'-'+e.num); if(clue)clue.classList.toggle('done',ok); if(ok){correct++; for(let i=0;i<e.w.length;i++){const rr=e.dir==='A'?e.r:e.r+i,cc=e.dir==='A'?e.c+i:e.c;const inp=cellInput(rr,cc);if(inp)inp.parentElement.classList.add('good');}} }); document.getElementById('cwScore').innerHTML='<i class="fas fa-check"></i> '+correct+'/'+entries.length; if(correct===entries.length){ award(entries.length);bumpGroup(); const m=document.getElementById('cwMsg'); m.textContent='🎉 Solved!'; m.className='msg win'; sWin(); confetti(); } }
+            window.cwCheck=function(){ checkDone(); };
+            window.cwReveal=function(){ uiConfirm({title:'Reveal the crossword?',body:'This fills in every answer for the whole class.',yes:'Reveal all',icon:'eye',onYes:function(){ entries.forEach(e=>{for(let i=0;i<e.w.length;i++){const rr=e.dir==='A'?e.r:e.r+i,cc=e.dir==='A'?e.c+i:e.c;const inp=cellInput(rr,cc);if(inp)inp.value=e.w[i];}}); checkDone(); }}); };
             timerPaint();
         }
 
