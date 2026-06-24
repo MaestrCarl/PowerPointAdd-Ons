@@ -70,6 +70,13 @@
         .tab.active { color: #fff; background: linear-gradient(135deg, var(--primary), var(--primary-2)); border-color: transparent; box-shadow: 0 5px 14px rgba(var(--primary-rgb), .35); }
         .panel { display: none; animation: fade .25s ease; }
         .panel.active { display: block; }
+        .tgallery{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-bottom:6px;}
+        .tcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px 14px;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;gap:9px;transition:.18s;}
+        .tcard:hover{transform:translateY(-5px);border-color:transparent;box-shadow:0 14px 30px rgba(var(--primary-rgb),.25);}
+        .tcard .ic{width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:23px;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-2));box-shadow:0 8px 18px rgba(var(--primary-rgb),.35);}
+        .tcard h3{margin:0;font-family:var(--font-head);font-size:15px;font-weight:600;}
+        .tcard p{margin:0;font-size:11.5px;color:var(--muted);line-height:1.35;}
+        .modeback{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
         @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
         textarea { width: 100%; min-height: 110px; border-radius: 14px; border: 1px solid var(--line);
@@ -177,14 +184,10 @@
     <main>
         <!-- EDIT VIEW -->
         <div id="editView" class="pane">
-            <div class="tabs">
-                <button class="tab active" onclick="openTab(event,'picker')"><i class="fas fa-wand-magic-sparkles"></i> Picker</button>
-                <button class="tab" onclick="openTab(event,'groups')"><i class="fas fa-users"></i> Groups</button>
-                <button class="tab" onclick="openTab(event,'pairs')"><i class="fas fa-user-group"></i> Pairs</button>
-                <button class="tab" onclick="openTab(event,'spinner')"><i class="fas fa-life-ring"></i> Spinner</button>
-            </div>
+            <div class="tgallery" id="modeGallery"></div>
+            <div class="modeback" id="modeBack" style="display:none"><button class="btn btn-soft" onclick="showModeGallery()"><i class="fas fa-arrow-left"></i> All pickers</button><h3 id="modeTitle" style="margin:0;font-family:var(--font-head)"></h3></div>
 
-            <div id="picker" class="panel active">
+            <div id="picker" class="panel">
                 <textarea id="list-picker" placeholder="Enter names here (one per line)..." oninput="saveSoon()"></textarea>
                 <button class="btn btn-primary" onclick="runPicker()"><i class="fas fa-wand-magic-sparkles"></i> Pick Random Student</button>
             </div>
@@ -256,7 +259,7 @@
             if (typeof s.exclude === 'boolean') document.getElementById('excludeWinners').checked = s.exclude;
             if (s.muted) { muted = true; updateMuteIcon(); }
             applyTheme(s.theme === 'dark');
-            if (s.tab) { const btn = [...document.querySelectorAll('.tab')].find(b => b.getAttribute('onclick').includes("'" + s.tab + "'")); if (btn) btn.click(); }
+            showModeGallery();
             spinnerSetNames();
         }
         function saveNow() {
@@ -330,14 +333,16 @@
         function toggleMode() { playClick(); setMode(!document.getElementById('presentView').classList.contains('show')); }
 
         /* ============ TABS / UTILS ============ */
-        function openTab(evt, name) {
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
-            document.getElementById(name).classList.add('active');
-            evt.currentTarget.classList.add('active');
-            if (name === 'spinner') { sizeWheel(); renderWheel(); }
-            saveSoon();
-        }
+        const PMODES=[
+            {id:'picker',name:'Random Picker',icon:'fa-wand-magic-sparkles',desc:'Pick one student at random.'},
+            {id:'groups',name:'Groups',icon:'fa-users',desc:'Split the class into groups.'},
+            {id:'pairs',name:'Pairs',icon:'fa-user-group',desc:'Pair students up.'},
+            {id:'spinner',name:'Spinner',icon:'fa-life-ring',desc:'Spin a wheel of names.'}
+        ];
+        function buildModeGallery(){ const g=document.getElementById('modeGallery'); if(!g)return; g.innerHTML=''; PMODES.forEach(m=>{ const c=document.createElement('div'); c.className='tcard'; c.innerHTML='<div class="ic"><i class="fas '+m.icon+'"></i></div><h3>'+m.name+'</h3><p>'+m.desc+'</p>'; c.onclick=()=>openMode(m.id); g.appendChild(c); }); }
+        function openMode(name){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); const el=document.getElementById(name); if(el)el.classList.add('active'); document.getElementById('modeGallery').style.display='none'; document.getElementById('modeBack').style.display='flex'; const m=PMODES.find(x=>x.id===name); document.getElementById('modeTitle').textContent=m?m.name:''; if(name==='spinner'){ sizeWheel(); renderWheel(); } saveSoon(); }
+        function showModeGallery(){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); document.getElementById('modeGallery').style.display='grid'; document.getElementById('modeBack').style.display='none'; }
+        function openTab(evt, name) { openMode(name); }
         function getList(id) { return val(id).split('\n').map(n => n.trim()).filter(n => n !== ''); }
         function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
         function flashStatus(m) { const s = document.getElementById('status'); s.textContent = m; s.style.color = 'var(--danger)'; setTimeout(() => { s.textContent = 'Tip: your names & settings save into the PowerPoint file.'; s.style.color = ''; }, 2200); }
@@ -524,7 +529,9 @@
         /* ============ BOOT ============ */
         // Render immediately (works even when embedded in the hub iframe, where Office never inits).
         applyTheme(readDark());
+        buildModeGallery();
         loadState();
+        showModeGallery();
         sizeWheel(); renderWheel(); updateStarHint();
         // Upgrade to in-file persistence if running as a real Office add-in.
         if (window.Office && Office.onReady) {

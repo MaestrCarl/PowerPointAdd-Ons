@@ -55,6 +55,13 @@
         .tab { border: 1px solid var(--line); background: var(--surface); color: var(--muted); cursor: pointer; font-weight: 800; font-size: 12.5px; padding: 7px 13px; border-radius: 30px; white-space: nowrap; transition: all .15s; }
         .tab.active { color: #fff; background: linear-gradient(135deg, var(--primary), var(--primary-2)); border-color: transparent; box-shadow: 0 5px 14px rgba(var(--primary-rgb), .35); }
         .panel { display: none; animation: fade .25s ease; } .panel.active { display: block; }
+        .tgallery{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));margin-bottom:6px;}
+        .tcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px 12px;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;transition:.18s;}
+        .tcard:hover{transform:translateY(-5px);border-color:transparent;box-shadow:0 14px 30px rgba(var(--primary-rgb),.25);}
+        .tcard .ic{width:50px;height:50px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:21px;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-2));box-shadow:0 8px 18px rgba(var(--primary-rgb),.35);}
+        .tcard h3{margin:0;font-family:var(--font-head);font-size:14px;font-weight:600;}
+        .tcard p{margin:0;font-size:11px;color:var(--muted);line-height:1.3;}
+        .modeback{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
         @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
         .btn { border: none; cursor: pointer; font-weight: 800; font-family: var(--font-body); border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; transition: filter .15s, transform .1s; }
@@ -139,18 +146,10 @@
 
     <main>
         <div id="editView" class="pane">
-            <div class="tabs" id="tabs">
-                <button class="tab active" onclick="openTab(event,'stopwatch')">Stopwatch</button>
-                <button class="tab" onclick="openTab(event,'countdown')">Countdown</button>
-                <button class="tab" onclick="openTab(event,'loop')">Loop</button>
-                <button class="tab" onclick="openTab(event,'pomodoro')">Pomodoro</button>
-                <button class="tab" onclick="openTab(event,'split')">Split</button>
-                <button class="tab" onclick="openTab(event,'silent')">Silent</button>
-                <button class="tab" onclick="openTab(event,'race')">Race</button>
-                <button class="tab" onclick="openTab(event,'quiz')">Quiz</button>
-            </div>
+            <div class="tgallery" id="modeGallery"></div>
+            <div class="modeback" id="modeBack" style="display:none"><button class="btn ghost" onclick="showModeGallery()"><i class="fas fa-arrow-left"></i> All timers</button><h3 id="modeTitle" style="margin:0;font-family:var(--font-head)"></h3></div>
 
-            <div id="stopwatch" class="panel active"><button class="btn add-btn" onclick="addTimer('stopwatch')"><i class="fas fa-plus"></i> Add Stopwatch</button><div id="stopwatch-list"></div></div>
+            <div id="stopwatch" class="panel"><button class="btn add-btn" onclick="addTimer('stopwatch')"><i class="fas fa-plus"></i> Add Stopwatch</button><div id="stopwatch-list"></div></div>
             <div id="countdown" class="panel"><button class="btn add-btn" onclick="addTimer('countdown')"><i class="fas fa-plus"></i> Add Countdown</button><div id="countdown-list"></div></div>
             <div id="loop" class="panel"><button class="btn add-btn" onclick="addTimer('loop')"><i class="fas fa-plus"></i> Add Loop</button><div class="hint">Counts down, then restarts each round.</div><div id="loop-list"></div></div>
             <div id="pomodoro" class="panel"><button class="btn add-btn" onclick="addTimer('pomodoro')"><i class="fas fa-plus"></i> Add Pomodoro</button><div class="hint">Alternates Work and Break automatically.</div><div id="pomodoro-list"></div></div>
@@ -197,7 +196,7 @@
             timers = [];
             if(Array.isArray(s.defs) && s.defs.length){ s.defs.forEach(d=> addTimer(d.type, d)); }
             else { addTimer('stopwatch'); }
-            if(s.tab){ const b=[...document.querySelectorAll('.tab')].find(x=>x.getAttribute('onclick').includes("'"+s.tab+"'")); if(b) b.click(); }
+            showModeGallery();
         }
         function saveNow(){ const j=JSON.stringify(collectState()); try{localStorage.setItem(STATE_KEY,j);}catch(e){} if(officeReady){ try{ Office.context.document.settings.set(STATE_KEY,j); Office.context.document.settings.saveAsync(); }catch(e){} } }
         function saveSoon(){ clearTimeout(saveTimer); saveTimer=setTimeout(saveNow,500); try{ updateStarHint(); }catch(e){} }
@@ -228,8 +227,21 @@
         function toggleMode(){ playClick(); setMode(!document.getElementById('presentView').classList.contains('show')); }
         function pStart(){ if(activeId) startTimer(activeId); } function pPause(){ if(activeId) pauseTimer(activeId,true); } function pReset(){ if(activeId) resetTimer(activeId); }
 
-        /* ===== TABS ===== */
-        function openTab(evt,name){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active')); document.getElementById(name).classList.add('active'); evt.currentTarget.classList.add('active'); saveSoon(); }
+        /* ===== MODE GALLERY (cards instead of tabs) ===== */
+        const TMODES=[
+            {id:'stopwatch',name:'Stopwatch',icon:'fa-stopwatch',desc:'Count up from zero.'},
+            {id:'countdown',name:'Countdown',icon:'fa-hourglass-half',desc:'Count down to zero.'},
+            {id:'loop',name:'Loop',icon:'fa-repeat',desc:'Repeat rounds.'},
+            {id:'pomodoro',name:'Pomodoro',icon:'fa-brain',desc:'Work / break cycles.'},
+            {id:'split',name:'Split',icon:'fa-flag-checkered',desc:'Lap & split times.'},
+            {id:'silent',name:'Silent',icon:'fa-volume-xmark',desc:'Visual only, no ticking.'},
+            {id:'race',name:'Race',icon:'fa-trophy',desc:'Timers side by side.'},
+            {id:'quiz',name:'Quiz Buzzer',icon:'fa-bell',desc:'Buzzer sound & flash.'}
+        ];
+        function buildModeGallery(){ const g=document.getElementById('modeGallery'); if(!g)return; g.innerHTML=''; TMODES.forEach(m=>{ const c=document.createElement('div'); c.className='tcard'; c.innerHTML='<div class="ic"><i class="fas '+m.icon+'"></i></div><h3>'+m.name+'</h3><p>'+m.desc+'</p>'; c.onclick=()=>openMode(m.id); g.appendChild(c); }); }
+        function openMode(name){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); const el=document.getElementById(name); if(el)el.classList.add('active'); document.getElementById('modeGallery').style.display='none'; document.getElementById('modeBack').style.display='flex'; const m=TMODES.find(x=>x.id===name); document.getElementById('modeTitle').textContent=m?m.name:''; saveSoon(); }
+        function showModeGallery(){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); document.getElementById('modeGallery').style.display='grid'; document.getElementById('modeBack').style.display='none'; }
+        function openTab(evt,name){ openMode(name); }
         const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
         const COUNTDOWNISH = ['countdown','silent','race','loop'];
 
@@ -308,7 +320,9 @@
 
         /* ===== BOOT ===== */
         // Render immediately (works even when embedded in the hub iframe, where Office never inits).
+        buildModeGallery();
         if(!loadState()){ applyTheme(readDark()); addTimer('stopwatch'); }
+        showModeGallery();
         // Upgrade to in-file persistence if running as a real Office add-in.
         if(window.Office && Office.onReady){ Office.onReady(function(info){ officeReady=!!(info&&info.host); if(officeReady) loadState(); }); }
     </script>

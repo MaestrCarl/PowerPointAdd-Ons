@@ -63,7 +63,7 @@
             box-shadow:inset 0 0 70px rgba(0,0,0,.13),0 18px 40px rgba(0,0,0,.16);
             display:flex;align-items:center;justify-content:center;padding:18px;}
         .dark-mode .room{background:linear-gradient(180deg,#241f4d 0%,#2c2458 56%,#3c3162 56%,#2a2247 100%);}
-        .room::after{content:"";position:absolute;left:0;right:0;top:56%;height:2px;background:rgba(0,0,0,.10);box-shadow:0 1px 0 rgba(255,255,255,.25);}
+        .room::after{content:"";position:absolute;left:0;right:0;top:56%;height:2px;background:rgba(0,0,0,.10);box-shadow:0 1px 0 rgba(255,255,255,.25);z-index:0;}
         .deco{position:absolute;pointer-events:none;}
         .deco.window{left:7%;top:9%;width:88px;height:74px;border-radius:8px;background:linear-gradient(160deg,#bfe3ff,#86c5ff);border:6px solid #fff;box-shadow:0 6px 14px rgba(0,0,0,.18);}
         .deco.window::before,.deco.window::after{content:"";position:absolute;background:#fff;}
@@ -72,11 +72,11 @@
         .deco.frame{right:8%;top:12%;width:58px;height:46px;border-radius:5px;background:linear-gradient(135deg,#ffd27f,#ff9a5a);border:5px solid #fff;box-shadow:0 6px 14px rgba(0,0,0,.18);}
         .deco.bunting{left:0;right:0;top:0;height:26px;display:flex;justify-content:center;gap:10px;}
         .deco.bunting i{width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:16px solid var(--c,#ff3d7f);filter:drop-shadow(0 2px 2px rgba(0,0,0,.15));}
-        .deco.plant{left:9%;bottom:5%;font-size:34px;filter:drop-shadow(0 4px 4px rgba(0,0,0,.2));}
-        .deco.rug{left:50%;bottom:6%;width:60%;height:48px;transform:translateX(-50%) rotateX(60deg);border-radius:50%;background:radial-gradient(circle,rgba(109,40,217,.30),rgba(109,40,217,0) 70%);}
+        .deco.plant{left:4%;bottom:6%;font-size:clamp(46px,9vmin,84px);z-index:5;filter:drop-shadow(0 6px 6px rgba(0,0,0,.25));}
+        .deco.rug{left:50%;bottom:6%;width:60%;height:48px;transform:translateX(-50%) rotateX(60deg);border-radius:50%;background:radial-gradient(circle,rgba(109,40,217,.30),rgba(109,40,217,0) 70%);z-index:1;}
 
         /* ===== MYSTERY BOX (true 3D cube) ===== */
-        .boxscene{perspective:1100px;display:flex;align-items:flex-end;justify-content:center;min-height:230px;}
+        .boxscene{perspective:1100px;display:flex;align-items:flex-end;justify-content:center;min-height:230px;position:relative;z-index:4;}
         .box{position:relative;width:170px;height:170px;transform-style:preserve-3d;transform:rotateX(-20deg) rotateY(-32deg);transition:transform .6s cubic-bezier(.18,.89,.32,1.28);cursor:pointer;}
         .box:hover{transform:rotateX(-20deg) rotateY(-18deg);}
         .bx{position:absolute;left:0;top:0;width:170px;height:170px;background-image:linear-gradient(135deg,#f97316,#ff3d7f);border:1px solid rgba(255,255,255,.16);box-shadow:inset 0 0 34px rgba(0,0,0,.20);}
@@ -121,6 +121,45 @@
         #scratchCanvas{position:absolute;inset:0;touch-action:none;cursor:crosshair;}
         /* pixel/hidden */
         .pix{filter:blur(var(--b,24px));transition:filter .4s ease;} .pixtext{font-family:var(--font-head);font-weight:700;font-size:clamp(2rem,10vmin,7rem);}
+        /* ===== MODAL REVEAL EFFECT + history + door room ===== */
+        .reveal-modal{perspective:1500px;}
+        .reveal3d{background:var(--surface);color:var(--ink);border-radius:22px;padding:24px 28px;box-shadow:0 30px 70px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:16px;align-items:center;max-width:92vw;transform-style:preserve-3d;}
+        .reveal3d.fly{animation:revealFly .7s cubic-bezier(.18,.89,.32,1.28);}
+        @keyframes revealFly{0%{transform:translateY(150px) rotateX(80deg) scale(.22);opacity:0;}55%{transform:translateY(-12px) rotateX(-8deg) scale(1.07);opacity:1;}100%{transform:none;opacity:1;}}
+        .reveal-inner{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;align-items:center;}
+        .dr-item{display:flex;align-items:center;justify-content:center;}
+        .reveal-modal.doorroom .reveal3d{background:radial-gradient(circle at 50% 26%,#2c2742,#0c0a14);color:#fff;border:1px solid #2a2640;min-width:min(86vw,420px);min-height:300px;justify-content:flex-end;position:relative;overflow:hidden;padding-top:70px;}
+        .doorroom .lamp{position:absolute;top:0;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:2;}
+        .doorroom .lamp .cord{width:3px;height:42px;background:#3a3550;}
+        .doorroom .lamp .bulb{width:24px;height:24px;border-radius:50%;background:#5a5547;animation:bulbOn .7s .2s forwards;}
+        @keyframes bulbOn{to{background:#fff3b0;box-shadow:0 0 34px 12px rgba(255,236,150,.95);}}
+        .doorroom .spot{position:absolute;top:30px;left:50%;width:90%;height:88%;transform:translateX(-50%);background:radial-gradient(circle at 50% 0,rgba(255,240,180,.4),rgba(255,240,180,0) 62%);opacity:0;animation:spotOn .7s .3s forwards;pointer-events:none;z-index:1;}
+        @keyframes spotOn{to{opacity:1;}}
+        .doorroom .dr-item{position:relative;z-index:2;animation:pop .6s .35s both;}
+        .doorroom .btn-primary{position:relative;z-index:3;}
+        .rev-history{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center;max-width:680px;margin:0 auto;}
+        .rev-history:empty{display:none;}
+        .rev-lbl{font-size:12px;color:var(--muted);font-weight:800;}
+        .rev-chip{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:5px 11px;font-weight:800;font-size:12.5px;cursor:pointer;color:var(--ink);}
+        .rev-chip:hover{border-color:var(--primary);}
+        .rem-toggle{justify-content:center;}
+        /* door: real swing + adaptive grid */
+        .door.opened{background:linear-gradient(160deg,#2f6bff,#1f49c4);color:#fff;border:none;padding:0;animation:doorSwing .5s cubic-bezier(.18,.89,.32,1.28) forwards;}
+        .door.opened::before{display:block;}
+        @keyframes doorSwing{to{transform:perspective(1000px) rotateY(-74deg);filter:brightness(.7);}}
+        .door .dnum{position:relative;z-index:1;}
+        .grid2.doors{max-width:760px;grid-auto-rows:1fr;}
+        /* scratch: multi-card picker + modal */
+        .grid2.cards{max-width:680px;}
+        .scard{aspect-ratio:3/4;border-radius:14px;background:linear-gradient(160deg,#ffb020,#f97316);color:#fff;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-family:var(--font-head);font-size:1.3rem;box-shadow:0 12px 24px rgba(0,0,0,.25);transition:transform .2s;}
+        .scard:hover{transform:translateY(-5px);}
+        .scard i{font-size:2rem;}
+        .scard.done{opacity:.45;}
+        #scratchModal .scratchWrap{width:min(80vw,460px);height:min(46vh,300px);}
+        .sc-ctrls{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;align-items:center;}
+        .sc-ctrls label{font-size:12px;font-weight:800;color:var(--muted);display:inline-flex;gap:6px;align-items:center;}
+        .sc-ctrls input[type=range]{width:108px;}
+
         #confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:900;}
         .modal{display:none;position:fixed;inset:0;background:rgba(10,8,30,.7);z-index:2000;align-items:center;justify-content:center;padding:16px;} .modal.show{display:flex;}
         .modal-card{background:var(--surface);border-radius:18px;padding:22px;max-width:520px;width:100%;text-align:center;animation:pop .4s cubic-bezier(.18,.89,.32,1.28);}
@@ -179,6 +218,21 @@
         <div class="modal-actions"><button class="btn btn-soft" onclick="closeModal('shareModal')">Close</button></div>
     </div></div>
     <div class="modal" id="itemModal" onclick="closeModal('itemModal')"><div class="modal-card" id="itemModalBody"></div></div>
+    <div class="modal" id="confirmModal"><div class="modal-card">
+        <h3 id="confirmTitle"><i class="fas fa-eye" style="color:var(--gold)"></i> Show?</h3>
+        <p class="hint" id="confirmBody" style="margin:6px 0 0;font-size:13.5px"></p>
+        <div class="modal-actions"><button class="btn btn-soft" onclick="confirmNo()">Cancel</button><button class="btn btn-primary" id="confirmYes" onclick="confirmYes()">Show</button></div>
+    </div></div>
+    <div class="modal reveal-modal" id="revealModal"><div class="reveal3d" id="reveal3d">
+        <div class="reveal-inner" id="revealInner"></div>
+        <button class="btn btn-primary" onclick="closeReveal()"><i class="fas fa-check"></i> Close</button>
+    </div></div>
+    <div class="modal" id="scratchModal"><div class="reveal3d" id="scratch3d" style="gap:12px">
+        <div class="scratch-host" id="scratchHost"></div>
+        <div id="scratchCtrls"></div>
+        <button class="btn btn-primary" onclick="closeModal('scratchModal')"><i class="fas fa-check"></i> Close</button>
+    </div></div>
+
 
     <script>
         /* ===== REGISTRY ===== */
@@ -229,7 +283,11 @@
         function closeModal(id){document.getElementById(id).classList.remove('show');}
         let masked=true;
         function applyMask(){const t=document.getElementById('items');if(t)t.classList.toggle('masked',masked);const b=document.getElementById('maskBtn');if(b){b.classList.toggle('shown',!masked);b.innerHTML=(masked?'<i class="fas fa-eye-slash"></i> ':'<i class="fas fa-eye"></i> ')+'<span>'+(masked?'Hidden':'Showing')+'</span>';}}
-        function toggleMask(){if(masked){if(confirm('You are about to display the items on screen. Show them to the class?')){masked=false;applyMask();}}else{masked=true;applyMask();}}
+        function toggleMask(){ if(masked){ uiConfirm({title:'Show items?',body:'This will display the items on screen for the whole class. Continue?',yes:'Show',onYes:function(){masked=false;applyMask();}}); } else { masked=true; applyMask(); } }
+        let _confirmCb=null;
+        function uiConfirm(o){_confirmCb=o.onYes||null;document.getElementById('confirmTitle').innerHTML='<i class="fas fa-eye" style="color:var(--gold)"></i> '+esc(o.title||'Are you sure?');document.getElementById('confirmBody').textContent=o.body||'';document.getElementById('confirmYes').innerHTML='<i class="fas fa-check"></i> '+esc(o.yes||'Confirm');openModal('confirmModal');}
+        function confirmYes(){closeModal('confirmModal');const cb=_confirmCb;_confirmCb=null;if(cb)cb();}
+        function confirmNo(){closeModal('confirmModal');_confirmCb=null;}
 
         /* ===== ITEM MEDIA ===== */
         function parseItem(line){const v=line.trim();if(/^https?:\/\/\S+\.(png|jpe?g|gif|webp|svg)(\?\S*)?$/i.test(v))return{t:'img',v};if(/^https?:\/\/\S+\.(mp4|webm|ogg)(\?\S*)?$/i.test(v))return{t:'video',v};return{t:'text',v};}
@@ -265,26 +323,42 @@
         function titleBar(){return cfg.t?'<div class="ptitle">'+esc(cfg.t)+'</div>':'';}
         function roomDeco(){return '<div class="deco bunting"><i style="--c:#ff3d7f"></i><i style="--c:#ffb020"></i><i style="--c:#14d6c4"></i><i style="--c:#6d28d9"></i><i style="--c:#22c55e"></i><i style="--c:#2f6bff"></i></div><div class="deco window"></div><div class="deco frame"></div><div class="deco plant">🪴</div><div class="deco rug"></div>';}
 
+        /* ===== REVEAL FRAMEWORK (3D modal reveal + history + remove toggle) ===== */
+        let REVEALED=[], removeRevealed=true;
+        function revealReset(){ REVEALED=[]; }
+        function setRemove(v){ removeRevealed=v; }
+        function syncRemoveUI(){ const c=document.getElementById('removeToggle'); if(c)c.checked=removeRevealed; }
+        function removeBar(){ return '<label class="chk rem-toggle"><input type="checkbox" id="removeToggle" onchange="setRemove(this.checked)"> Take items out once they are revealed</label>'; }
+        function revealBar(){ return '<div class="rev-history" id="revHistory"></div>'; }
+        function revChip(it){ return it.t==='text'?esc(it.v.length>14?it.v.slice(0,13)+'…':it.v):'<i class="fas fa-image"></i>'; }
+        function pushReveal(it){ REVEALED.push({it:it}); renderHistory(); }
+        function renderHistory(){ const h=document.getElementById('revHistory'); if(!h)return; if(!REVEALED.length){h.innerHTML='';return;} h.innerHTML='<span class="rev-lbl"><i class="fas fa-clock-rotate-left"></i> Revealed:</span>'+REVEALED.map(function(r,i){return '<button class="rev-chip" onclick="reopenReveal('+i+')">'+revChip(r.it)+'</button>';}).join(''); }
+        function reopenReveal(i){ if(REVEALED[i])showReveal(REVEALED[i].it,{replay:true}); }
+        function showReveal(it,opts){ opts=opts||{}; const card=document.getElementById('reveal3d'),modal=document.getElementById('revealModal'),inner=document.getElementById('revealInner'); modal.classList.toggle('doorroom',!!opts.door); inner.innerHTML=opts.door?('<div class="lamp"><span class="cord"></span><span class="bulb"></span></div><div class="spot"></div><div class="dr-item">'+itemHTML(it,true)+'</div>'):('<div class="dr-item">'+itemHTML(it,true)+'</div>'); card.classList.remove('fly'); void card.offsetWidth; card.classList.add('fly'); openModal('revealModal'); if(!opts.replay){sReveal();confetti(1100);} }
+        function showRevealMulti(items){ if(items.length===1)return showReveal(items[0]); const card=document.getElementById('reveal3d'),inner=document.getElementById('revealInner'); document.getElementById('revealModal').classList.remove('doorroom'); inner.innerHTML=items.map(function(it){return '<div class="dr-item">'+itemHTML(it,false)+'</div>';}).join(''); card.classList.remove('fly'); void card.offsetWidth; card.classList.add('fly'); openModal('revealModal'); sReveal(); confetti(1200); }
+        function closeReveal(){ closeModal('revealModal'); }
+
         /* ===== WHAT'S IN THE BOX ===== */
         function playBox(){
-            let pool=cfg.parsed.map((it,i)=>i); const pick=(cfg.opt&&cfg.opt.pick)||1, exclude=!(cfg.opt&&cfg.opt.exclude===false);
+            let pool=cfg.parsed.map(function(it,i){return i;}); const pick=(cfg.opt&&cfg.opt.pick)||1; removeRevealed=!(cfg.opt&&cfg.opt.exclude===false); revealReset();
             const player=document.getElementById('player');
             player.innerHTML=titleBar()+
                 '<div class="room"><div class="boxscene"><div class="box" id="box" onclick="boxPick()">'+
                     '<div class="bx bx-bottom"></div><div class="bx bx-back"></div><div class="bx bx-left"></div><div class="bx bx-right"></div><div class="bx bx-front"></div>'+
                     '<div class="lid"><span class="knot"></span></div>'+
                 '</div></div>'+roomDeco()+'</div>'+
-                '<div class="pcount" id="boxCount"></div><div class="reveal-stage" id="boxOut"></div>'+
+                '<div class="pcount" id="boxCount"></div>'+removeBar()+revealBar()+
                 '<div class="play-actions"><button class="btn btn-primary" onclick="boxPick()"><i class="fas fa-hand-sparkles"></i> Shake &amp; Pick</button><button class="btn btn-soft" onclick="playBox()"><i class="fas fa-rotate-left"></i> Reset</button></div>';
-            const box=document.getElementById('box'),out=document.getElementById('boxOut'),cnt=document.getElementById('boxCount');
+            const box=document.getElementById('box'),cnt=document.getElementById('boxCount');
             function refresh(){cnt.textContent=pool.length+' item'+(pool.length===1?'':'s')+' left';}
+            syncRemoveUI();
             window.boxPick=function(){
-                if(!pool.length){cnt.textContent='Box is empty — reset to refill.';return;}
+                if(!pool.length){cnt.textContent='Box is empty — tap Reset to refill.';return;}
                 box.classList.remove('open');box.classList.add('shake');sShake();
-                setTimeout(()=>{box.classList.remove('shake');box.classList.add('open');sReveal();
-                    out.innerHTML='';const n=Math.min(pick,pool.length);
-                    for(let k=0;k<n;k++){const r=Math.floor(Math.random()*pool.length);const itemIdx=pool[r];if(exclude)pool.splice(r,1);const it=cfg.parsed[itemIdx];const d=document.createElement('div');d.className='ritem';d.style.animationDelay=(k*0.12)+'s';d.innerHTML=itemHTML(it,false);d.onclick=()=>showItem(it);out.appendChild(d);}
-                    confetti(1200);refresh();
+                setTimeout(function(){ box.classList.remove('shake');box.classList.add('open');
+                    var picks=[],avail=pool.slice(),n=Math.min(pick,avail.length);
+                    for(var k=0;k<n;k++){ var r=Math.floor(Math.random()*avail.length); var idx=avail.splice(r,1)[0]; picks.push(cfg.parsed[idx]); if(removeRevealed){ var pi=pool.indexOf(idx); if(pi>=0)pool.splice(pi,1); } }
+                    showRevealMulti(picks); picks.forEach(function(it){pushReveal(it);}); refresh();
                 },520);
             };
             refresh();
@@ -292,78 +366,102 @@
 
         /* ===== MAGIC ENVELOPES ===== */
         function playEnvelopes(){
-            const n=cfg.parsed.length, player=document.getElementById('player');
+            const n=cfg.parsed.length; removeRevealed=true; revealReset();
+            const player=document.getElementById('player');
             player.innerHTML=titleBar()+'<div class="pcount">Tap an envelope to open it.</div>'+
                 '<div class="room">'+roomDeco()+'<div class="grid2" id="envGrid" style="--cc:'+Math.min(4,Math.max(2,Math.ceil(Math.sqrt(n))))+'"></div></div>'+
+                removeBar()+revealBar()+
                 '<div class="play-actions"><button class="btn btn-soft" onclick="playEnvelopes()"><i class="fas fa-rotate-left"></i> Close all</button></div>';
-            const grid=document.getElementById('envGrid');
-            cfg.parsed.forEach((it,i)=>{const b=document.createElement('button');b.className='env';b.innerHTML='<span class="seal"></span><i class="fas fa-envelope"></i>';b.onclick=()=>{if(b.classList.contains('opened'))return showItem(it);b.classList.add('opened');b.innerHTML=itemHTML(it,false);sReveal();confetti(900);};grid.appendChild(b);});
+            const grid=document.getElementById('envGrid'); syncRemoveUI();
+            cfg.parsed.forEach(function(it,i){const b=document.createElement('button');b.className='env';b.innerHTML='<span class="seal"></span><i class="fas fa-envelope"></i>';b.onclick=function(){ if(b.classList.contains('opened')){showReveal(it,{replay:true});return;} b.classList.add('opened'); b.innerHTML=itemHTML(it,false); showReveal(it); pushReveal(it); };grid.appendChild(b);});
         }
 
-        /* ===== MYSTERY DOORS ===== */
+        /* ===== MYSTERY DOORS (swing open + zoom into lit room) ===== */
         function playDoors(){
-            const order=shuf(cfg.parsed.map((_,i)=>i),cfg.seed), n=order.length, player=document.getElementById('player');
+            const order=shuf(cfg.parsed.map(function(_,i){return i;}),cfg.seed), n=order.length; removeRevealed=true; revealReset();
+            const player=document.getElementById('player');
+            const cc=Math.min(5,Math.max(2,Math.ceil(Math.sqrt(n))*1));
             player.innerHTML=titleBar()+'<div class="pcount">Choose a door.</div>'+
-                '<div class="room">'+roomDeco()+'<div class="grid2" id="doorGrid" style="--cc:'+Math.min(5,Math.max(2,n))+'"></div></div>'+
+                '<div class="room">'+roomDeco()+'<div class="grid2 doors" id="doorGrid" style="--cc:'+Math.min(5,Math.max(2,n>6?Math.ceil(n/2):n))+'"></div></div>'+
+                removeBar()+revealBar()+
                 '<div class="play-actions"><button class="btn btn-soft" onclick="playDoors()"><i class="fas fa-rotate-left"></i> Reset doors</button></div>';
-            const grid=document.getElementById('doorGrid');
-            order.forEach((itemIdx,pos)=>{const b=document.createElement('button');b.className='door';b.innerHTML='<span class="handle"></span>'+(pos+1);const it=cfg.parsed[itemIdx];b.onclick=()=>{if(b.classList.contains('opened'))return showItem(it);b.classList.add('opened');b.innerHTML=itemHTML(it,false);sReveal();confetti(900);};grid.appendChild(b);});
+            const grid=document.getElementById('doorGrid'); syncRemoveUI();
+            order.forEach(function(itemIdx,pos){const b=document.createElement('button');b.className='door';b.innerHTML='<span class="handle"></span><span class="dnum">'+(pos+1)+'</span>';const it=cfg.parsed[itemIdx];b.onclick=function(){ if(b.classList.contains('opened')){showReveal(it,{door:true,replay:true});return;} b.classList.add('opened'); sClick(); setTimeout(function(){ showReveal(it,{door:true}); pushReveal(it); },430); };grid.appendChild(b);});
         }
 
         /* ===== MYSTERY WHEEL ===== */
-        let wheelRot=0,wheelSpinning=false,WR=320;
+        let wheelRot=0,wheelSpinning=false,WR=320,wheelLive=null;
+        function wheelReset(){ wheelLive=cfg.parsed.map(function(_,i){return i;}); playWheel(); }
         function playWheel(){
-            const labels=cfg.parsed.map(it=>it.t==='text'?it.v:'(media)');
+            if(!wheelLive||!wheelLive.length)wheelLive=cfg.parsed.map(function(_,i){return i;}); removeRevealed=false; revealReset();
+            let LB=wheelLive.map(function(i){const it=cfg.parsed[i];return it.t==='text'?it.v:'(media)';});
             const player=document.getElementById('player');
             player.innerHTML=titleBar()+'<div id="wheelWrap"><canvas id="wheel"></canvas><div class="wptr"></div></div>'+
-                '<button class="btn btn-primary" style="padding:13px 30px" onclick="wheelSpin()"><i class="fas fa-rotate-right"></i> SPIN</button><div id="wheelWin"></div>';
+                '<button class="btn btn-primary" style="padding:13px 30px" onclick="wheelSpin()"><i class="fas fa-rotate-right"></i> SPIN</button><div id="wheelWin"></div>'+
+                removeBar()+revealBar()+
+                '<div class="play-actions"><button class="btn btn-soft" onclick="wheelReset()"><i class="fas fa-rotate-left"></i> Refill wheel</button></div>';
+            syncRemoveUI();
             const cv=document.getElementById('wheel'),ctx=cv.getContext('2d');
-            function size(){const host=document.getElementById('player');const s=Math.max(200,Math.min(host.clientWidth-20,window.innerHeight*0.62,640));WR=s;const dpr=window.devicePixelRatio||1;cv.style.width=s+'px';cv.style.height=s+'px';cv.width=Math.round(s*dpr);cv.height=Math.round(s*dpr);}
+            function size(){const host=document.getElementById('player');const s=Math.max(200,Math.min(host.clientWidth-20,window.innerHeight*0.52,560));WR=s;const dpr=window.devicePixelRatio||1;cv.style.width=s+'px';cv.style.height=s+'px';cv.width=Math.round(s*dpr);cv.height=Math.round(s*dpr);}
             function shade(hex,a){const n=parseInt(hex.slice(1),16);let r=(n>>16)+a,g=((n>>8)&255)+a,b=(n&255)+a;r=Math.max(0,Math.min(255,r));g=Math.max(0,Math.min(255,g));b=Math.max(0,Math.min(255,b));return'#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);}
-            function draw(){const n=labels.length,C=WR/2,rad=WR/2-6;ctx.clearRect(0,0,WR,WR);const ang=2*Math.PI/n,fs=Math.max(12,Math.min(WR*0.06,WR*0.62/n));for(let i=0;i<n;i++){ctx.beginPath();ctx.moveTo(C,C);ctx.arc(C,C,rad,i*ang,(i+1)*ang);ctx.closePath();const base=PAL[i%PAL.length],gr=ctx.createRadialGradient(C,C,rad*0.2,C,C,rad);gr.addColorStop(0,base);gr.addColorStop(1,shade(base,-30));ctx.fillStyle=gr;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='rgba(255,255,255,.55)';ctx.stroke();ctx.save();ctx.translate(C,C);ctx.rotate(i*ang+ang/2);ctx.fillStyle='#fff';ctx.font='700 '+fs+'px Nunito,Arial';ctx.textAlign='right';ctx.textBaseline='middle';ctx.shadowColor='rgba(0,0,0,.4)';ctx.shadowBlur=2;const lb=labels[i].length>16?labels[i].slice(0,15)+'…':labels[i];ctx.fillText(lb,rad*0.93,0);ctx.restore();}ctx.shadowColor='transparent';ctx.beginPath();ctx.arc(C,C,Math.max(14,WR*0.05),0,Math.PI*2);ctx.fillStyle=(getComputedStyle(document.body).getPropertyValue('--surface')||'#fff').trim();ctx.fill();ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,.15)';ctx.stroke();}
+            function draw(){const n=LB.length,C=WR/2,rad=WR/2-6;ctx.clearRect(0,0,WR,WR);if(!n)return;const ang=2*Math.PI/n,fs=Math.max(12,Math.min(WR*0.06,WR*0.62/n));for(let i=0;i<n;i++){ctx.beginPath();ctx.moveTo(C,C);ctx.arc(C,C,rad,i*ang,(i+1)*ang);ctx.closePath();const base=PAL[i%PAL.length],gr=ctx.createRadialGradient(C,C,rad*0.2,C,C,rad);gr.addColorStop(0,base);gr.addColorStop(1,shade(base,-30));ctx.fillStyle=gr;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='rgba(255,255,255,.55)';ctx.stroke();ctx.save();ctx.translate(C,C);ctx.rotate(i*ang+ang/2);ctx.fillStyle='#fff';ctx.font='700 '+fs+'px Nunito,Arial';ctx.textAlign='right';ctx.textBaseline='middle';ctx.shadowColor='rgba(0,0,0,.4)';ctx.shadowBlur=2;const lb=LB[i].length>16?LB[i].slice(0,15)+'…':LB[i];ctx.fillText(lb,rad*0.93,0);ctx.restore();}ctx.shadowColor='transparent';ctx.beginPath();ctx.arc(C,C,Math.max(14,WR*0.05),0,Math.PI*2);ctx.fillStyle=(getComputedStyle(document.body).getPropertyValue('--surface')||'#fff').trim();ctx.fill();ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,.15)';ctx.stroke();}
             function rndr(){const dpr=window.devicePixelRatio||1;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,WR,WR);ctx.save();ctx.translate(WR/2,WR/2);ctx.rotate(wheelRot*Math.PI/180);ctx.translate(-WR/2,-WR/2);draw();ctx.restore();}
             window._wheelRender=rndr;window._wheelSize=size;
             size();rndr();
-            window.wheelSpin=function(){if(wheelSpinning||!labels.length)return;ea();wheelSpinning=true;const start=wheelRot,n=labels.length,target=start+(5+Math.random()*3)*360+Math.random()*360,dur=4200+Math.random()*900,t0=performance.now();let li=-1;document.getElementById('wheelWin').textContent='';(function fr(now){const p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,3);wheelRot=start+(target-start)*e;rndr();const idx=Math.floor(((360-(wheelRot%360))%360)/(360/n))%n;if(idx!==li){if(p<0.997)sTick();li=idx;}if(p<1)requestAnimationFrame(fr);else{wheelSpinning=false;const fi=Math.floor(((360-(wheelRot%360))%360)/(360/n))%n;const it=cfg.parsed[fi];document.getElementById('wheelWin').innerHTML='🎉 '+(it.t==='text'?esc(it.v):'');sReveal();confetti(1500);if(it.t!=='text')showItem(it);}})(t0);};
+            window.wheelSpin=function(){if(wheelSpinning||!LB.length)return;ea();wheelSpinning=true;const start=wheelRot,n=LB.length,target=start+(5+Math.random()*3)*360+Math.random()*360,dur=4200+Math.random()*900,t0=performance.now();let li=-1;document.getElementById('wheelWin').textContent='';(function fr(now){const p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,3);wheelRot=start+(target-start)*e;rndr();const idx=Math.floor(((360-(wheelRot%360))%360)/(360/n))%n;if(idx!==li){if(p<0.997)sTick();li=idx;}if(p<1)requestAnimationFrame(fr);else{wheelSpinning=false;const fi=Math.floor(((360-(wheelRot%360))%360)/(360/n))%n;const liveIdx=wheelLive[fi];const it=cfg.parsed[liveIdx];document.getElementById('wheelWin').innerHTML='🎉 '+(it.t==='text'?esc(it.v):'(media)');showReveal(it);pushReveal(it);if(removeRevealed&&wheelLive.length>1){wheelLive.splice(fi,1);LB=wheelLive.map(function(j){const t=cfg.parsed[j];return t.t==='text'?t.v:'(media)';});wheelRot=0;size();rndr();}}})(t0);};
         }
-        window.addEventListener('resize',()=>{if(cfg&&cfg.g==='wheel'&&window._wheelSize){window._wheelSize();window._wheelRender();}});
+        window.addEventListener('resize',function(){if(cfg&&cfg.g==='wheel'&&window._wheelSize){window._wheelSize();window._wheelRender();}});
 
-        /* ===== SCRATCH CARD ===== */
+        /* ===== SCRATCH CARDS (pick a card, scratch it in a modal) ===== */
+        let scratchSize=26, scratchSharp=1;
         function playScratch(){
-            let i=0; const player=document.getElementById('player');
-            function build(){const it=cfg.parsed[i];player.innerHTML=titleBar()+'<div class="pcount">Card '+(i+1)+' / '+cfg.parsed.length+'</div><div class="scratchWrap"><div class="scratchUnder">'+itemHTML(it,false)+'</div><canvas id="scratchCanvas"></canvas></div>'+
-                '<div class="play-actions"><button class="btn btn-soft" onclick="scReveal()"><i class="fas fa-eye"></i> Reveal</button><button class="btn btn-primary" onclick="scNext()"><i class="fas fa-forward"></i> Next card</button></div>';
-                const wrap=player.querySelector('.scratchWrap'),cv=document.getElementById('scratchCanvas'),ctx=cv.getContext('2d');
-                const dpr=window.devicePixelRatio||1, w=wrap.clientWidth, h=wrap.clientHeight;
-                cv.width=w*dpr;cv.height=h*dpr;cv.style.width=w+'px';cv.style.height=h+'px';ctx.scale(dpr,dpr);
-                const grd=ctx.createLinearGradient(0,0,w,h);grd.addColorStop(0,'#b9b3d6');grd.addColorStop(1,'#8a84ad');ctx.fillStyle=grd;ctx.fillRect(0,0,w,h);
-                ctx.fillStyle='rgba(255,255,255,.6)';ctx.font='700 '+Math.round(h*0.12)+'px Luckiest Guy,Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('Scratch me!',w/2,h/2);
-                let drawing=false,cleared=0;const total=w*h;
-                function pos(e){const r=cv.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top};}
-                function scratch(e){if(!drawing)return;e.preventDefault();const p=pos(e);ctx.globalCompositeOperation='destination-out';ctx.beginPath();ctx.arc(p.x,p.y,Math.max(14,h*0.08),0,Math.PI*2);ctx.fill();sTick();}
-                cv.addEventListener('pointerdown',e=>{drawing=true;scratch(e);});
-                cv.addEventListener('pointermove',scratch);
-                window.addEventListener('pointerup',()=>{if(drawing){drawing=false;checkClear();}});
-                function checkClear(){try{const d=ctx.getImageData(0,0,cv.width,cv.height).data;let c=0;for(let k=3;k<d.length;k+=4*40)if(d[k]===0)c++;if(c/(d.length/(4*40))>0.5){ctx.clearRect(0,0,w,h);sReveal();confetti(1000);}}catch(e){}}
-                window.scReveal=function(){ctx.clearRect(0,0,w,h);sReveal();confetti(1000);};
-            }
-            window.scNext=function(){i=(i+1)%cfg.parsed.length;build();};
-            build();
+            const order=shuf(cfg.parsed.map(function(_,i){return i;}),cfg.seed), n=order.length; revealReset();
+            const player=document.getElementById('player');
+            player.innerHTML=titleBar()+'<div class="pcount">Pick a card to scratch.</div>'+
+                '<div class="room">'+roomDeco()+'<div class="grid2 cards" id="cardGrid" style="--cc:'+Math.min(5,Math.max(2,Math.ceil(Math.sqrt(n))))+'"></div></div>'+
+                removeBar()+revealBar()+
+                '<div class="play-actions"><button class="btn btn-soft" onclick="playScratch()"><i class="fas fa-rotate-left"></i> Reset cards</button></div>';
+            const grid=document.getElementById('cardGrid'); syncRemoveUI();
+            order.forEach(function(itemIdx,pos){const b=document.createElement('button');b.className='scard';b.innerHTML='<i class="fas fa-gift"></i><span>'+(pos+1)+'</span>';const it=cfg.parsed[itemIdx];b.onclick=function(){ b.classList.add('done'); openScratchModal(it); pushReveal(it); };grid.appendChild(b);});
+        }
+        function openScratchModal(it){
+            document.getElementById('scratchHost').innerHTML='<div class="scratchWrap"><div class="scratchUnder">'+itemHTML(it,false)+'</div><canvas id="scratchCanvas"></canvas></div>';
+            document.getElementById('scratchCtrls').innerHTML='<div class="sc-ctrls"><label>Brush size <input type="range" id="scSize" min="12" max="60" value="'+scratchSize+'" oninput="scratchSize=+this.value"></label><label>Sharpness <input type="range" id="scSharp" min="0" max="2" step="1" value="'+scratchSharp+'" oninput="scratchSharp=+this.value"></label><button class="btn btn-soft" onclick="scRevealNow()"><i class="fas fa-eye"></i> Reveal</button></div>';
+            openModal('scratchModal');
+            requestAnimationFrame(initScratch);
+        }
+        function initScratch(){
+            const wrap=document.querySelector('#scratchModal .scratchWrap'),cv=document.getElementById('scratchCanvas'),ctx=cv.getContext('2d');
+            const dpr=window.devicePixelRatio||1,w=wrap.clientWidth,h=wrap.clientHeight;
+            cv.width=w*dpr;cv.height=h*dpr;cv.style.width=w+'px';cv.style.height=h+'px';ctx.scale(dpr,dpr);
+            const grd=ctx.createLinearGradient(0,0,w,h);grd.addColorStop(0,'#c9b8ff');grd.addColorStop(1,'#8a84ad');ctx.fillStyle=grd;ctx.fillRect(0,0,w,h);
+            ctx.fillStyle='rgba(255,255,255,.7)';ctx.font='700 '+Math.round(h*0.13)+'px Luckiest Guy,Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('Scratch!',w/2,h/2);
+            let drawing=false;
+            function pos(e){const r=cv.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top};}
+            function brush(x,y){const rad=scratchSize;ctx.globalCompositeOperation='destination-out';if(scratchSharp>=2){ctx.fillStyle='rgba(0,0,0,1)';ctx.beginPath();ctx.arc(x,y,rad,0,7);ctx.fill();}else{const g=ctx.createRadialGradient(x,y,rad*(scratchSharp===1?0.5:0.1),x,y,rad);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,rad,0,7);ctx.fill();}}
+            function scratch(e){if(!drawing)return;e.preventDefault();const p=pos(e);brush(p.x,p.y);sTick();}
+            cv.addEventListener('pointerdown',function(e){drawing=true;scratch(e);});
+            cv.addEventListener('pointermove',scratch);
+            cv.addEventListener('pointerup',function(){if(drawing){drawing=false;checkClear();}});
+            cv.addEventListener('pointercancel',function(){drawing=false;});
+            function checkClear(){try{const d=ctx.getImageData(0,0,cv.width,cv.height).data;let c=0,tot=0;for(let k=3;k<d.length;k+=4*60){tot++;if(d[k]<40)c++;}if(c/tot>0.55){ctx.clearRect(0,0,w,h);sReveal();confetti(1000);}}catch(e){}}
+            window.scRevealNow=function(){ctx.clearRect(0,0,w,h);sReveal();confetti(1000);};
         }
 
         /* ===== HIDDEN REVEAL (blur) ===== */
         function playPixel(){
-            let i=0; const player=document.getElementById('player');
+            let i=0; const player=document.getElementById('player'); revealReset();
             function build(){const it=cfg.parsed[i];let b=24;player.innerHTML=titleBar()+'<div class="pcount">Item '+(i+1)+' / '+cfg.parsed.length+' — guess it!</div>'+
-                '<div class="pix" id="pix" style="--b:24px">'+(it.t==='text'?'<span class="pixtext">'+esc(it.v)+'</span>':itemHTML(it,false))+'</div>'+
+                '<div class="pix" id="pix" style="--b:24px">'+(it.t==='text'?'<span class="pixtext">'+esc(it.v)+'</span>':itemHTML(it,false))+'</div>'+revealBar()+
                 '<div class="play-actions"><button class="btn btn-primary" onclick="pxClear()"><i class="fas fa-magnifying-glass-plus"></i> Clearer</button><button class="btn btn-soft" onclick="pxReveal()"><i class="fas fa-eye"></i> Reveal</button><button class="btn btn-soft" onclick="pxNext()"><i class="fas fa-forward"></i> Next</button></div>';
                 const pix=document.getElementById('pix');
-                window.pxClear=function(){b=Math.max(0,b-5);pix.style.setProperty('--b',b+'px');sTick();if(b===0){sReveal();confetti(900);}};
-                window.pxReveal=function(){b=0;pix.style.setProperty('--b','0px');sReveal();confetti(900);};
+                window.pxClear=function(){b=Math.max(0,b-5);pix.style.setProperty('--b',b+'px');sTick();if(b===0){sReveal();confetti(900);pushReveal(it);}};
+                window.pxReveal=function(){b=0;pix.style.setProperty('--b','0px');sReveal();confetti(900);pushReveal(it);};
             }
             window.pxNext=function(){i=(i+1)%cfg.parsed.length;build();};
             build();
         }
+
 
         /* ===== BOOKMARK ===== */
         let bookmarked=false;
