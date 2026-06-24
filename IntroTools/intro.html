@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Intro Tools</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root{--bg:#f4f1ff;--bg-2:#e7fbff;--surface:#fff;--ink:#241b4e;--muted:#6b6790;--line:#e7e3f5;--primary:#6d28d9;--primary-2:#9333ea;--primary-rgb:109,40,217;--danger:#ff3d7f;--ok:#22c55e;--gold:#ffb020;--radius:16px;--font-head:'Luckiest Guy',sans-serif;--font-body:'Nunito',sans-serif;}
+        :root{--bg:#f4f1ff;--bg-2:#e7fbff;--surface:#fff;--ink:#241b4e;--muted:#6b6790;--line:#e7e3f5;--primary:#6d28d9;--primary-2:#9333ea;--primary-rgb:109,40,217;--danger:#ff3d7f;--ok:#22c55e;--gold:#ffb020;--radius:16px;--font-head:'Baloo 2',sans-serif;--font-body:'Nunito',sans-serif;}
         .dark-mode{--bg:#14122e;--bg-2:#0e1330;--surface:#211d44;--ink:#efeaff;--muted:#a9a3d6;--line:#352f63;--primary:#a78bfa;--primary-2:#c084fc;--primary-rgb:167,139,250;--danger:#ff5c93;}
         *{box-sizing:border-box;}html,body{height:100%;}
         body{margin:0;font-family:var(--font-body);color:var(--ink);height:100vh;display:flex;flex-direction:column;overflow:hidden;background:radial-gradient(1200px 700px at 85% -15%,var(--bg-2),var(--bg)) fixed;transition:background .3s,color .3s;}
@@ -160,6 +160,15 @@
         .sc-ctrls label{font-size:12px;font-weight:800;color:var(--muted);display:inline-flex;gap:6px;align-items:center;}
         .sc-ctrls input[type=range]{width:108px;}
 
+        .builder2{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;}
+        .b2-left{flex:1 1 300px;min-width:260px;}
+        .b2-right{flex:1 1 270px;min-width:240px;}
+        .b2-right .pvcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px;position:sticky;top:0;}
+        #introPreview{display:flex;flex-direction:column;align-items:center;}
+        .pvtitle{font-weight:800;color:var(--muted);font-size:11px;text-align:center;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;}
+        .pvnote{font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.4;}
+        .wheelmini{width:140px;height:140px;border-radius:50%;margin:0 auto;box-shadow:0 8px 18px rgba(0,0,0,.2);border:5px solid var(--surface);}
+        .pvscale{transform:scale(.8);transform-origin:top center;height:150px;}
         #confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:900;}
         .modal{display:none;position:fixed;inset:0;background:rgba(10,8,30,.7);z-index:2000;align-items:center;justify-content:center;padding:16px;} .modal.show{display:flex;}
         .modal-card{background:var(--surface);border-radius:18px;padding:22px;max-width:520px;width:100%;text-align:center;animation:pop .4s cubic-bezier(.18,.89,.32,1.28);}
@@ -190,15 +199,19 @@
         <div id="form" style="display:none">
             <button class="btn btn-soft" onclick="showGallery()" style="margin-bottom:6px"><i class="fas fa-arrow-left"></i> All tools</button>
             <h2 id="formTitle">Tool</h2>
-            <label class="fld">Title (optional)</label>
-            <input type="text" id="title" placeholder="e.g. Today's Mystery" oninput="saveDraft()">
-            <div class="mask-row"><span class="lab" id="itemsLabel">Items</span><button class="eye" id="maskBtn" onclick="toggleMask()"><i class="fas fa-eye-slash"></i> <span>Hidden</span></button></div>
-            <textarea id="items" class="masked" oninput="saveDraft()"></textarea>
-            <div id="itemsHelp" class="hint">One per line. Text, emoji, or a direct image/video URL. Hidden by default — Enter makes a new line.</div>
-            <div class="card" id="optCard" style="display:none">
-                <label class="fld" style="margin-top:0">Options</label>
-                <div class="optrow" id="pickRow"><label class="chk">Pick how many at once <input type="number" id="optPick" value="1" min="1" max="9" style="width:60px" oninput="saveDraft()"></label>
-                <label class="chk"><input type="checkbox" id="optExclude" checked onchange="saveDraft()"> Don't repeat picks</label></div>
+            <input type="text" id="title" placeholder="Title (optional) — e.g. Today's Mystery" oninput="saveDraft()" style="margin-bottom:4px">
+            <div class="builder2">
+              <div class="b2-left">
+                <div class="mask-row"><span class="lab" id="itemsLabel">Items</span><button class="eye" id="maskBtn" onclick="toggleMask()"><i class="fas fa-eye-slash"></i> <span>Hidden</span></button></div>
+                <textarea id="items" class="masked" oninput="saveDraft()"></textarea>
+                <div id="itemsHelp" class="hint">One per line. Text, emoji, or a direct image/video URL.</div>
+                <div class="card" id="optCard" style="display:none">
+                    <label class="fld" style="margin-top:0">Options</label>
+                    <div class="optrow" id="pickRow"><label class="chk">Pick how many at once <input type="number" id="optPick" value="1" min="1" max="9" style="width:60px" oninput="saveDraft()"></label>
+                    <label class="chk"><input type="checkbox" id="optExclude" checked onchange="saveDraft()"> Don't repeat picks</label></div>
+                </div>
+              </div>
+              <div class="b2-right"><div class="pvcard"><label class="fld" style="margin-top:0"><i class="fas fa-eye"></i> Live preview</label><div id="introPreview"></div></div></div>
             </div>
             <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
                 <button class="btn btn-primary" onclick="generate()"><i class="fas fa-play"></i> Play now</button>
@@ -298,13 +311,13 @@
         let cur=null;
         function buildGallery(){const g=document.getElementById('galleryGrid');g.innerHTML='';ACTS.forEach(m=>{const t=document.createElement('div');t.className='gtile'+(m.soon?' soon':'');t.style.setProperty('--gc',m.c1);t.style.setProperty('--gc2',m.c2);t.innerHTML='<div class="ic"><i class="fas '+m.icon+'"></i></div><h3>'+m.name+'</h3><p>'+m.desc+'</p>';if(!m.soon)t.onclick=()=>openForm(m.id);g.appendChild(t);});}
         function showGallery(){location.hash='';document.getElementById('gallery').style.display='block';document.getElementById('form').style.display='none';document.getElementById('player').style.display='none';document.getElementById('editBtn').style.display='none';document.getElementById('brandName').textContent='Intro & Reveal Tools';updateStarHint();}
-        function openForm(id){cur=id;const m=M[id];document.getElementById('gallery').style.display='none';document.getElementById('form').style.display='block';document.getElementById('player').style.display='none';document.getElementById('brandName').textContent=m.name;document.getElementById('formTitle').textContent=m.name;document.getElementById('itemsLabel').textContent='Items';document.getElementById('items').placeholder=m.ph||'';document.getElementById('itemsHelp').textContent=m.label+' · Hidden by default — Enter makes a new line.';document.getElementById('optCard').style.display=(m.opt==='pick')?'block':'none';masked=true;applyMask();updateStarHint();}
+        function openForm(id){cur=id;const m=M[id];document.getElementById('gallery').style.display='none';document.getElementById('form').style.display='block';document.getElementById('player').style.display='none';document.getElementById('brandName').textContent=m.name;document.getElementById('formTitle').textContent=m.name;document.getElementById('itemsLabel').textContent='Items';document.getElementById('items').placeholder=m.ph||'';document.getElementById('itemsHelp').textContent=m.label+' · Hidden by default — Enter makes a new line.';document.getElementById('optCard').style.display=(m.opt==='pick')?'block':'none';masked=true;applyMask();introPreview();updateStarHint();}
         function parseItems(){return val('items').split('\n').map(s=>s.trim()).filter(Boolean);}
         function buildPayload(){const t=val('title').trim(),raw=parseItems();if(!raw.length)return null;const seed=Math.floor(Math.random()*1e9);const opt={};if(M[cur].opt==='pick'){opt.pick=Math.max(1,parseInt(val('optPick'))||1);opt.exclude=document.getElementById('optExclude').checked;}return{g:cur,t,items:raw,opt,seed};}
         function linkFor(p){return location.origin+location.pathname+'#d='+enc(p);}
         function generate(){const p=buildPayload();if(!p){flash('Add at least one item.');return;}location.hash='d='+enc(p);}
         function flash(m){const n=document.getElementById('itemsHelp');const o=n.textContent;n.textContent=m;n.style.color='var(--danger)';setTimeout(()=>{n.textContent=o;n.style.color='';},2400);}
-        function saveDraft(){try{localStorage.setItem('ct-intro-draft',JSON.stringify({g:cur,t:val('title'),items:val('items'),pick:val('optPick'),exclude:document.getElementById('optExclude').checked}));}catch(e){}updateStarHint();}
+        function saveDraft(){try{localStorage.setItem('ct-intro-draft',JSON.stringify({g:cur,t:val('title'),items:val('items'),pick:val('optPick'),exclude:document.getElementById('optExclude').checked}));}catch(e){}try{introPreview();}catch(e){}updateStarHint();}
         function loadDraft(){try{const d=JSON.parse(localStorage.getItem('ct-intro-draft'));if(d&&d.g&&M[d.g]){openForm(d.g);set('title',d.t);set('items',d.items);if(d.pick)set('optPick',d.pick);document.getElementById('optExclude').checked=d.exclude!==false;masked=true;applyMask();}}catch(e){}}
         function goEdit(){const wasPlaying=location.hash.indexOf('d=')>=0;const id=cfg?cfg.g:cur;location.hash='';if(id&&M[id])openForm(id);if(wasPlaying)document.getElementById('regenNotice').style.display='block';}
         function currentLink(){if(location.hash.indexOf('d=')>=0)return location.href;const p=buildPayload();return p?linkFor(p):null;}
@@ -321,6 +334,17 @@
             document.getElementById('editBtn').style.display='none';updateStarHint();
         }
         function titleBar(){return cfg.t?'<div class="ptitle">'+esc(cfg.t)+'</div>':'';}
+        function introPreview(){ const host=document.getElementById('introPreview'); if(!host||!cur)return; const items=parseItems(),n=items.length;
+            if(!n){host.innerHTML='<div class="pvnote">Add an item to see a preview.</div>';return;}
+            const count='<div class="pvtitle">'+n+' item'+(n>1?'s':'')+'</div>';
+            if(cur==='box'){ host.innerHTML=count+'<div class="pvscale"><div class="boxscene" style="min-height:140px"><div class="box"><div class="bx bx-bottom"></div><div class="bx bx-back"></div><div class="bx bx-left"></div><div class="bx bx-right"></div><div class="bx bx-front"></div><div class="lid"><span class="knot"></span></div></div></div></div><div class="pvnote">Shake &amp; pick reveals items in a 3D popup.</div>'; }
+            else if(cur==='env'){ const k=Math.min(4,Math.max(2,n)); host.innerHTML=count+'<div class="grid2" style="--cc:'+k+';max-width:230px;margin:0 auto">'+Array.from({length:Math.min(4,n)}).map(function(){return '<button class="env" style="pointer-events:none"><span class="seal"></span><i class="fas fa-envelope"></i></button>';}).join('')+'</div><div class="pvnote">Tap an envelope to reveal what is inside.</div>'; }
+            else if(cur==='door'){ const k=Math.min(5,Math.max(2,n)); host.innerHTML=count+'<div class="grid2 doors" style="--cc:'+k+';max-width:250px;margin:0 auto">'+Array.from({length:Math.min(5,n)}).map(function(_,i){return '<button class="door" style="pointer-events:none"><span class="handle"></span><span class="dnum">'+(i+1)+'</span></button>';}).join('')+'</div><div class="pvnote">Open a door to zoom into a lit room.</div>'; }
+            else if(cur==='wheel'){ host.innerHTML=count+wheelMini(items)+'<div class="pvnote">Spin to land on one option.</div>'; }
+            else if(cur==='scratch'){ host.innerHTML=count+'<div class="grid2 cards" style="--cc:'+Math.min(4,Math.max(2,n))+';max-width:230px;margin:0 auto">'+Array.from({length:Math.min(4,n)}).map(function(_,i){return '<button class="scard" style="pointer-events:none"><i class="fas fa-gift"></i><span>'+(i+1)+'</span></button>';}).join('')+'</div><div class="pvnote">Pick a card, then scratch it open.</div>'; }
+            else if(cur==='pixel'){ const it=parseItem(items[0]); host.innerHTML=count+'<div class="pix" style="--b:14px">'+(it.t==='text'?'<span class="pixtext" style="font-size:2.2rem">'+esc(it.v)+'</span>':itemHTML(it,false))+'</div><div class="pvnote">Clears gradually as students guess.</div>'; }
+        }
+        function wheelMini(items){ const labels=items.map(function(l){return parseItem(l);}); const nn=labels.length,seg=360/nn; let stops=''; for(let i=0;i<nn;i++){const c=PAL[i%PAL.length];stops+=c+' '+(i*seg)+'deg '+((i+1)*seg)+'deg'+(i<nn-1?',':'');} return '<div class="wheelmini" style="background:conic-gradient('+stops+')"></div>'; }
         function roomDeco(){return '<div class="deco bunting"><i style="--c:#ff3d7f"></i><i style="--c:#ffb020"></i><i style="--c:#14d6c4"></i><i style="--c:#6d28d9"></i><i style="--c:#22c55e"></i><i style="--c:#2f6bff"></i></div><div class="deco window"></div><div class="deco frame"></div><div class="deco plant">🪴</div><div class="deco rug"></div>';}
 
         /* ===== REVEAL FRAMEWORK (3D modal reveal + history + remove toggle) ===== */
@@ -435,7 +459,7 @@
             const dpr=window.devicePixelRatio||1,w=wrap.clientWidth,h=wrap.clientHeight;
             cv.width=w*dpr;cv.height=h*dpr;cv.style.width=w+'px';cv.style.height=h+'px';ctx.scale(dpr,dpr);
             const grd=ctx.createLinearGradient(0,0,w,h);grd.addColorStop(0,'#c9b8ff');grd.addColorStop(1,'#8a84ad');ctx.fillStyle=grd;ctx.fillRect(0,0,w,h);
-            ctx.fillStyle='rgba(255,255,255,.7)';ctx.font='700 '+Math.round(h*0.13)+'px Luckiest Guy,Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('Scratch!',w/2,h/2);
+            ctx.fillStyle='rgba(255,255,255,.7)';ctx.font='700 '+Math.round(h*0.13)+'px Baloo 2,Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('Scratch!',w/2,h/2);
             let drawing=false;
             function pos(e){const r=cv.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top};}
             function brush(x,y){const rad=scratchSize;ctx.globalCompositeOperation='destination-out';if(scratchSharp>=2){ctx.fillStyle='rgba(0,0,0,1)';ctx.beginPath();ctx.arc(x,y,rad,0,7);ctx.fill();}else{const g=ctx.createRadialGradient(x,y,rad*(scratchSharp===1?0.5:0.1),x,y,rad);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,rad,0,7);ctx.fill();}}

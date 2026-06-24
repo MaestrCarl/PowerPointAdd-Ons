@@ -6,23 +6,23 @@
     <title>ClassTools</title>
     <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Luckiest+Guy&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root{--bg:#f4f1ff;--bg-2:#e7fbff;--surface:#fff;--ink:#241b4e;--muted:#6b6790;--line:#e7e3f5;
             --primary:#6d28d9;--primary-2:#9333ea;--primary-rgb:109,40,217;--radius:18px;--gold:#ffb020;
-            --font-head:'Luckiest Guy',sans-serif;--font-body:'Nunito',sans-serif;}
+            --font-head:'Baloo 2',sans-serif;--font-body:'Nunito',sans-serif;--font-logo:'Luckiest Guy',cursive;}
         .dark-mode{--bg:#14122e;--bg-2:#0e1330;--surface:#211d44;--ink:#efeaff;--muted:#a9a3d6;--line:#352f63;--primary:#a78bfa;--primary-2:#c084fc;--primary-rgb:167,139,250;}
         *{box-sizing:border-box;}
         body{font-family:var(--font-body);margin:0;min-height:100vh;color:var(--ink);background:radial-gradient(1200px 700px at 85% -15%,var(--bg-2),var(--bg)) fixed;overflow-x:hidden;transition:background .3s,color .3s;}
         .topbar{display:flex;align-items:center;gap:10px;padding:9px 14px;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;box-shadow:0 4px 16px rgba(var(--primary-rgb),.35);}
-        .topbar .brand{display:flex;align-items:center;gap:9px;font-family:var(--font-head);font-weight:700;font-size:18px;}
+        .topbar .brand{display:flex;align-items:center;gap:9px;font-family:var(--font-logo);font-weight:400;font-size:20px;letter-spacing:.5px;}
         .topbar .spacer{flex:1 1 auto;}
         .icon-btn{width:34px;height:34px;border-radius:10px;border:none;cursor:pointer;background:rgba(255,255,255,.16);color:#fff;font-size:14px;display:inline-flex;align-items:center;justify-content:center;transition:.15s;}
         .icon-btn:hover{background:rgba(255,255,255,.3);}.icon-btn:active{transform:scale(.92);}
 
         #menu-view{padding:22px 22px 40px;}
         .hub-header{text-align:center;margin-bottom:18px;}
-        .hub-header h1{margin:0;font-family:var(--font-head);font-size:26px;font-weight:700;}
+        .hub-header h1{margin:0;font-family:var(--font-logo);font-size:30px;font-weight:400;letter-spacing:.5px;}
         .hub-header p{margin:6px 0 0;font-size:13px;color:var(--muted);}
         .pinned{max-width:720px;margin:0 auto 18px;display:none;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--gold);border-radius:14px;padding:10px 14px;}
         .pinned i.star{color:var(--gold);} .pinned .lbl{font-weight:800;} .pinned .go{margin-left:auto;}

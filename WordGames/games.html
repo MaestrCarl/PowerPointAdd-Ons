@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Word Games</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root{--bg:#f4f1ff;--bg-2:#e7fbff;--surface:#fff;--ink:#241b4e;--muted:#6b6790;--line:#e7e3f5;
             --primary:#6d28d9;--primary-2:#9333ea;--primary-rgb:109,40,217;--danger:#ff3d7f;--ok:#22c55e;--gold:#ffb020;--radius:16px;
-            --font-head:'Luckiest Guy',sans-serif;--font-body:'Nunito',sans-serif;}
+            --font-head:'Baloo 2',sans-serif;--font-body:'Nunito',sans-serif;}
         .dark-mode{--bg:#14122e;--bg-2:#0e1330;--surface:#211d44;--ink:#efeaff;--muted:#a9a3d6;--line:#352f63;--primary:#a78bfa;--primary-2:#c084fc;--primary-rgb:167,139,250;--danger:#ff5c93;}
         *{box-sizing:border-box;} html,body{height:100%;}
         body{margin:0;font-family:var(--font-body);color:var(--ink);height:100vh;display:flex;flex-direction:column;overflow:hidden;background:radial-gradient(1200px 700px at 85% -15%,var(--bg-2),var(--bg)) fixed;transition:background .3s,color .3s;}
@@ -160,6 +160,16 @@
         .pvcell.cw{background:var(--surface);color:var(--ink);border-color:var(--line);position:relative;}
         .pvcell.cw.blank{background:transparent;border-color:transparent;}
         .pvcell .num{position:absolute;top:1px;left:2px;font-size:8px;color:var(--muted);font-weight:700;}
+        .pvtitle{font-weight:800;color:var(--muted);font-size:11px;text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;}
+        .pvword{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:8px;}
+        .pvslot{width:20px;height:26px;border-bottom:3px solid var(--primary);}.pvslot.space{border:none;width:10px;}
+        .pvtiles{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:8px;}
+        .pvtile{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:7px 11px;font-family:var(--font-head);font-weight:700;color:var(--ink);box-shadow:0 3px 8px rgba(0,0,0,.08);}
+        .pvtile.word{font-family:var(--font-body);font-weight:800;}
+        .pvcats{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(86px,1fr));width:100%;}
+        .pvcat{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center;}
+        .pvcat-h{font-family:var(--font-head);font-weight:700;color:var(--primary);font-size:13px;}
+        .pvcat-n{font-size:11px;color:var(--muted);margin-top:3px;}
         /* ---- DRAG TILES (scramble / sentence) ---- */
         .dtiles{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;min-height:52px;padding:8px;border:2px dashed var(--line);border-radius:14px;}
         .dtile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 15px;font-family:var(--font-head);font-weight:700;font-size:clamp(1.1rem,3vmin,1.8rem);cursor:grab;user-select:none;touch-action:none;transition:transform .12s,box-shadow .12s;}
@@ -437,7 +447,7 @@
             document.getElementById('itemsHelp').textContent=(id==='cat'?'One category per line:  Category = item1, item2':(ENTRY[id]?ENTRY[id].pasteHelp:''));
             document.getElementById('items').placeholder=(id==='cat'?'Mammals = dog, cat, whale\nBirds = eagle, owl':(id==='hg'?'photosynthesis | how plants make food':(id==='se'?'The quick brown fox jumps.':'word')));
             document.getElementById('catCats').style.display=(id==='cat')?'block':'none';
-            document.getElementById('previewPanel').style.display=(id==='ws'||id==='cw')?'block':'none';
+            document.getElementById('previewPanel').style.display='block';
             buildGameOpts(id);
             document.getElementById('modeRows').classList.add('on'); document.getElementById('modePaste').classList.remove('on');
             document.getElementById('rowsEditor').style.display='block'; document.getElementById('addRowBtn').style.display='inline-flex'; document.getElementById('pasteWrap').style.display='none';
@@ -497,7 +507,13 @@
         function longestOf(ws){ return ws.length?Math.max.apply(null,ws.map(w=>w.w.length)):5; }
         function wsAutoSize(ws){ if(!ws.length)return 8; const longest=longestOf(ws); const total=ws.reduce((a,w)=>a+w.w.length,0); return Math.min(22,Math.max(longest,Math.ceil(Math.sqrt(total*1.8)))+2); }
         function wsSize(ws){ const el=document.getElementById('wsSize'); const auto=wsAutoSize(ws); if(wsSizeManual&&el&&parseInt(el.value))return Math.max(parseInt(el.value),longestOf(ws)); if(el)el.value=auto; return auto; }
-        function previewUpdate(){ if(curGame==='ws')wsRender(); else if(curGame==='cw')cwPreview(); }
+        function previewUpdate(){ if(curGame==='ws')wsRender(); else if(curGame==='cw')cwPreview(); else if(curGame==='hg')hgPreview(); else if(curGame==='sc')scPreview(); else if(curGame==='se')sePreview(); else if(curGame==='cat')catPreview(); }
+        function previewBox(h){ const el=document.getElementById('b2preview'); if(el)el.innerHTML=h; const ex=document.getElementById('exportRow'); if(ex)ex.innerHTML=''; }
+        function pvEmpty(msg){ previewBox('<div class="optnote" style="text-align:center">'+msg+'</div>'); }
+        function hgPreview(){ const L=parseItems(); if(!L.length)return pvEmpty('Add a word to preview.'); const first=(L[0].split('|')[0]||'').trim(); const slots=first.split('').map(function(ch){return ch===' '?'<span class="pvslot space"></span>':'<span class="pvslot"></span>';}).join(''); const hint=(L[0].split('|')[1]||'').trim(); previewBox('<div class="pvtitle">'+L.length+' word'+(L.length>1?'s':'')+'</div><div class="pvword" style="'+lcStyle()+'">'+slots+'</div>'+(hint?'<div class="optnote" style="text-align:center"><i class="fas fa-lightbulb"></i> '+esc(hint)+'</div>':'')+'<div class="optnote" style="text-align:center">Students guess letters to fill the blanks.</div>'); }
+        function scPreview(){ const L=parseItems(); if(!L.length)return pvEmpty('Add a word to preview.'); const w=L[0].toUpperCase().replace(/[^A-Za-z]/g,''); const scr=w.length>1?shuf(w.split(''),12345).join(''):w; const drag=document.getElementById('optDrag')&&document.getElementById('optDrag').checked; previewBox('<div class="pvtitle">'+L.length+' word'+(L.length>1?'s':'')+'</div><div class="pvtiles">'+scr.split('').map(function(c){return '<span class="pvtile">'+esc(c)+'</span>';}).join('')+'</div><div class="optnote" style="text-align:center">'+(drag?'Drag the tiles into the right order.':'Type the unscrambled word.')+'</div>'); }
+        function sePreview(){ const L=parseItems(); if(!L.length)return pvEmpty('Add a sentence to preview.'); const words=L[0].split(/\s+/).filter(Boolean); const sh=shuf(words.map(function(w,i){return i;}),12345); previewBox('<div class="pvtitle">'+L.length+' sentence'+(L.length>1?'s':'')+'</div><div class="pvtiles">'+sh.map(function(i){return '<span class="pvtile word">'+esc(words[i])+'</span>';}).join('')+'</div><div class="optnote" style="text-align:center">Students drag the words into the right order.</div>'); }
+        function catPreview(){ const cats=parseItems().map(function(l){const i=l.indexOf('=');if(i<0)return null;const n=l.slice(0,i).trim();const items=l.slice(i+1).split(',').map(function(s){return s.trim();}).filter(Boolean);return {n:n,items:items};}).filter(Boolean); if(!cats.length)return pvEmpty('Add a category to preview.'); previewBox('<div class="pvcats">'+cats.map(function(c){return '<div class="pvcat"><div class="pvcat-h">'+esc(c.n)+'</div><div class="pvcat-n">'+c.items.length+' item'+(c.items.length===1?'':'s')+'</div></div>';}).join('')+'</div><div class="optnote" style="text-align:center">Students sort items into the right category.</div>'); }
         function lcStyle(){ return CAPS==='lower'?'text-transform:lowercase':''; }
         function wsRender(){ const host=document.getElementById('b2preview'); if(!host)return; const ws=wsWords(); if(!ws.length){host.innerHTML='<div class="optnote" style="text-align:center">Add a word to see the grid.</div>';document.getElementById('exportRow').innerHTML='';return;} const size=wsSize(ws); const built=buildWordSearch(ws.map(o=>({w:o.w,dirs:wordDirs(o)})),size,wsSnake,12345); const on={}; Object.keys(built.placed).forEach(w=>built.placed[w].forEach(p=>on[p[0]+','+p[1]]=true)); const g=built.grid.map(r=>r.split('')); let html='<div class="pvgrid" style="grid-template-columns:repeat('+built.size+',1fr);'+lcStyle()+'">'; for(let r=0;r<built.size;r++)for(let c=0;c<built.size;c++){html+='<div class="pvcell '+(on[r+','+c]?'w0':'on')+'">'+g[r][c]+'</div>';} html+='</div>'; if(built.unplaced.length)html+='<div class="optnote" style="color:var(--danger);text-align:center">Couldn\'t fit: '+built.unplaced.map(esc).join(', ')+' — try a bigger grid or more directions.</div>'; host.innerHTML=html; renderExport(); }
         function cwPreview(){ const host=document.getElementById('b2preview'); if(!host)return; const ws=cwWords(); if(ws.length<2){host.innerHTML='<div class="optnote" style="text-align:center">Add at least two words that share a letter.</div>';document.getElementById('exportRow').innerHTML='';return;} const cw=buildCrossword(ws.map(w=>({w:w.w,clue:w.clue}))); let html='<div class="pvgrid" style="grid-template-columns:repeat('+cw.W+',1fr);max-width:300px;'+lcStyle()+'">'; for(let r=0;r<cw.H;r++)for(let c=0;c<cw.W;c++){const ch=cw.cells[r][c];const n=cw.entries.find(e=>e.r===r&&e.c===c);html+='<div class="pvcell '+(ch?'cw':'cw blank')+'">'+(n?'<span class="num">'+n.num+'</span>':'')+(ch||'')+'</div>';} html+='</div>'; host.innerHTML=html; renderExport(); }
