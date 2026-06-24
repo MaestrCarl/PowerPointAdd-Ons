@@ -44,12 +44,32 @@
         .tool-bar button.back{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;border:none;padding:9px 15px;border-radius:30px;cursor:pointer;font-family:var(--font-body);font-weight:800;display:inline-flex;align-items:center;gap:7px;}
         .tool-bar .tool-title{font-family:var(--font-head);font-weight:600;font-size:15px;}
         #tool-frame{flex:1 1 auto;width:100%;border:none;}
+        .brand:hover{opacity:.85;}
+        /* ===== HISTORY MODAL ===== */
+        .modal{display:none;position:fixed;inset:0;background:rgba(10,8,30,.6);z-index:3000;align-items:flex-start;justify-content:center;padding:60px 16px 16px;}
+        .modal.show{display:flex;}
+        .modal-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;max-width:460px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.35);animation:popm .35s cubic-bezier(.18,.89,.32,1.28);}
+        @keyframes popm{from{transform:scale(.85) translateY(-10px);opacity:0;}to{transform:none;opacity:1;}}
+        .modal-card h3{font-family:var(--font-head);margin:0 0 4px;font-size:18px;display:flex;align-items:center;gap:8px;}
+        .modal-card .msub{color:var(--muted);font-size:12px;margin:0 0 14px;}
+        .hist-list{display:flex;flex-direction:column;gap:9px;max-height:50vh;overflow:auto;}
+        .hist-row{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--line);border-radius:13px;padding:10px 12px;}
+        .hist-row .hi{color:var(--gold);font-size:15px;flex:0 0 auto;}
+        .hist-row .hl{flex:1 1 auto;font-weight:700;font-size:13.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .hist-row button{border:none;cursor:pointer;border-radius:9px;padding:8px 11px;font-family:var(--font-body);font-weight:800;font-size:12px;display:inline-flex;align-items:center;gap:6px;}
+        .hist-row .open{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;}
+        .hist-row .del{background:transparent;color:var(--muted);border:1px solid var(--line);}
+        .hist-row .del:hover{color:var(--danger,#ff3d7f);border-color:var(--danger,#ff3d7f);}
+        .hist-empty{text-align:center;color:var(--muted);font-size:13px;padding:24px 8px;}
+        .modal-actions{display:flex;justify-content:flex-end;margin-top:16px;}
+        .modal-actions .close{background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:11px;padding:9px 16px;cursor:pointer;font-family:var(--font-body);font-weight:800;}
     </style>
 </head>
 <body>
     <div class="topbar">
-        <div class="brand"><i class="fas fa-toolbox"></i> ClassTools</div>
+        <div class="brand" id="brandHome" onclick="goHome()" title="Back to all tools" style="cursor:pointer"><i class="fas fa-toolbox"></i> ClassTools</div>
         <div class="spacer"></div>
+        <button class="icon-btn" id="histBtn" onclick="openHistory()" title="Starred tools history"><i class="fas fa-clock-rotate-left"></i></button>
         <button class="icon-btn" id="darkBtn" onclick="toggleDark()" title="Dark mode"><i class="fas fa-moon"></i></button>
     </div>
 
@@ -69,14 +89,21 @@
         <iframe id="tool-frame" title="Active tool" allow="clipboard-write; camera"></iframe>
     </div>
 
+    <div class="modal" id="histModal" onclick="if(event.target===this)closeHistory()">
+        <div class="modal-card">
+            <h3><i class="fas fa-star" style="color:var(--gold)"></i> Starred tools</h3>
+            <p class="msub">Your bookmarked tools, saved on this device. Open one, or remove it from the list.</p>
+            <div class="hist-list" id="histList"></div>
+            <div class="modal-actions"><button class="close" onclick="closeHistory()">Close</button></div>
+        </div>
+    </div>
+
     <script>
         /* TOOL REGISTRY — grouped into sections. Append to add more. */
         const SECTIONS = [
             { name: 'Classroom Tools', tools: [
                 { title: 'Classroom Timer', desc: 'Countdown, stopwatch, pomodoro, race & more.', icon: 'fas fa-stopwatch', url: '../MyTimerAddin/timer.html', c1:'#6d28d9', c2:'#9333ea' },
-                { title: 'Random Picker', desc: 'Pick students, groups, pairs & a spinner.', icon: 'fas fa-dice', url: '../RandomPicker/picker.html', c1:'#2f6bff', c2:'#14d6c4' }
-            ]},
-            { name: 'Intro Tools', tools: [
+                { title: 'Random Picker', desc: 'Pick students, groups, pairs & a spinner.', icon: 'fas fa-dice', url: '../RandomPicker/picker.html', c1:'#2f6bff', c2:'#14d6c4' },
                 { title: 'Intro Tools', desc: "Mystery box, doors, envelopes, wheel, scratch & reveal.", icon: 'fas fa-wand-sparkles', url: '../IntroTools/intro.html', c1:'#f97316', c2:'#ff3d7f' }
             ]},
             { name: 'Gaming Tools', tools: [
@@ -113,6 +140,11 @@
             document.getElementById('menu-view').style.display = 'block';
             refreshPinned();
         }
+        // Clicking the ClassTools logo always returns to the main menu.
+        function goHome() {
+            if (document.getElementById('tool-view').style.display !== 'none') closeTool();
+            else { document.querySelector('.topbar').style.display = 'flex'; document.getElementById('menu-view').style.display = 'block'; }
+        }
 
         /* ===== SETTINGS (bookmark saved in the .pptx when available) ===== */
         let officeReady = false;
@@ -135,10 +167,38 @@
         function openPinned() { const bm = getBookmark(); if (bm && bm.url) openUrl(bm.url, bm.label); }
         function clearPinned() { settingsSet('ct-bookmark', null); refreshPinned(); }
 
+        /* ===== STARRED HISTORY (persistent on this device) ===== */
+        const HIST_KEY = 'ct-star-history';
+        function readHistory() { try { return JSON.parse(localStorage.getItem(HIST_KEY)) || []; } catch (e) { return []; } }
+        function writeHistory(list) { try { localStorage.setItem(HIST_KEY, JSON.stringify(list)); } catch (e) {} }
+        function addHistory(url, label) {
+            if (!url) return;
+            const list = readHistory().filter(h => h.url !== url);
+            list.unshift({ url: url, label: label || 'Bookmarked tool', ts: Date.now() });
+            writeHistory(list.slice(0, 30));
+        }
+        function removeHistory(url) {
+            writeHistory(readHistory().filter(h => h.url !== url));
+            const bm = getBookmark(); if (bm && bm.url === url) clearPinned();
+            renderHistory();
+        }
+        function renderHistory() {
+            const list = readHistory(), box = document.getElementById('histList');
+            if (!list.length) { box.innerHTML = '<div class="hist-empty"><i class="far fa-star"></i><br>No starred tools yet. Open a tool and tap its ⭐ to save it here.</div>'; return; }
+            box.innerHTML = list.map(h =>
+                '<div class="hist-row"><i class="fas fa-star hi"></i><span class="hl" title="' + h.label.replace(/"/g,'&quot;') + '">' + h.label.replace(/</g,'&lt;') + '</span>' +
+                '<button class="open" onclick="openFromHistory(\'' + encodeURIComponent(h.url) + '\')"><i class="fas fa-play"></i> Open</button>' +
+                '<button class="del" onclick="removeHistory(decodeURIComponent(\'' + encodeURIComponent(h.url) + '\'))" title="Remove"><i class="fas fa-xmark"></i></button></div>'
+            ).join('');
+        }
+        function openFromHistory(encUrl) { const url = decodeURIComponent(encUrl); closeHistory(); openUrl(url, ''); }
+        function openHistory() { renderHistory(); document.getElementById('histModal').classList.add('show'); }
+        function closeHistory() { document.getElementById('histModal').classList.remove('show'); }
+
         // tools (in the iframe) post their bookmark up to here
         window.addEventListener('message', function (e) {
             const d = e.data; if (!d || d.ns !== 'classtools') return;
-            if (d.cmd === 'bookmark') { settingsSet('ct-bookmark', d.url ? JSON.stringify({ url: d.url, label: d.label || 'Bookmarked tool' }) : null); refreshPinned(); }
+            if (d.cmd === 'bookmark') { settingsSet('ct-bookmark', d.url ? JSON.stringify({ url: d.url, label: d.label || 'Bookmarked tool' }) : null); if (d.url) addHistory(d.url, d.label); refreshPinned(); }
             if (d.cmd === 'close') closeTool();
         });
 
