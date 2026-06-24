@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Classroom Picker</title>
+    <title>Pickers, Pairings &amp; Groupings</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -11,14 +11,14 @@
             --bg: #f4f1ff; --bg-2: #e7fbff; --surface: #ffffff; --surface-2: #f6f5ff;
             --ink: #241b4e; --muted: #6b6790; --line: #e7e3f5;
             --primary: #6d28d9; --primary-2: #9333ea; --primary-rgb: 109, 40, 217;
-            --danger: #ff3d7f; --radius: 18px;
+            --danger: #ff3d7f; --gold: #ffb020; --radius: 18px;
             --font-head: 'Baloo 2', sans-serif; --font-body: 'Nunito', sans-serif;
         }
         .dark-mode {
             --bg: #14122e; --bg-2: #0e1330; --surface: #211d44; --surface-2: #2a2552;
             --ink: #efeaff; --muted: #a9a3d6; --line: #352f63;
             --primary: #a78bfa; --primary-2: #c084fc; --primary-rgb: 167, 139, 250;
-            --danger: #ff5c93;
+            --danger: #ff5c93; --gold: #ffc861;
         }
         * { box-sizing: border-box; }
         html, body { height: 100%; }
@@ -29,7 +29,7 @@
         }
         button { font-family: var(--font-body); }
 
-        /* ===== TOP BAR (compact, icon tools, no overlap) ===== */
+        /* ===== TOP BAR ===== */
         .topbar { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: 8px 12px;
             background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff;
             box-shadow: 0 4px 16px rgba(var(--primary-rgb), .35); z-index: 50; }
@@ -48,7 +48,7 @@
         .star-lg { width: 40px; height: 40px; border-radius: 11px; border: none; cursor: pointer; background: rgba(255,255,255,.16); color: #fff; font-size: 19px; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; transition: .15s; }
         .star-lg:hover { background: rgba(255,255,255,.3); } .star-lg.on { background: #ffd34d; color: #7a4b00; } .star-lg.star-hint { animation: starPulse 1.1s ease-in-out infinite; }
         .star-tip { font-size: 10.5px; font-weight: 700; color: rgba(255,255,255,.92); line-height: 1.05; max-width: 132px; }
-        @media (max-width: 540px) { .star-tip { display: none; } }
+        @media (max-width: 640px) { .star-tip { display: none; } }
 
         /* ===== CLASS INFO BAR ===== */
         .classbar { flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; background: var(--surface-2); border-bottom: 1px solid var(--line); }
@@ -61,43 +61,76 @@
         /* ===== MAIN ===== */
         main { flex: 1 1 auto; min-height: 0; overflow: hidden; }
         .pane { height: 100%; overflow: auto; }
-        #editView { padding: 12px; }
+        #editView { padding: 12px; height: 100%; }
 
-        /* Tabs */
-        .tabs { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 10px; }
-        .tab { border: 1px solid var(--line); background: var(--surface); color: var(--muted); cursor: pointer;
-            font-weight: 800; font-size: 13px; padding: 8px 14px; border-radius: 30px; white-space: nowrap; transition: all .15s; display: inline-flex; gap: 7px; align-items: center; }
-        .tab.active { color: #fff; background: linear-gradient(135deg, var(--primary), var(--primary-2)); border-color: transparent; box-shadow: 0 5px 14px rgba(var(--primary-rgb), .35); }
-        .panel { display: none; animation: fade .25s ease; }
-        .panel.active { display: block; }
-        .tgallery{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-bottom:6px;}
-        .tcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px 14px;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;gap:9px;transition:.18s;}
+        .tgallery{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:6px;}
+        .tcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px 14px;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;gap:9px;transition:.18s;}
         .tcard:hover{transform:translateY(-5px);border-color:transparent;box-shadow:0 14px 30px rgba(var(--primary-rgb),.25);}
-        .tcard .ic{width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:23px;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-2));box-shadow:0 8px 18px rgba(var(--primary-rgb),.35);}
-        .tcard h3{margin:0;font-family:var(--font-head);font-size:15px;font-weight:600;}
+        .tcard .ic{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-2));box-shadow:0 8px 18px rgba(var(--primary-rgb),.35);}
+        .tcard h3{margin:0;font-family:var(--font-head);font-size:16px;font-weight:600;}
         .tcard p{margin:0;font-size:11.5px;color:var(--muted);line-height:1.35;}
         .modeback{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
         @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-        textarea { width: 100%; min-height: 110px; border-radius: 14px; border: 1px solid var(--line);
-            padding: 12px; font-family: var(--font-body); font-size: 14px; background: var(--surface); color: var(--ink); resize: vertical; }
+        /* ===== SIDEBAR + VIEWER WORKSPACE ===== */
+        .panel { display: none; }
+        .panel.active { display: block; animation: fade .25s ease; }
+        .work { display: grid; grid-template-columns: minmax(260px, 340px) 1fr; gap: 14px; align-items: stretch;
+            height: calc(100% - 56px); min-height: 0; }
+        .side { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px;
+            display: flex; flex-direction: column; gap: 10px; overflow: auto; min-height: 0; }
+        .view { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px;
+            display: flex; flex-direction: column; min-height: 0; overflow: hidden; position: relative; }
+        .side h4 { margin: 2px 0 0; font-family: var(--font-head); font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+        @media (max-width: 760px) {
+            .work { grid-template-columns: 1fr; height: auto; }
+            .side { order: 2; }
+            .view { order: 1; min-height: 46vh; }
+        }
+
+        textarea { width: 100%; min-height: 120px; border-radius: 12px; border: 1px solid var(--line);
+            padding: 11px; font-family: var(--font-body); font-size: 14px; background: var(--surface-2); color: var(--ink); resize: vertical; }
         textarea:focus { outline: 2px solid rgba(var(--primary-rgb), .4); border-color: transparent; }
-        .row { display: flex; align-items: center; gap: 8px; margin-top: 12px; color: var(--muted); font-weight: 700; flex-wrap: wrap; }
-        input[type=number] { width: 60px; padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); text-align: center; font-family: var(--font-body); font-weight: 700; }
-        .btn { border: none; cursor: pointer; font-weight: 800; font-family: var(--font-body); border-radius: 14px;
+        .row { display: flex; align-items: center; gap: 8px; color: var(--muted); font-weight: 700; flex-wrap: wrap; font-size: 13px; }
+        .chk { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-weight: 700; font-size: 13px; cursor: pointer; }
+        select, input[type=number], input[type=text] { padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); font-family: var(--font-body); font-weight: 700; font-size: 13px; }
+        input[type=number] { width: 64px; text-align: center; }
+        .btn { border: none; cursor: pointer; font-weight: 800; font-family: var(--font-body); border-radius: 13px;
             display: inline-flex; align-items: center; justify-content: center; gap: 9px; transition: filter .15s, transform .1s; }
         .btn:active { transform: scale(.97); }
-        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; padding: 13px 20px; font-size: 15px; width: 100%; margin-top: 14px; box-shadow: 0 8px 20px rgba(var(--primary-rgb), .35); }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; padding: 13px 18px; font-size: 15px; width: 100%; box-shadow: 0 8px 20px rgba(var(--primary-rgb), .35); }
         .btn-primary:hover { filter: brightness(1.06); }
-        .btn-soft { background: var(--surface); color: var(--ink); border: 1px solid var(--line); padding: 11px 18px; }
-        .hint { font-size: 12px; color: var(--muted); margin-top: 8px; text-align: center; }
+        .btn-soft { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); padding: 9px 14px; font-size: 13px; }
+        .btn-soft:hover { border-color: rgba(var(--primary-rgb),.5); }
+        .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .hint { font-size: 12px; color: var(--muted); }
 
-        /* ===== PRESENT (results) ===== */
-        #presentView { display: none; flex-direction: column; height: 100%; }
-        #presentView.show { display: flex; }
-        .stage { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
-        .present-actions { flex: 0 0 auto; display: flex; gap: 9px; justify-content: center; flex-wrap: wrap; padding-top: 10px; }
-        .present-actions .btn { padding: 10px 18px; font-size: 14px; }
+        /* ===== ROSTER (chips with leader/avoid toggles) ===== */
+        .roster { display: flex; flex-wrap: wrap; gap: 6px; max-height: 170px; overflow: auto; padding: 2px; }
+        .rchip { display: inline-flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--line);
+            border-radius: 18px; padding: 4px 8px 4px 11px; font-weight: 700; font-size: 12.5px; }
+        .rchip .nm { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .rchip .tg { width: 22px; height: 22px; border-radius: 50%; border: none; cursor: pointer; background: rgba(125,125,125,.16);
+            color: var(--muted); font-size: 11px; display: inline-flex; align-items: center; justify-content: center; transition: .12s; }
+        .rchip .tg:hover { transform: scale(1.12); }
+        .rchip.leader { border-color: var(--gold); background: rgba(255,176,32,.16); }
+        .rchip.leader .tg { background: var(--gold); color: #5a3a00; }
+        .rchip.avoid { border-color: var(--danger); background: rgba(255,61,127,.13); }
+        .rchip.avoid .tg.av { background: var(--danger); color: #fff; }
+
+        /* ===== HISTORY ===== */
+        .history { background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+        .history h4 { margin: 0 0 6px; }
+        .history ul { list-style: none; margin: 0; padding: 0; max-height: 150px; overflow-y: auto; font-size: 13px; font-weight: 600; }
+        .history li { padding: 4px 0; border-bottom: 1px dashed var(--line); display: flex; justify-content: space-between; gap: 8px; }
+        .history li .t { color: var(--muted); font-size: 11px; font-weight: 700; }
+
+        /* ===== VIEW CONTENT ===== */
+        .view-title { flex: 0 0 auto; text-align: center; font-family: var(--font-head); font-weight: 700; color: var(--primary);
+            font-size: clamp(1.05rem, 3.2vmin, 1.7rem); margin: 0 0 10px; display: flex; gap: 10px; align-items: center; justify-content: center; }
+        .view-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+        .placeholder { margin: auto; color: var(--muted); text-align: center; font-weight: 700; opacity: .8; }
+        .placeholder i { font-size: 40px; display: block; margin-bottom: 10px; color: var(--primary); opacity: .6; }
 
         .winner-card { margin: auto; display: inline-flex; flex-direction: column; align-items: center; gap: 12px;
             padding: clamp(16px, 4vh, 40px) clamp(20px, 6vw, 70px); border-radius: 26px;
@@ -111,48 +144,50 @@
         .shuffle-name { margin: auto; font-family: var(--font-head); font-weight: 700; font-size: clamp(1.8rem, 9vmin, 7rem); opacity: .85; animation: flip .12s ease; }
         @keyframes flip { from { transform: translateY(12px) scale(.96); opacity: 0; } to { transform: translateY(0) scale(1); opacity: .85; } }
 
-        .results-title { flex: 0 0 auto; text-align: center; font-family: var(--font-head); font-weight: 700; color: var(--primary);
-            font-size: clamp(1.05rem, 3.2vmin, 1.7rem); margin: 0 0 10px; display: flex; gap: 10px; align-items: center; justify-content: center; }
         .grid { flex: 1 1 auto; display: grid; grid-template-columns: repeat(var(--cols, 2), 1fr); gap: clamp(7px, 1.4vmin, 14px); min-height: 0; }
         .grid.fit { grid-auto-rows: 1fr; overflow: hidden; }
-        .grid.scroll { grid-auto-rows: minmax(110px, 1fr); overflow-y: auto; padding-right: 4px; }
+        .grid.scroll { grid-auto-rows: minmax(120px, 1fr); overflow-y: auto; padding-right: 4px; }
         .gcard { text-align: left; border-radius: 14px; padding: clamp(8px, 1.5vmin, 16px); background: var(--surface);
-            border-left: 6px solid var(--g, var(--primary)); box-shadow: 0 8px 20px rgba(0,0,0,.10);
-            display: flex; flex-direction: column; min-height: 0; overflow: hidden; opacity: 0; transform: translateY(16px) scale(.97); }
+            border-left: 7px solid var(--g, var(--primary)); box-shadow: 0 8px 20px rgba(0,0,0,.10);
+            display: flex; flex-direction: column; min-height: 0; opacity: 0; transform: translateY(16px) scale(.97); }
         .gcard.in { animation: cardIn .45s cubic-bezier(.18,.89,.32,1.28) forwards; }
+        .gcard.flash { box-shadow: 0 0 0 3px var(--g, var(--primary)), 0 8px 20px rgba(0,0,0,.12); }
         @keyframes cardIn { to { opacity: 1; transform: none; } }
-        .ghead { display: flex; align-items: center; gap: 8px; margin-bottom: clamp(4px, 1vmin, 9px); font-family: var(--font-head); font-weight: 700; color: var(--g, var(--primary)); font-size: clamp(.82rem, 2.2vmin, 1.2rem); flex: 0 0 auto; }
-        .ghead .dot { width: clamp(20px, 3.4vmin, 30px); height: clamp(20px, 3.4vmin, 30px); border-radius: 50%; flex: 0 0 auto; background: var(--g, var(--primary)); color: #fff; display: flex; align-items: center; justify-content: center; font-size: clamp(.62rem, 1.7vmin, .9rem); }
-        .ghead .count { color: var(--muted); font-weight: 800; font-size: .78em; }
-        .chips { display: flex; flex-wrap: wrap; gap: clamp(4px, 1vmin, 8px); overflow: hidden; align-content: flex-start; }
+        .ghead { display: flex; align-items: center; gap: 8px; margin-bottom: clamp(4px, 1vmin, 9px); font-family: var(--font-head); font-weight: 700; color: var(--g, var(--primary)); font-size: clamp(.9rem, 2.4vmin, 1.35rem); flex: 0 0 auto; }
+        .ghead .dot { width: clamp(22px, 3.6vmin, 32px); height: clamp(22px, 3.6vmin, 32px); border-radius: 50%; flex: 0 0 auto; background: var(--g, var(--primary)); color: #fff; display: flex; align-items: center; justify-content: center; font-size: clamp(.66rem, 1.8vmin, .95rem); }
+        .ghead .count { color: var(--muted); font-weight: 800; font-size: .72em; margin-left: auto; }
+        .chips { display: flex; flex-wrap: wrap; gap: clamp(4px, 1vmin, 8px); overflow: auto; align-content: flex-start; flex: 1 1 auto; }
         .chip { background: rgba(var(--primary-rgb), .12); color: var(--ink); border-radius: 20px; font-weight: 700;
-            font-size: clamp(.62rem, 1.85vmin, 1.05rem); padding: clamp(2px, .8vmin, 7px) clamp(7px, 1.5vmin, 13px);
-            opacity: 0; animation: chipIn .3s ease forwards; }
-        @keyframes chipIn { from { opacity: 0; transform: scale(.8); } to { opacity: 1; transform: scale(1); } }
+            font-size: clamp(.74rem, 2vmin, 1.15rem); padding: clamp(3px, .9vmin, 8px) clamp(8px, 1.6vmin, 14px);
+            display: inline-flex; align-items: center; gap: 6px; opacity: 0; transform: scale(.7);
+            white-space: normal; word-break: break-word; }
+        .chip.in { animation: chipIn .35s cubic-bezier(.18,.89,.32,1.28) forwards; }
+        .chip.lead { background: rgba(255,176,32,.22); box-shadow: inset 0 0 0 1.5px var(--gold); }
+        .chip.lead i { color: var(--gold); }
+        @keyframes chipIn { to { opacity: 1; transform: scale(1); } }
 
-        /* ===== SPINNER (two-column on wide; spinner in focus) ===== */
-        .spin-wrap { display: flex; gap: 16px; align-items: stretch; }
-        .spin-left { flex: 0 0 38%; max-width: 340px; display: flex; flex-direction: column; gap: 10px; }
-        .spin-right { flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; gap: 10px; min-width: 0; }
+        /* ===== SPINNER ===== */
+        .spin-stage { flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: 0; }
         #wheelWrap { position: relative; display: inline-block; filter: drop-shadow(0 12px 18px rgba(0,0,0,.28)); }
         #wheelCanvas { display: block; border-radius: 50%; }
         .pointer { position: absolute; top: 50%; right: -6px; transform: translateY(-50%); width: 0; height: 0;
-            border-top: 15px solid transparent; border-bottom: 15px solid transparent; border-right: 28px solid var(--danger);
+            border-top: 16px solid transparent; border-bottom: 16px solid transparent; border-right: 30px solid var(--danger);
             filter: drop-shadow(2px 3px 3px rgba(0,0,0,.4)); z-index: 10; }
-        .spin-controls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; align-items: center; }
-        .spin-check { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-weight: 700; font-size: 13px; }
-        #spin-winner { min-height: 1.3em; font-family: var(--font-head); font-weight: 700; font-size: clamp(1.1rem, 3.4vmin, 2rem); color: var(--primary); text-align: center; }
-        .history { width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
-        .history h3 { margin: 0 0 6px; font-size: 12px; color: var(--muted); font-weight: 800; text-transform: uppercase; letter-spacing: .5px; }
-        .history ul { list-style: none; margin: 0; padding: 0; max-height: 130px; overflow-y: auto; font-size: 13px; font-weight: 600; }
-        .history li { padding: 3px 0; border-bottom: 1px dashed var(--line); }
-        @media (max-width: 600px) {
-            .spin-wrap { flex-direction: column; }
-            .spin-left { flex: none; max-width: none; order: 2; }
-            .spin-right { order: 1; }
-        }
+        #spinBtn { width: auto; padding: 13px 34px; }
+
+        /* ===== MODAL ===== */
+        .modal { position: fixed; inset: 0; background: rgba(20,15,46,.55); backdrop-filter: blur(3px); z-index: 800;
+            display: none; align-items: center; justify-content: center; padding: 18px; }
+        .modal.show { display: flex; animation: fade .2s ease; }
+        .modal-card { background: var(--surface); border-radius: 24px; padding: clamp(22px,5vw,46px); text-align: center;
+            box-shadow: 0 30px 80px rgba(0,0,0,.4); border: 2px solid rgba(var(--primary-rgb),.4); max-width: 92vw;
+            animation: pop .55s cubic-bezier(.18,.89,.32,1.28); }
+        .modal-card .ml { font-family: var(--font-head); letter-spacing: 5px; color: var(--primary); font-weight: 700; font-size: clamp(.8rem,2.4vmin,1.3rem); }
+        .modal-card .mn { font-family: var(--font-head); font-weight: 700; font-size: clamp(2.2rem, 9vmin, 6rem); margin: 8px 0 18px; word-break: break-word; }
 
         #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 900; }
+        .pulse-once { animation: pulseOnce .5s ease; }
+        @keyframes pulseOnce { 0%{transform:scale(1);}50%{transform:scale(1.06);}100%{transform:scale(1);} }
     </style>
 </head>
 <body>
@@ -167,8 +202,7 @@
             <span class="star-tip">Click to bookmark — reopens here automatically.</span>
         </div>
         <div class="spacer"></div>
-        <button class="icon-btn" id="modeBtn" onclick="toggleMode()" title="Edit / Present"><i class="fas fa-display"></i></button>
-        <button class="icon-btn" id="exportBtn" onclick="exportResults()" title="Export results (.txt)"><i class="fas fa-file-arrow-down"></i></button>
+        <button class="icon-btn" id="fsBtn" onclick="presentLast()" title="Present last result fullscreen"><i class="fas fa-display"></i></button>
         <button class="icon-btn" id="muteBtn" onclick="toggleMute()" title="Sound on/off"><i class="fas fa-volume-high"></i></button>
         <button class="icon-btn" id="darkBtn" onclick="toggleDark()" title="Dark mode"><i class="fas fa-moon"></i></button>
     </div>
@@ -182,73 +216,178 @@
     </div>
 
     <main>
-        <!-- EDIT VIEW -->
         <div id="editView" class="pane">
             <div class="tgallery" id="modeGallery"></div>
-            <div class="modeback" id="modeBack" style="display:none"><button class="btn btn-soft" onclick="showModeGallery()"><i class="fas fa-arrow-left"></i> All pickers</button><h3 id="modeTitle" style="margin:0;font-family:var(--font-head)"></h3></div>
+            <div class="modeback" id="modeBack" style="display:none">
+                <button class="btn btn-soft" onclick="showModeGallery()"><i class="fas fa-arrow-left"></i> All pickers</button>
+                <h3 id="modeTitle" style="margin:0;font-family:var(--font-head)"></h3>
+            </div>
 
+            <!-- ============ PICKER ============ -->
             <div id="picker" class="panel">
-                <textarea id="list-picker" placeholder="Enter names here (one per line)..." oninput="saveSoon()"></textarea>
-                <button class="btn btn-primary" onclick="runPicker()"><i class="fas fa-wand-magic-sparkles"></i> Pick Random Student</button>
-            </div>
-
-            <div id="groups" class="panel">
-                <textarea id="list-groups" placeholder="Enter names here (one per line)..." oninput="saveSoon()"></textarea>
-                <div class="row">Number of groups: <input type="number" id="num-groups" value="2" min="1" oninput="saveSoon()"></div>
-                <button class="btn btn-primary" onclick="runGroups()"><i class="fas fa-users"></i> Generate Groups</button>
-                <div class="hint">Up to 10 groups fit on screen without scrolling.</div>
-            </div>
-
-            <div id="pairs" class="panel">
-                <textarea id="list-pairs" placeholder="Enter names here (one per line)..." oninput="saveSoon()"></textarea>
-                <button class="btn btn-primary" onclick="runPairs()"><i class="fas fa-user-group"></i> Generate Pairs</button>
-            </div>
-
-            <div id="spinner" class="panel">
-                <div class="spin-wrap">
-                    <div class="spin-left">
-                        <textarea id="list-spinner" placeholder="Paste names here (one per line)..." oninput="spinnerSetNames()" style="min-height:160px"></textarea>
-                        <div class="spin-controls">
-                            <label class="spin-check"><input type="checkbox" id="excludeWinners" onchange="saveSoon()"> Remove winners after spin</label>
+                <div class="work">
+                    <div class="side">
+                        <h4>Names</h4>
+                        <textarea id="list-picker" placeholder="Enter names here (one per line)..." oninput="onNamesInput()"></textarea>
+                        <label class="chk"><input type="checkbox" id="pk-remove" onchange="saveSoon()"> Remove name once selected</label>
+                        <label class="chk"><input type="checkbox" id="pk-noRepeat" checked onchange="saveSoon()"> Avoid repeats until everyone is picked</label>
+                        <button class="btn btn-primary" onclick="runPicker()"><i class="fas fa-wand-magic-sparkles"></i> Pick a Student</button>
+                        <div class="btn-row">
+                            <button class="btn btn-soft" onclick="restorePicker()"><i class="fas fa-rotate-left"></i> Restore all</button>
+                            <button class="btn btn-soft" onclick="clearHistory('picker')"><i class="fas fa-trash"></i> Clear history</button>
                         </div>
-                        <button class="btn btn-soft" onclick="resetWheel()"><i class="fas fa-rotate-left"></i> Restore all names</button>
-                        <div class="history"><h3>Winner history</h3><ul id="history-list"></ul></div>
+                        <div class="history">
+                            <h4>Picked history <span id="pk-count" class="hint"></span></h4>
+                            <ul id="hist-picker"></ul>
+                            <div class="btn-row" style="margin-top:8px">
+                                <button class="btn btn-soft" onclick="exportHistory('picker')"><i class="fas fa-file-arrow-down"></i> Export</button>
+                                <button class="btn btn-soft" onclick="importHistory('picker')"><i class="fas fa-file-arrow-up"></i> Import</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="spin-right">
-                        <div id="wheelWrap"><canvas id="wheelCanvas"></canvas><div class="pointer"></div></div>
-                        <button class="btn btn-primary" style="width:auto;margin:0;padding:13px 30px" onclick="spinWheel()"><i class="fas fa-rotate-right"></i> SPIN</button>
-                        <div id="spin-winner"></div>
+                    <div class="view" id="view-picker">
+                        <div class="view-body"><div class="placeholder"><i class="fas fa-wand-magic-sparkles"></i>Press “Pick a Student”.</div></div>
                     </div>
                 </div>
             </div>
 
-            <div id="status" class="hint">Tip: your names &amp; settings save into the PowerPoint file.</div>
+            <!-- ============ GROUPS ============ -->
+            <div id="groups" class="panel">
+                <div class="work">
+                    <div class="side">
+                        <h4>Names</h4>
+                        <textarea id="list-groups" placeholder="Enter names here (one per line)..." oninput="onNamesInput()"></textarea>
+                        <div class="row">Number of groups: <input type="number" id="num-groups" value="3" min="1" max="20" oninput="saveSoon()"></div>
+                        <label class="chk"><input type="checkbox" id="gp-bySize" onchange="saveSoon()"> Set size per group instead</label>
+                        <h4>Tap a crown to pre-assign group leaders</h4>
+                        <div class="roster" id="roster-groups"></div>
+                        <button class="btn btn-primary" onclick="runGroups()"><i class="fas fa-users"></i> Generate Groups</button>
+                        <div class="hint">Leaders are spread one-per-group first. Up to 10 groups fit on screen.</div>
+                        <div class="history">
+                            <h4>Saved groupings</h4>
+                            <ul id="hist-groups"></ul>
+                            <div class="btn-row" style="margin-top:8px">
+                                <button class="btn btn-soft" onclick="exportHistory('groups')"><i class="fas fa-file-arrow-down"></i> Export</button>
+                                <button class="btn btn-soft" onclick="importHistory('groups')"><i class="fas fa-file-arrow-up"></i> Import</button>
+                                <button class="btn btn-soft" onclick="clearHistory('groups')"><i class="fas fa-trash"></i> Clear</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="view" id="view-groups">
+                        <div class="view-body"><div class="placeholder"><i class="fas fa-users"></i>Generate groups to see them dealt out here.</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ PAIRS ============ -->
+            <div id="pairs" class="panel">
+                <div class="work">
+                    <div class="side">
+                        <h4>Names</h4>
+                        <textarea id="list-pairs" placeholder="Enter names here (one per line)..." oninput="onNamesInput()"></textarea>
+                        <div class="row">Leftover student:
+                            <select id="pr-odd" onchange="saveSoon()">
+                                <option value="solo">stays solo</option>
+                                <option value="trio">joins a trio</option>
+                            </select>
+                        </div>
+                        <h4>Tap a name to keep it apart from the others marked</h4>
+                        <div class="roster" id="roster-pairs"></div>
+                        <button class="btn btn-primary" onclick="runPairs()"><i class="fas fa-user-group"></i> Generate Pairs</button>
+                        <div class="hint">Marked students will never be paired with each other.</div>
+                        <div class="history">
+                            <h4>Saved pairings</h4>
+                            <ul id="hist-pairs"></ul>
+                            <div class="btn-row" style="margin-top:8px">
+                                <button class="btn btn-soft" onclick="exportHistory('pairs')"><i class="fas fa-file-arrow-down"></i> Export</button>
+                                <button class="btn btn-soft" onclick="importHistory('pairs')"><i class="fas fa-file-arrow-up"></i> Import</button>
+                                <button class="btn btn-soft" onclick="clearHistory('pairs')"><i class="fas fa-trash"></i> Clear</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="view" id="view-pairs">
+                        <div class="view-body"><div class="placeholder"><i class="fas fa-user-group"></i>Generate pairs to see them here.</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ SPINNER ============ -->
+            <div id="spinner" class="panel">
+                <div class="work">
+                    <div class="side">
+                        <h4>Names</h4>
+                        <textarea id="list-spinner" placeholder="Paste names here (one per line)..." oninput="spinnerSetNames()" style="min-height:150px"></textarea>
+                        <label class="chk"><input type="checkbox" id="sp-remove" onchange="saveSoon()"> Remove name after spin</label>
+                        <div class="btn-row">
+                            <button class="btn btn-soft" onclick="resetWheel()"><i class="fas fa-rotate-left"></i> Restore all names</button>
+                            <button class="btn btn-soft" onclick="clearHistory('spinner')"><i class="fas fa-trash"></i> Clear history</button>
+                        </div>
+                        <div class="history">
+                            <h4>Winner history</h4>
+                            <ul id="hist-spinner"></ul>
+                            <div class="btn-row" style="margin-top:8px">
+                                <button class="btn btn-soft" onclick="exportHistory('spinner')"><i class="fas fa-file-arrow-down"></i> Export</button>
+                                <button class="btn btn-soft" onclick="importHistory('spinner')"><i class="fas fa-file-arrow-up"></i> Import</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="view" id="view-spinner">
+                        <div class="spin-stage">
+                            <div id="wheelWrap"><canvas id="wheelCanvas"></canvas><div class="pointer"></div></div>
+                            <button class="btn btn-primary" id="spinBtn" onclick="spinWheel()"><i class="fas fa-rotate-right"></i> SPIN</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="status" class="hint" style="margin-top:10px">Tip: your names &amp; settings save into the PowerPoint file.</div>
         </div>
 
-        <!-- PRESENT VIEW -->
-        <div id="presentView" class="pane">
-            <div class="stage" id="stage">Ready...</div>
-            <div class="present-actions" id="present-actions"></div>
+        <!-- PRESENT (fullscreen) VIEW -->
+        <div id="presentView" class="pane" style="display:none;flex-direction:column;height:100%">
+            <div class="view-body" id="presentStage" style="padding:14px">Ready...</div>
+            <div class="present-actions" id="present-actions" style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap;padding:10px"></div>
         </div>
     </main>
 
+    <!-- WINNER MODAL -->
+    <div class="modal" id="winModal">
+        <div class="modal-card">
+            <div class="ml" id="winModalLabel">SELECTED</div>
+            <div class="mn" id="winModalName">—</div>
+            <div class="btn-row" style="justify-content:center">
+                <button class="btn btn-primary" style="width:auto" onclick="closeWinModal()"><i class="fas fa-check"></i> OK</button>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="fileImport" accept=".json,.txt" style="display:none">
+
     <script>
-        const PALETTE = ['#6d28d9','#ff3d7f','#14d6c4','#ffb020','#2f6bff','#22c55e','#ef4444','#f97316','#a855f7','#06b6d4'];
+        const PALETTE = ['#6d28d9','#ff3d7f','#14d6c4','#ffb020','#2f6bff','#22c55e','#ef4444','#f97316','#a855f7','#06b6d4','#eab308','#10b981'];
         const STATE_KEY = 'ct-picker-state';
         const THEME_KEY = 'ct-theme';
-        let lastResult = { label: '', body: '' };
+        let lastResult = { label: '', body: '', present: null };
 
-        /* ============ OFFICE / PERSISTENCE (saves inside the .pptx) ============ */
+        /* in-memory working sets (so "remove" doesn't destroy the textarea) */
+        let pickerPool = null;          // null = use full list
+        let leaders = new Set();        // names flagged as leaders (groups)
+        let avoidSet = new Set();       // names kept apart (pairs)
+        const HIST = { picker: [], groups: [], pairs: [], spinner: [] };
+
+        /* ============ OFFICE / PERSISTENCE ============ */
         let officeReady = false, saveTimer = null;
         function collectState() {
             return {
-                theme: document.body.classList.contains('dark-mode') ? 'dark' : 'light',
                 muted: muted,
-                tab: (document.querySelector('.panel.active') || {}).id || 'picker',
                 ci: { activity: val('ci-activity'), grade: val('ci-grade'), section: val('ci-section'), subject: val('ci-subject') },
                 names: { picker: val('list-picker'), groups: val('list-groups'), pairs: val('list-pairs'), spinner: val('list-spinner') },
                 numGroups: val('num-groups'),
-                exclude: document.getElementById('excludeWinners').checked
+                opts: {
+                    pkRemove: chk('pk-remove'), pkNoRepeat: chk('pk-noRepeat'),
+                    gpBySize: chk('gp-bySize'), prOdd: val('pr-odd'), spRemove: chk('sp-remove')
+                },
+                leaders: [...leaders], avoid: [...avoidSet], hist: HIST
             };
         }
         function applyState(s) {
@@ -256,11 +395,13 @@
             if (s.ci) { set('ci-activity', s.ci.activity); set('ci-grade', s.ci.grade); set('ci-section', s.ci.section); set('ci-subject', s.ci.subject); }
             if (s.names) { set('list-picker', s.names.picker); set('list-groups', s.names.groups); set('list-pairs', s.names.pairs); set('list-spinner', s.names.spinner); }
             if (s.numGroups) set('num-groups', s.numGroups);
-            if (typeof s.exclude === 'boolean') document.getElementById('excludeWinners').checked = s.exclude;
+            if (s.opts) { setChk('pk-remove', s.opts.pkRemove); setChk('pk-noRepeat', s.opts.pkNoRepeat); setChk('gp-bySize', s.opts.gpBySize); if (s.opts.prOdd) set('pr-odd', s.opts.prOdd); setChk('sp-remove', s.opts.spRemove); }
+            if (s.leaders) leaders = new Set(s.leaders);
+            if (s.avoid) avoidSet = new Set(s.avoid);
+            if (s.hist) { ['picker','groups','pairs','spinner'].forEach(k => { if (Array.isArray(s.hist[k])) HIST[k] = s.hist[k]; }); }
             if (s.muted) { muted = true; updateMuteIcon(); }
-            applyTheme(s.theme === 'dark');
-            showModeGallery();
-            spinnerSetNames();
+            // NOTE: theme intentionally NOT applied from saved state — we always follow the live hub theme (ct-theme). Fixes dark/light mismatch.
+            renderRosters(); renderAllHistory(); spinnerSetNames();
         }
         function saveNow() {
             const json = JSON.stringify(collectState());
@@ -274,20 +415,24 @@
             if (raw == null) { try { raw = localStorage.getItem(STATE_KEY); } catch (e) {} }
             if (raw) { try { applyState(JSON.parse(raw)); } catch (e) {} }
         }
-        function val(id) { return (document.getElementById(id).value || ''); }
-        function set(id, v) { if (v != null) document.getElementById(id).value = v; }
+        function val(id) { const el = document.getElementById(id); return el ? (el.value || '') : ''; }
+        function set(id, v) { const el = document.getElementById(id); if (el && v != null) el.value = v; }
+        function chk(id) { const el = document.getElementById(id); return !!(el && el.checked); }
+        function setChk(id, v) { const el = document.getElementById(id); if (el && typeof v === 'boolean') el.checked = v; }
 
-        /* ============ THEME (synced live across tools + saved in file) ============ */
+        function onNamesInput() { pickerPool = null; renderRosters(); saveSoon(); }
+
+        /* ============ THEME ============ */
         function readDark() { try { return localStorage.getItem(THEME_KEY) === 'dark'; } catch (e) { return false; } }
         function applyTheme(dark) {
             document.body.classList.toggle('dark-mode', dark);
             document.getElementById('darkBtn').innerHTML = dark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-            if (names.length) renderWheel();
+            if (names.length || true) { try { renderWheel(); } catch (e) {} }
         }
         function toggleDark() {
             const dark = !document.body.classList.contains('dark-mode');
             try { localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light'); } catch (e) {}
-            applyTheme(dark); saveSoon();
+            applyTheme(dark);
         }
         window.addEventListener('storage', e => { if (e.key === THEME_KEY) applyTheme(e.newValue === 'dark'); });
 
@@ -318,137 +463,256 @@
         /* ============ CONFETTI ============ */
         function confetti(duration) {
             const canvas = document.getElementById('confetti'); const W = canvas.width = innerWidth, H = canvas.height = innerHeight; const ctx = canvas.getContext('2d');
-            const parts = []; for (let i = 0; i < 100; i++) parts.push({ x: W/2 + (Math.random()-.5)*W*.3, y: H*.35+(Math.random()-.5)*40, vx:(Math.random()-.5)*9, vy:Math.random()*-9-4, g:.22+Math.random()*.12, s:5+Math.random()*6, rot:Math.random()*Math.PI, vr:(Math.random()-.5)*.3, color:PALETTE[i%PALETTE.length] });
+            const parts = []; for (let i = 0; i < 110; i++) parts.push({ x: W/2 + (Math.random()-.5)*W*.3, y: H*.35+(Math.random()-.5)*40, vx:(Math.random()-.5)*9, vy:Math.random()*-9-4, g:.22+Math.random()*.12, s:5+Math.random()*6, rot:Math.random()*Math.PI, vr:(Math.random()-.5)*.3, color:PALETTE[i%PALETTE.length] });
             const end = performance.now() + (duration || 1800);
             (function f(now){ ctx.clearRect(0,0,W,H); parts.forEach(p=>{p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.fillStyle=p.color;ctx.globalAlpha=.9;ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);ctx.restore();}); if(now<end)requestAnimationFrame(f); else ctx.clearRect(0,0,W,H); })(performance.now());
         }
 
-        /* ============ MODE (Edit / Present) ============ */
-        function setMode(present) {
-            document.getElementById('editView').style.display = present ? 'none' : 'block';
-            document.getElementById('presentView').classList.toggle('show', present);
-            document.getElementById('modeBtn').classList.toggle('on', present);
-            document.querySelector('.classbar').style.display = present ? 'none' : 'flex';
-        }
-        function toggleMode() { playClick(); setMode(!document.getElementById('presentView').classList.contains('show')); }
-
-        /* ============ TABS / UTILS ============ */
+        /* ============ GALLERY / NAV ============ */
         const PMODES=[
-            {id:'picker',name:'Random Picker',icon:'fa-wand-magic-sparkles',desc:'Pick one student at random.'},
-            {id:'groups',name:'Groups',icon:'fa-users',desc:'Split the class into groups.'},
-            {id:'pairs',name:'Pairs',icon:'fa-user-group',desc:'Pair students up.'},
-            {id:'spinner',name:'Spinner',icon:'fa-life-ring',desc:'Spin a wheel of names.'}
+            {id:'picker',name:'Random Picker',icon:'fa-wand-magic-sparkles',desc:'Pick one student at random, with remove + history.'},
+            {id:'groups',name:'Groupings',icon:'fa-users',desc:'Split the class into animated groups, assign leaders.'},
+            {id:'pairs',name:'Pairings',icon:'fa-user-group',desc:'Pair students up, keep certain students apart.'},
+            {id:'spinner',name:'Spinner',icon:'fa-life-ring',desc:'Spin a wheel of names with a reveal modal.'}
         ];
         function buildModeGallery(){ const g=document.getElementById('modeGallery'); if(!g)return; g.innerHTML=''; PMODES.forEach(m=>{ const c=document.createElement('div'); c.className='tcard'; c.innerHTML='<div class="ic"><i class="fas '+m.icon+'"></i></div><h3>'+m.name+'</h3><p>'+m.desc+'</p>'; c.onclick=()=>openMode(m.id); g.appendChild(c); }); }
-        function openMode(name){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); const el=document.getElementById(name); if(el)el.classList.add('active'); document.getElementById('modeGallery').style.display='none'; document.getElementById('modeBack').style.display='flex'; const m=PMODES.find(x=>x.id===name); document.getElementById('modeTitle').textContent=m?m.name:''; if(name==='spinner'){ sizeWheel(); renderWheel(); } saveSoon(); }
+        function openMode(name){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); const el=document.getElementById(name); if(el)el.classList.add('active'); document.getElementById('modeGallery').style.display='none'; document.getElementById('modeBack').style.display='flex'; const m=PMODES.find(x=>x.id===name); document.getElementById('modeTitle').textContent=m?m.name:''; renderRosters(); if(name==='spinner'){ sizeWheel(); renderWheel(); } saveSoon(); }
         function showModeGallery(){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); document.getElementById('modeGallery').style.display='grid'; document.getElementById('modeBack').style.display='none'; }
-        function openTab(evt, name) { openMode(name); }
         function getList(id) { return val(id).split('\n').map(n => n.trim()).filter(n => n !== ''); }
         function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-        function flashStatus(m) { const s = document.getElementById('status'); s.textContent = m; s.style.color = 'var(--danger)'; setTimeout(() => { s.textContent = 'Tip: your names & settings save into the PowerPoint file.'; s.style.color = ''; }, 2200); }
-        function layoutFor(n) { if (n <= 3) return { cols: 1, fit: true }; if (n <= 10) return { cols: 2, fit: true }; return { cols: Math.min(4, Math.ceil(n / 5)), fit: false }; }
-        function presentActions(label, fn) {
-            const bar = document.getElementById('present-actions'); bar.innerHTML = '';
-            const again = document.createElement('button'); again.className = 'btn btn-primary'; again.style.width = 'auto'; again.style.margin = '0';
-            again.innerHTML = '<i class="fas fa-rotate-right"></i> ' + label; again.onclick = () => { playClick(); fn(); };
-            const exp = document.createElement('button'); exp.className = 'btn btn-soft'; exp.innerHTML = '<i class="fas fa-file-arrow-down"></i> Export'; exp.onclick = () => { playClick(); exportResults(); };
-            const edit = document.createElement('button'); edit.className = 'btn btn-soft'; edit.innerHTML = '<i class="fas fa-pen"></i> Edit'; edit.onclick = () => { playClick(); setMode(false); };
-            bar.append(again, exp, edit);
+        function flashStatus(m) { const s = document.getElementById('status'); s.textContent = m; s.style.color = 'var(--danger)'; setTimeout(() => { s.textContent = 'Tip: your names & settings save into the PowerPoint file.'; s.style.color = ''; }, 2400); }
+        function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+        function layoutFor(n) { if (n <= 2) return { cols: 1, fit: true }; if (n <= 4) return { cols: 2, fit: true }; if (n <= 6) return { cols: 3, fit: true }; if (n <= 10) return { cols: Math.ceil(n/2), fit: true }; return { cols: 4, fit: false }; }
+
+        /* ============ ROSTER CHIPS (leaders / avoid) ============ */
+        function renderRosters() {
+            renderRoster('groups', 'roster-groups', 'leader');
+            renderRoster('pairs', 'roster-pairs', 'avoid');
+        }
+        function renderRoster(mode, hostId, kind) {
+            const host = document.getElementById(hostId); if (!host) return;
+            const list = [...new Set(getList('list-' + mode))];
+            // prune stale flags
+            if (kind === 'leader') leaders.forEach(n => { if (!list.includes(n)) leaders.delete(n); });
+            if (kind === 'avoid') avoidSet.forEach(n => { if (!list.includes(n)) avoidSet.delete(n); });
+            host.innerHTML = '';
+            if (!list.length) { host.innerHTML = '<span class="hint">Add names above to manage them here.</span>'; return; }
+            list.forEach(nm => {
+                const on = kind === 'leader' ? leaders.has(nm) : avoidSet.has(nm);
+                const chip = document.createElement('div');
+                chip.className = 'rchip' + (on ? (kind === 'leader' ? ' leader' : ' avoid') : '');
+                const icon = kind === 'leader' ? 'fa-crown' : 'fa-ban';
+                chip.innerHTML = '<span class="nm">' + esc(nm) + '</span>' +
+                    '<button class="tg' + (kind === 'avoid' ? ' av' : '') + '" title="' + (kind==='leader'?'Toggle leader':'Keep apart') + '"><i class="fas ' + icon + '"></i></button>';
+                chip.querySelector('.tg').onclick = () => {
+                    const set = kind === 'leader' ? leaders : avoidSet;
+                    if (set.has(nm)) set.delete(nm); else set.add(nm);
+                    playClick(); renderRoster(mode, hostId, kind); saveSoon();
+                };
+                host.appendChild(chip);
+            });
         }
 
-        /* ============ EXPORT (.txt with save dialog) ============ */
-        async function exportResults() {
-            if (!lastResult.body) { flashStatus('Run an activity first, then export.'); return; }
-            const ci = { activity: val('ci-activity'), grade: val('ci-grade'), section: val('ci-section'), subject: val('ci-subject') };
-            const text = [
-                'Activity : ' + (ci.activity || '-'),
-                'Grade    : ' + (ci.grade || '-'),
-                'Section  : ' + (ci.section || '-'),
-                'Subject  : ' + (ci.subject || '-'),
-                'Date     : ' + new Date().toLocaleString(),
-                'Tool     : ' + lastResult.label,
-                '',
-                '====== RESULTS ======',
-                lastResult.body
-            ].join('\r\n');
-            const base = (ci.activity || 'picker').replace(/[^a-z0-9-_ ]/gi, '').trim() || 'picker';
-            const fname = base + '_' + new Date().toISOString().slice(0, 10) + '.txt';
-            await saveText(fname, text);
+        /* ============ HISTORY ============ */
+        function pushHistory(mode, entry) { HIST[mode].unshift({ t: Date.now(), v: entry }); if (HIST[mode].length > 60) HIST[mode].length = 60; renderHistory(mode); saveSoon(); }
+        function renderAllHistory() { ['picker','groups','pairs','spinner'].forEach(renderHistory); }
+        function renderHistory(mode) {
+            const ul = document.getElementById('hist-' + mode); if (!ul) return;
+            ul.innerHTML = HIST[mode].map(h => '<li><span>' + esc(h.v) + '</span><span class="t">' + new Date(h.t).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + '</span></li>').join('');
+            if (mode === 'picker') { const c = document.getElementById('pk-count'); if (c) c.textContent = HIST.picker.length ? '(' + HIST.picker.length + ')' : ''; }
         }
-        async function saveText(filename, text) {
-            if (window.showSaveFilePicker) {
+        function clearHistory(mode) { HIST[mode] = []; renderHistory(mode); saveSoon(); flashStatus('History cleared.'); }
+        function exportHistory(mode) {
+            const ci = { activity: val('ci-activity'), grade: val('ci-grade'), section: val('ci-section'), subject: val('ci-subject') };
+            const payload = { tool: 'ClassTools Picker', mode, class: ci, exportedAt: new Date().toISOString(), history: HIST[mode] };
+            const base = (ci.activity || mode).replace(/[^a-z0-9-_ ]/gi, '').trim() || mode;
+            saveBlob(base + '_' + mode + '_' + new Date().toISOString().slice(0,10) + '.json', JSON.stringify(payload, null, 2), 'application/json');
+        }
+        let importMode = null;
+        function importHistory(mode) { importMode = mode; document.getElementById('fileImport').click(); }
+        document.getElementById('fileImport').addEventListener('change', function (e) {
+            const f = e.target.files[0]; if (!f) return; const r = new FileReader();
+            r.onload = () => {
                 try {
-                    const h = await showSaveFilePicker({ suggestedName: filename, types: [{ description: 'Text file', accept: { 'text/plain': ['.txt'] } }] });
-                    const w = await h.createWritable(); await w.write(text); await w.close(); return;
-                } catch (e) { if (e && e.name === 'AbortError') return; }
-            }
-            const blob = new Blob([text], { type: 'text/plain' }); const url = URL.createObjectURL(blob);
+                    const data = JSON.parse(r.result);
+                    if (data.history && importMode) { HIST[importMode] = data.history.concat(HIST[importMode]).slice(0, 60); renderHistory(importMode); saveSoon(); flashStatus('History imported.'); }
+                    else flashStatus('No history found in that file.');
+                } catch (err) {
+                    // accept plain text: one entry per line
+                    const lines = String(r.result).split('\n').map(s=>s.trim()).filter(Boolean);
+                    if (lines.length && importMode) { lines.forEach(l => HIST[importMode].push({ t: Date.now(), v: l })); renderHistory(importMode); saveSoon(); flashStatus('Imported ' + lines.length + ' lines.'); }
+                }
+            };
+            r.readAsText(f); e.target.value = '';
+        });
+        function saveBlob(filename, text, mime) {
+            const blob = new Blob([text], { type: mime || 'text/plain' }); const url = URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+        }
+
+        /* ============ PRESENT (fullscreen) ============ */
+        function showPresent(html) {
+            document.getElementById('editView').style.display = 'none';
+            const pv = document.getElementById('presentView'); pv.style.display = 'flex';
+            document.querySelector('.classbar').style.display = 'none';
+            document.getElementById('presentStage').innerHTML = html;
+            const bar = document.getElementById('present-actions'); bar.innerHTML = '';
+            const back = document.createElement('button'); back.className = 'btn btn-soft'; back.innerHTML = '<i class="fas fa-pen"></i> Back to setup';
+            back.onclick = () => { pv.style.display = 'none'; document.getElementById('editView').style.display = 'block'; document.querySelector('.classbar').style.display = 'flex'; };
+            bar.append(back);
+        }
+        function presentLast() {
+            if (!lastResult.present) { flashStatus('Run an activity first.'); return; }
+            playClick(); showPresent(lastResult.present);
         }
 
         /* ============ PICKER ============ */
         function runPicker() {
-            const list = getList('list-picker'); if (!list.length) { flashStatus('Add some names first.'); return; }
-            ensureAudio(); setMode(true);
-            const stage = document.getElementById('stage'); document.getElementById('present-actions').innerHTML = '';
+            const full = getList('list-picker'); if (!full.length) { flashStatus('Add some names first.'); return; }
+            if (chk('pk-noRepeat')) { if (!pickerPool || !pickerPool.length) pickerPool = shuffle(full); }
+            else pickerPool = full.slice();
+            const pool = pickerPool.length ? pickerPool : full;
+            ensureAudio();
+            const view = document.querySelector('#view-picker .view-body') || document.getElementById('view-picker');
+            const host = document.querySelector('#view-picker .view-body');
+            const target = host || document.getElementById('view-picker');
             const start = performance.now(); let delay = 55;
             (function cycle() {
-                stage.innerHTML = '<div class="shuffle-name">' + esc(list[Math.floor(Math.random()*list.length)]) + '</div>';
+                target.innerHTML = '<div class="shuffle-name">' + esc(full[Math.floor(Math.random()*full.length)]) + '</div>';
                 playTick(); delay *= 1.12;
                 if (delay < 320 && performance.now() - start < 2200) setTimeout(cycle, delay); else reveal();
             })();
             function reveal() {
-                const picked = list[Math.floor(Math.random()*list.length)];
-                stage.innerHTML = '<div class="winner-card"><span class="winner-label">SELECTED</span><span class="winner-name">' + esc(picked) + '</span></div>';
+                const idx = Math.floor(Math.random() * pool.length);
+                const picked = pool[idx];
+                target.innerHTML = '<div class="winner-card"><span class="winner-label">SELECTED</span><span class="winner-name">' + esc(picked) + '</span></div>';
                 playReveal(); confetti(1900);
-                lastResult = { label: 'Random Picker', body: 'Selected student: ' + picked };
-                presentActions('Pick Again', runPicker);
+                lastResult = { label: 'Random Picker', body: 'Selected: ' + picked, present: '<div class="winner-card"><span class="winner-label">SELECTED</span><span class="winner-name">' + esc(picked) + '</span></div>' };
+                pushHistory('picker', picked);
+                // remove from pool / list
+                if (chk('pk-noRepeat')) pickerPool = pool.filter((_, i) => i !== idx);
+                if (chk('pk-remove')) {
+                    const remain = full.filter(n => n !== picked);
+                    set('list-picker', remain.join('\n')); pickerPool = chk('pk-noRepeat') ? remain.slice() : null; saveSoon();
+                }
             }
         }
+        function restorePicker() { pickerPool = null; flashStatus('Pool restored — everyone is back in.'); playClick(); }
 
-        /* ============ GROUPS ============ */
+        /* ============ GROUPS (3s deal animation + leaders) ============ */
         function runGroups() {
-            const list = getList('list-groups').sort(() => Math.random() - .5);
-            const num = Math.max(1, parseInt(val('num-groups')) || 1);
-            if (!list.length) { flashStatus('Add some names first.'); return; }
-            ensureAudio(); setMode(true);
-            const groups = []; for (let i = 0; i < num; i++) groups.push(list.filter((_, idx) => idx % num === i));
-            renderCards('Groups', 'fa-users', groups.map((m, i) => ({ title: 'Group ' + (i+1), members: m })), runGroups, 'Shuffle Again');
-            lastResult = { label: 'Groups', body: groups.map((m, i) => 'Group ' + (i+1) + ' (' + m.length + '): ' + m.join(', ')).join('\r\n') };
-        }
+            const all = getList('list-groups'); if (!all.length) { flashStatus('Add some names first.'); return; }
+            ensureAudio();
+            const leaderList = all.filter(n => leaders.has(n));
+            const rest = shuffle(all.filter(n => !leaders.has(n)));
+            let num;
+            if (chk('gp-bySize')) { const size = Math.max(1, parseInt(val('num-groups')) || 1); num = Math.max(1, Math.ceil(all.length / size)); }
+            else num = Math.max(1, parseInt(val('num-groups')) || 1);
+            num = Math.min(num, all.length);
+            // build group buckets, seed leaders one per group
+            const groups = Array.from({ length: num }, () => ({ leader: null, members: [] }));
+            leaderList.forEach((ln, i) => { const g = groups[i % num]; if (!g.leader) g.leader = ln; else g.members.push(ln); });
+            // distribute rest round-robin starting from smallest
+            rest.forEach((nm, i) => { groups[i % num].members.push(nm); });
 
-        /* ============ PAIRS ============ */
-        function runPairs() {
-            const list = getList('list-pairs').sort(() => Math.random() - .5);
-            if (list.length < 2) { flashStatus('Add at least two names.'); return; }
-            ensureAudio(); setMode(true);
-            const pairs = []; for (let i = 0; i < list.length; i += 2) pairs.push({ title: 'Pair ' + (i/2+1), members: list[i+1] ? [list[i], list[i+1]] : [list[i], 'solo'] });
-            renderCards('Pairs', 'fa-user-group', pairs, runPairs, 'Shuffle Again');
-            lastResult = { label: 'Pairs', body: pairs.map(p => p.title + ': ' + p.members.join(' & ')).join('\r\n') };
-        }
-
-        function renderCards(title, icon, items, againFn, againLabel) {
-            const n = items.length, lay = layoutFor(n), stage = document.getElementById('stage');
-            stage.innerHTML = '<div class="results-title"><i class="fas ' + icon + '"></i> ' + title + ' <span style="color:var(--muted);font-weight:800">(' + n + ')</span></div>' +
-                '<div class="grid ' + (lay.fit ? 'fit' : 'scroll') + '" id="grid" style="--cols:' + lay.cols + '"></div>';
-            const grid = document.getElementById('grid');
-            items.forEach((it, i) => {
+            // render empty cards then deal
+            const lay = layoutFor(num), view = document.getElementById('view-groups');
+            view.innerHTML = '<div class="view-title"><i class="fas fa-users"></i> Groups <span style="color:var(--muted);font-weight:800">(' + num + ')</span></div>' +
+                '<div class="view-body"><div class="grid ' + (lay.fit ? 'fit' : 'scroll') + '" id="g-grid" style="--cols:' + lay.cols + '"></div></div>';
+            const grid = document.getElementById('g-grid');
+            const cardEls = groups.map((g, i) => {
                 const card = document.createElement('div'); card.className = 'gcard'; card.style.setProperty('--g', PALETTE[i % PALETTE.length]);
-                const chips = it.members.map((m, j) => '<span class="chip" style="animation-delay:' + (j*.04) + 's">' + esc(m) + '</span>').join('');
-                card.innerHTML = '<div class="ghead"><span class="dot">' + (i+1) + '</span> ' + esc(it.title) + ' <span class="count">' + it.members.length + '</span></div><div class="chips">' + chips + '</div>';
+                card.innerHTML = '<div class="ghead"><span class="dot">' + (i+1) + '</span> Group ' + (i+1) + ' <span class="count" id="gc-' + i + '">0</span></div><div class="chips" id="gchips-' + i + '"></div>';
                 grid.appendChild(card);
-                setTimeout(() => { card.classList.add('in'); playPop(i); if (i === n - 1) setTimeout(() => { playFinish(); confetti(1400); presentActions(againLabel, againFn); }, 220); }, 90 + i * Math.min(260, 1600 / n));
+                setTimeout(() => { card.classList.add('in'); playPop(i); }, 60 + i * 40);
+                return card;
             });
+            // place leaders immediately (so leader cards already show), then deal members over ~3s
+            groups.forEach((g, i) => { if (g.leader) addChip(i, g.leader, true); });
+            const deals = [];
+            groups.forEach((g, gi) => g.members.forEach(m => deals.push({ gi, m })));
+            const dealsShuffled = shuffle(deals);
+            const total = dealsShuffled.length, dur = 3000, step = total ? Math.max(70, dur / total) : 0;
+            dealsShuffled.forEach((d, k) => {
+                setTimeout(() => {
+                    addChip(d.gi, d.m, false);
+                    const card = cardEls[d.gi]; card.classList.add('flash'); setTimeout(() => card.classList.remove('flash'), 180);
+                    playTick();
+                    if (k === total - 1) setTimeout(() => { playFinish(); confetti(1500); }, 200);
+                }, 400 + k * step);
+            });
+            function addChip(gi, name, isLead) {
+                const host = document.getElementById('gchips-' + gi); if (!host) return;
+                const c = document.createElement('span'); c.className = 'chip' + (isLead ? ' lead' : '');
+                c.innerHTML = (isLead ? '<i class="fas fa-crown"></i>' : '') + esc(name);
+                host.appendChild(c); requestAnimationFrame(() => c.classList.add('in'));
+                const cnt = document.getElementById('gc-' + gi); if (cnt) cnt.textContent = host.children.length;
+            }
+            const body = groups.map((g, i) => 'Group ' + (i+1) + (g.leader ? ' [leader: ' + g.leader + ']' : '') + ' (' + ((g.leader?1:0)+g.members.length) + '): ' + [g.leader, ...g.members].filter(Boolean).join(', ')).join('\r\n');
+            lastResult = { label: 'Groups', body, present: view.innerHTML };
+            pushHistory('groups', num + ' groups from ' + all.length + ' students');
+        }
+
+        /* ============ PAIRS (keep-apart + 3s animation, no truncation) ============ */
+        function runPairs() {
+            const all = getList('list-pairs'); if (all.length < 2) { flashStatus('Add at least two names.'); return; }
+            ensureAudio();
+            const pairs = makePairs(all);
+            const lay = layoutFor(pairs.length), view = document.getElementById('view-pairs');
+            view.innerHTML = '<div class="view-title"><i class="fas fa-user-group"></i> Pairs <span style="color:var(--muted);font-weight:800">(' + pairs.length + ')</span></div>' +
+                '<div class="view-body"><div class="grid ' + (lay.fit ? 'fit' : 'scroll') + '" id="p-grid" style="--cols:' + lay.cols + '"></div></div>';
+            const grid = document.getElementById('p-grid');
+            const total = pairs.length, dur = 3000, step = Math.max(150, dur / Math.max(1,total));
+            pairs.forEach((p, i) => {
+                const card = document.createElement('div'); card.className = 'gcard'; card.style.setProperty('--g', PALETTE[i % PALETTE.length]);
+                card.innerHTML = '<div class="ghead"><span class="dot">' + (i+1) + '</span> ' + esc(p.title) + ' <span class="count">' + p.members.length + '</span></div>' +
+                    '<div class="chips" id="pchips-' + i + '"></div>';
+                grid.appendChild(card);
+                setTimeout(() => {
+                    card.classList.add('in'); playPop(i);
+                    const host = document.getElementById('pchips-' + i);
+                    p.members.forEach((m, j) => setTimeout(() => {
+                        const c = document.createElement('span'); c.className = 'chip'; c.textContent = m;
+                        host.appendChild(c); requestAnimationFrame(() => c.classList.add('in')); playTick();
+                    }, j * 120));
+                    if (i === total - 1) setTimeout(() => { playFinish(); confetti(1500); }, 350);
+                }, 250 + i * step);
+            });
+            lastResult = { label: 'Pairs', body: pairs.map(p => p.title + ': ' + p.members.join(' & ')).join('\r\n'), present: view.innerHTML };
+            pushHistory('pairs', pairs.length + ' pairs from ' + all.length + ' students');
+        }
+        function makePairs(all) {
+            // try several shuffles to satisfy keep-apart constraint
+            const avoid = [...avoidSet].filter(n => all.includes(n));
+            let best = null;
+            for (let attempt = 0; attempt < 200; attempt++) {
+                const order = shuffle(all); const ps = []; let ok = true;
+                for (let i = 0; i < order.length; i += 2) {
+                    const a = order[i], b = order[i + 1];
+                    if (b && avoid.includes(a) && avoid.includes(b)) { ok = false; break; }
+                    ps.push(b ? [a, b] : [a]);
+                }
+                if (ok) { best = ps; break; }
+                if (!best) best = ps;
+            }
+            // handle leftover (odd) per option
+            let result = best;
+            const lastIdx = result.length - 1;
+            if (result[lastIdx] && result[lastIdx].length === 1 && result.length > 1 && val('pr-odd') === 'trio') {
+                const solo = result.pop()[0]; result[result.length - 1].push(solo);
+            }
+            return result.map((m, i) => ({ title: 'Pair ' + (i + 1), members: m }));
         }
 
         /* ============ SPINNER ============ */
         const canvas = document.getElementById('wheelCanvas'); const ctx = canvas.getContext('2d');
-        let names = [], spinning = false, rotation = 0, lastTickIdx = -1, R = 320;
+        let names = [], spinning = false, rotation = 0, lastTickIdx = -1, R = 320, pendingWinnerIdx = -1;
         function spinnerSetNames() { names = getList('list-spinner'); sizeWheel(); renderWheel(); saveSoon(); }
         function sizeWheel() {
-            const host = document.getElementById('wheelWrap').parentElement; // .spin-right
-            const maxW = (host.clientWidth || 340) - 2;
-            const size = Math.max(200, Math.min(maxW, window.innerHeight * 0.82, 820));
+            const stage = document.querySelector('#view-spinner .spin-stage'); if (!stage) return;
+            const maxW = (stage.clientWidth || 340) - 8;
+            const maxH = (stage.clientHeight || 400) - 90;
+            const size = Math.max(200, Math.min(maxW, maxH, 760));
             R = size;
             const dpr = window.devicePixelRatio || 1;
             canvas.style.width = size + 'px'; canvas.style.height = size + 'px';
@@ -484,13 +748,13 @@
         }
         function spinWheel() {
             if (spinning || names.length === 0) { if (!names.length) flashStatus('Add names for the wheel.'); return; }
-            ensureAudio(); spinning = true; lastTickIdx = -1; document.getElementById('spin-winner').textContent = '';
+            ensureAudio(); spinning = true; lastTickIdx = -1;
             const startRot = rotation, n = names.length;
-            const target = startRot + (5 + Math.random()*3) * 360 + Math.random()*360;  // several smooth turns
+            const target = startRot + (5 + Math.random()*3) * 360 + Math.random()*360;
             const dur = 4200 + Math.random()*900, t0 = performance.now();
             (function frame(now){
                 const p = Math.min(1, (now - t0)/dur);
-                const e = 1 - Math.pow(1 - p, 3);                 // easeOutCubic — smooth, anticipatable stop
+                const e = 1 - Math.pow(1 - p, 3);
                 rotation = startRot + (target - startRot) * e;
                 renderWheel();
                 const idx = Math.floor(((360-(rotation%360))%360)/(360/n))%n;
@@ -500,14 +764,25 @@
         }
         function finishSpin() {
             const n = names.length, ang = 360/n, pa = (360-(rotation%360))%360, idx = Math.floor(pa/ang)%n, winner = names[idx];
-            document.getElementById('history-list').innerHTML += '<li>' + esc(winner) + '</li>';
-            document.getElementById('spin-winner').innerHTML = '🎉 ' + esc(winner);
-            playReveal(); confetti(1700);
-            lastResult = { label: 'Spinner', body: 'Winner: ' + winner };
-            spinning = false;
-            if (document.getElementById('excludeWinners').checked) { names.splice(idx, 1); sizeWheel(); renderWheel(); }
+            spinning = false; pendingWinnerIdx = idx;
+            pushHistory('spinner', winner);
+            lastResult = { label: 'Spinner', body: 'Winner: ' + winner, present: '<div class="winner-card"><span class="winner-label">WINNER</span><span class="winner-name">' + esc(winner) + '</span></div>' };
+            playReveal(); confetti(1800);
+            // Show modal — the wheel still displays the winning slice under the pointer.
+            document.getElementById('winModalLabel').textContent = 'WINNER';
+            document.getElementById('winModalName').textContent = winner;
+            document.getElementById('winModal').classList.add('show');
         }
-        function resetWheel() { playClick(); names = getList('list-spinner'); rotation = 0; document.getElementById('spin-winner').textContent = ''; document.getElementById('history-list').innerHTML = ''; sizeWheel(); renderWheel(); flashStatus('All names restored.'); }
+        function closeWinModal() {
+            playClick();
+            document.getElementById('winModal').classList.remove('show');
+            // Only NOW remove the name (if option ticked), so the wheel lingered on the correct result.
+            if (chk('sp-remove') && pendingWinnerIdx >= 0 && pendingWinnerIdx < names.length) {
+                names.splice(pendingWinnerIdx, 1); sizeWheel(); renderWheel();
+            }
+            pendingWinnerIdx = -1;
+        }
+        function resetWheel() { playClick(); names = getList('list-spinner'); rotation = 0; sizeWheel(); renderWheel(); flashStatus('All names restored.'); }
         window.addEventListener('resize', () => { if (document.getElementById('spinner').classList.contains('active')) { sizeWheel(); renderWheel(); } });
 
         /* ============ HUB NAV + BOOKMARK ============ */
@@ -518,7 +793,7 @@
         function hasContent() { return getList('list-picker').length || getList('list-groups').length || getList('list-pairs').length || getList('list-spinner').length; }
         function toggleBookmark() {
             if (!hasContent()) { flashStatus('Add some names first, then bookmark.'); return; }
-            bookmarked = !bookmarked; const url = bookmarked ? location.href : null; const label = 'Random Picker' + (val('ci-activity') ? ' — ' + val('ci-activity') : '');
+            bookmarked = !bookmarked; const url = bookmarked ? location.href : null; const label = 'Pickers & Groups' + (val('ci-activity') ? ' — ' + val('ci-activity') : '');
             if (EMBEDDED) { try { window.parent.postMessage({ ns: 'classtools', cmd: 'bookmark', url, label }, '*'); } catch (e) {} }
             else { try { url ? localStorage.setItem('ct-bookmark', JSON.stringify({ url, label })) : localStorage.removeItem('ct-bookmark'); } catch (e) {} }
             updateStar();
@@ -527,15 +802,14 @@
         function updateStarHint() { const b = document.getElementById('starBtn'); b.classList.toggle('star-hint', !!hasContent() && !bookmarked); }
 
         /* ============ BOOT ============ */
-        // Render immediately (works even when embedded in the hub iframe, where Office never inits).
-        applyTheme(readDark());
+        applyTheme(readDark());        // always follow the live hub theme — never the saved file theme
         buildModeGallery();
         loadState();
         showModeGallery();
+        renderRosters(); renderAllHistory();
         sizeWheel(); renderWheel(); updateStarHint();
-        // Upgrade to in-file persistence if running as a real Office add-in.
         if (window.Office && Office.onReady) {
-            Office.onReady(function (info) { officeReady = !!(info && info.host); if (officeReady) { loadState(); sizeWheel(); renderWheel(); } });
+            Office.onReady(function (info) { officeReady = !!(info && info.host); if (officeReady) { loadState(); applyTheme(readDark()); sizeWheel(); renderWheel(); } });
         }
     </script>
 </body>
