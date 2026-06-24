@@ -6,11 +6,11 @@
     <title>ClassTools</title>
     <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root{--bg:#f4f1ff;--bg-2:#e7fbff;--surface:#fff;--ink:#241b4e;--muted:#6b6790;--line:#e7e3f5;
             --primary:#6d28d9;--primary-2:#9333ea;--primary-rgb:109,40,217;--radius:18px;--gold:#ffb020;
-            --font-head:'Bricolage Grotesque',sans-serif;--font-body:'Hanken Grotesk',sans-serif;}
+            --font-head:'Luckiest Guy',sans-serif;--font-body:'Nunito',sans-serif;}
         .dark-mode{--bg:#14122e;--bg-2:#0e1330;--surface:#211d44;--ink:#efeaff;--muted:#a9a3d6;--line:#352f63;--primary:#a78bfa;--primary-2:#c084fc;--primary-rgb:167,139,250;}
         *{box-sizing:border-box;}
         body{font-family:var(--font-body);margin:0;min-height:100vh;color:var(--ink);background:radial-gradient(1200px 700px at 85% -15%,var(--bg-2),var(--bg)) fixed;overflow-x:hidden;transition:background .3s,color .3s;}
@@ -102,13 +102,13 @@
         /* TOOL REGISTRY — grouped into sections. Append to add more. */
         const SECTIONS = [
             { name: 'Classroom Tools', tools: [
-                { title: 'Classroom Timer', desc: 'Countdown, stopwatch, pomodoro, race & more.', icon: 'fas fa-stopwatch', url: '../MyTimerAddin/timer.html', c1:'#6d28d9', c2:'#9333ea' },
-                { title: 'Random Picker', desc: 'Pick students, groups, pairs & a spinner.', icon: 'fas fa-dice', url: '../RandomPicker/picker.html', c1:'#2f6bff', c2:'#14d6c4' },
-                { title: 'Intro Tools', desc: "Mystery box, doors, envelopes, wheel, scratch & reveal.", icon: 'fas fa-wand-sparkles', url: '../IntroTools/intro.html', c1:'#f97316', c2:'#ff3d7f' }
+                { title: 'Timer Tools', desc: 'Countdown, stopwatch, pomodoro, race & more.', icon: 'fas fa-stopwatch', url: '../MyTimerAddin/timer.html', c1:'#6d28d9', c2:'#9333ea' },
+                { title: 'Pickers, Pairings & Groupings', desc: 'Pick students, make pairs & groups, spinner.', icon: 'fas fa-dice', url: '../RandomPicker/picker.html', c1:'#2f6bff', c2:'#14d6c4' },
+                { title: 'Intro & Reveal Tools', desc: "Mystery box, doors, envelopes, wheel, scratch & reveal.", icon: 'fas fa-wand-sparkles', url: '../IntroTools/intro.html', c1:'#f97316', c2:'#ff3d7f' }
             ]},
             { name: 'Gaming Tools', tools: [
-                { title: 'Word Games', desc: 'Hangman, scramble & sentence unscramble.', icon: 'fas fa-spell-check', url: '../WordGames/games.html', c1:'#ff3d7f', c2:'#f97316' },
-                { title: 'Scoreboard', desc: 'Teams, members & live scoring.', icon: 'fas fa-ranking-star', url: '../Scoreboard/scoreboard.html', c1:'#22c55e', c2:'#14d6c4' }
+                { title: 'Word Games & Builders', desc: 'Hangman, scramble, word search, crossword & more.', icon: 'fas fa-spell-check', url: '../WordGames/games.html', c1:'#ff3d7f', c2:'#f97316' },
+                { title: 'Scoreboard & Scoring', desc: 'Teams, members & live scoring.', icon: 'fas fa-ranking-star', url: '../Scoreboard/scoreboard.html', c1:'#22c55e', c2:'#14d6c4' }
             ]}
         ];
 

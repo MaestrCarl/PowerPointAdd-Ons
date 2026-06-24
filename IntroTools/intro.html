@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Intro Tools</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root{--bg:#f4f1ff;--bg-2:#e7fbff;--surface:#fff;--ink:#241b4e;--muted:#6b6790;--line:#e7e3f5;--primary:#6d28d9;--primary-2:#9333ea;--primary-rgb:109,40,217;--danger:#ff3d7f;--ok:#22c55e;--gold:#ffb020;--radius:16px;--font-head:'Bricolage Grotesque',sans-serif;--font-body:'Hanken Grotesk',sans-serif;}
+        :root{--bg:#f4f1ff;--bg-2:#e7fbff;--surface:#fff;--ink:#241b4e;--muted:#6b6790;--line:#e7e3f5;--primary:#6d28d9;--primary-2:#9333ea;--primary-rgb:109,40,217;--danger:#ff3d7f;--ok:#22c55e;--gold:#ffb020;--radius:16px;--font-head:'Luckiest Guy',sans-serif;--font-body:'Nunito',sans-serif;}
         .dark-mode{--bg:#14122e;--bg-2:#0e1330;--surface:#211d44;--ink:#efeaff;--muted:#a9a3d6;--line:#352f63;--primary:#a78bfa;--primary-2:#c084fc;--primary-rgb:167,139,250;--danger:#ff5c93;}
         *{box-sizing:border-box;}html,body{height:100%;}
         body{margin:0;font-family:var(--font-body);color:var(--ink);height:100vh;display:flex;flex-direction:column;overflow:hidden;background:radial-gradient(1200px 700px at 85% -15%,var(--bg-2),var(--bg)) fixed;transition:background .3s,color .3s;}
@@ -132,7 +132,7 @@
     <canvas id="confetti"></canvas>
     <div class="topbar">
         <button class="icon-btn" id="backBtn" onclick="goBackHub()" title="Back to tools" style="display:none"><i class="fas fa-arrow-left"></i></button>
-        <div class="brand"><i class="fas fa-wand-sparkles"></i> <span id="brandName">Intro Tools</span></div>
+        <div class="brand"><i class="fas fa-wand-sparkles"></i> <span id="brandName">Intro &amp; Reveal Tools</span></div>
         <div class="star-wrap"><button class="star-lg" id="starBtn" onclick="toggleBookmark()" title="Bookmark"><i class="far fa-star"></i></button><span class="star-tip">Click to bookmark — reopens here automatically.</span></div>
         <div class="spacer"></div>
         <button class="icon-btn" id="shareBtn" onclick="openShare()" title="Share link & QR"><i class="fas fa-share-nodes"></i></button>
@@ -239,7 +239,7 @@
         /* ===== GALLERY / FORM ===== */
         let cur=null;
         function buildGallery(){const g=document.getElementById('galleryGrid');g.innerHTML='';ACTS.forEach(m=>{const t=document.createElement('div');t.className='gtile'+(m.soon?' soon':'');t.style.setProperty('--gc',m.c1);t.style.setProperty('--gc2',m.c2);t.innerHTML='<div class="ic"><i class="fas '+m.icon+'"></i></div><h3>'+m.name+'</h3><p>'+m.desc+'</p>';if(!m.soon)t.onclick=()=>openForm(m.id);g.appendChild(t);});}
-        function showGallery(){location.hash='';document.getElementById('gallery').style.display='block';document.getElementById('form').style.display='none';document.getElementById('player').style.display='none';document.getElementById('editBtn').style.display='none';document.getElementById('brandName').textContent='Intro Tools';updateStarHint();}
+        function showGallery(){location.hash='';document.getElementById('gallery').style.display='block';document.getElementById('form').style.display='none';document.getElementById('player').style.display='none';document.getElementById('editBtn').style.display='none';document.getElementById('brandName').textContent='Intro & Reveal Tools';updateStarHint();}
         function openForm(id){cur=id;const m=M[id];document.getElementById('gallery').style.display='none';document.getElementById('form').style.display='block';document.getElementById('player').style.display='none';document.getElementById('brandName').textContent=m.name;document.getElementById('formTitle').textContent=m.name;document.getElementById('itemsLabel').textContent='Items';document.getElementById('items').placeholder=m.ph||'';document.getElementById('itemsHelp').textContent=m.label+' · Hidden by default — Enter makes a new line.';document.getElementById('optCard').style.display=(m.opt==='pick')?'block':'none';masked=true;applyMask();updateStarHint();}
         function parseItems(){return val('items').split('\n').map(s=>s.trim()).filter(Boolean);}
         function buildPayload(){const t=val('title').trim(),raw=parseItems();if(!raw.length)return null;const seed=Math.floor(Math.random()*1e9);const opt={};if(M[cur].opt==='pick'){opt.pick=Math.max(1,parseInt(val('optPick'))||1);opt.exclude=document.getElementById('optExclude').checked;}return{g:cur,t,items:raw,opt,seed};}
@@ -257,7 +257,7 @@
         let cfg=null;
         function render(){
             const m=location.hash.replace(/^#/,'').match(/d=(.+)$/);
-            if(m){let p;try{p=dec(m[1]);}catch(e){p=null;}if(p&&PLAYERS[p.g]){document.getElementById('gallery').style.display='none';document.getElementById('form').style.display='none';document.getElementById('player').style.display='flex';document.getElementById('editBtn').style.display='inline-flex';document.getElementById('brandName').textContent=M[p.g]?M[p.g].name:'Intro Tools';cfg=p;cfg.parsed=p.items.map(parseItem);PLAYERS[p.g]();updateStarHint();return;}}
+            if(m){let p;try{p=dec(m[1]);}catch(e){p=null;}if(p&&PLAYERS[p.g]){document.getElementById('gallery').style.display='none';document.getElementById('form').style.display='none';document.getElementById('player').style.display='flex';document.getElementById('editBtn').style.display='inline-flex';document.getElementById('brandName').textContent=M[p.g]?M[p.g].name:'Intro & Reveal Tools';cfg=p;cfg.parsed=p.items.map(parseItem);PLAYERS[p.g]();updateStarHint();return;}}
             document.getElementById('player').style.display='none';
             if(document.getElementById('form').style.display!=='block')showGallery();
             document.getElementById('editBtn').style.display='none';updateStarHint();
@@ -320,7 +320,7 @@
             const cv=document.getElementById('wheel'),ctx=cv.getContext('2d');
             function size(){const host=document.getElementById('player');const s=Math.max(200,Math.min(host.clientWidth-20,window.innerHeight*0.62,640));WR=s;const dpr=window.devicePixelRatio||1;cv.style.width=s+'px';cv.style.height=s+'px';cv.width=Math.round(s*dpr);cv.height=Math.round(s*dpr);}
             function shade(hex,a){const n=parseInt(hex.slice(1),16);let r=(n>>16)+a,g=((n>>8)&255)+a,b=(n&255)+a;r=Math.max(0,Math.min(255,r));g=Math.max(0,Math.min(255,g));b=Math.max(0,Math.min(255,b));return'#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);}
-            function draw(){const n=labels.length,C=WR/2,rad=WR/2-6;ctx.clearRect(0,0,WR,WR);const ang=2*Math.PI/n,fs=Math.max(12,Math.min(WR*0.06,WR*0.62/n));for(let i=0;i<n;i++){ctx.beginPath();ctx.moveTo(C,C);ctx.arc(C,C,rad,i*ang,(i+1)*ang);ctx.closePath();const base=PAL[i%PAL.length],gr=ctx.createRadialGradient(C,C,rad*0.2,C,C,rad);gr.addColorStop(0,base);gr.addColorStop(1,shade(base,-30));ctx.fillStyle=gr;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='rgba(255,255,255,.55)';ctx.stroke();ctx.save();ctx.translate(C,C);ctx.rotate(i*ang+ang/2);ctx.fillStyle='#fff';ctx.font='700 '+fs+'px Hanken Grotesk,Arial';ctx.textAlign='right';ctx.textBaseline='middle';ctx.shadowColor='rgba(0,0,0,.4)';ctx.shadowBlur=2;const lb=labels[i].length>16?labels[i].slice(0,15)+'…':labels[i];ctx.fillText(lb,rad*0.93,0);ctx.restore();}ctx.shadowColor='transparent';ctx.beginPath();ctx.arc(C,C,Math.max(14,WR*0.05),0,Math.PI*2);ctx.fillStyle=(getComputedStyle(document.body).getPropertyValue('--surface')||'#fff').trim();ctx.fill();ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,.15)';ctx.stroke();}
+            function draw(){const n=labels.length,C=WR/2,rad=WR/2-6;ctx.clearRect(0,0,WR,WR);const ang=2*Math.PI/n,fs=Math.max(12,Math.min(WR*0.06,WR*0.62/n));for(let i=0;i<n;i++){ctx.beginPath();ctx.moveTo(C,C);ctx.arc(C,C,rad,i*ang,(i+1)*ang);ctx.closePath();const base=PAL[i%PAL.length],gr=ctx.createRadialGradient(C,C,rad*0.2,C,C,rad);gr.addColorStop(0,base);gr.addColorStop(1,shade(base,-30));ctx.fillStyle=gr;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='rgba(255,255,255,.55)';ctx.stroke();ctx.save();ctx.translate(C,C);ctx.rotate(i*ang+ang/2);ctx.fillStyle='#fff';ctx.font='700 '+fs+'px Nunito,Arial';ctx.textAlign='right';ctx.textBaseline='middle';ctx.shadowColor='rgba(0,0,0,.4)';ctx.shadowBlur=2;const lb=labels[i].length>16?labels[i].slice(0,15)+'…':labels[i];ctx.fillText(lb,rad*0.93,0);ctx.restore();}ctx.shadowColor='transparent';ctx.beginPath();ctx.arc(C,C,Math.max(14,WR*0.05),0,Math.PI*2);ctx.fillStyle=(getComputedStyle(document.body).getPropertyValue('--surface')||'#fff').trim();ctx.fill();ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,.15)';ctx.stroke();}
             function rndr(){const dpr=window.devicePixelRatio||1;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,WR,WR);ctx.save();ctx.translate(WR/2,WR/2);ctx.rotate(wheelRot*Math.PI/180);ctx.translate(-WR/2,-WR/2);draw();ctx.restore();}
             window._wheelRender=rndr;window._wheelSize=size;
             size();rndr();
@@ -337,7 +337,7 @@
                 const dpr=window.devicePixelRatio||1, w=wrap.clientWidth, h=wrap.clientHeight;
                 cv.width=w*dpr;cv.height=h*dpr;cv.style.width=w+'px';cv.style.height=h+'px';ctx.scale(dpr,dpr);
                 const grd=ctx.createLinearGradient(0,0,w,h);grd.addColorStop(0,'#b9b3d6');grd.addColorStop(1,'#8a84ad');ctx.fillStyle=grd;ctx.fillRect(0,0,w,h);
-                ctx.fillStyle='rgba(255,255,255,.6)';ctx.font='700 '+Math.round(h*0.12)+'px Bricolage Grotesque,Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('Scratch me!',w/2,h/2);
+                ctx.fillStyle='rgba(255,255,255,.6)';ctx.font='700 '+Math.round(h*0.12)+'px Luckiest Guy,Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('Scratch me!',w/2,h/2);
                 let drawing=false,cleared=0;const total=w*h;
                 function pos(e){const r=cv.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top};}
                 function scratch(e){if(!drawing)return;e.preventDefault();const p=pos(e);ctx.globalCompositeOperation='destination-out';ctx.beginPath();ctx.arc(p.x,p.y,Math.max(14,h*0.08),0,Math.PI*2);ctx.fill();sTick();}
@@ -367,7 +367,7 @@
 
         /* ===== BOOKMARK ===== */
         let bookmarked=false;
-        function bmLabel(){let t='';try{const m=location.hash.match(/d=(.+)$/);if(m){const p=dec(m[1]);t=(p.t?p.t+' · ':'')+(M[p.g]?M[p.g].name:'');}}catch(e){}return 'Intro Tools'+(t?' — '+t:'');}
+        function bmLabel(){let t='';try{const m=location.hash.match(/d=(.+)$/);if(m){const p=dec(m[1]);t=(p.t?p.t+' · ':'')+(M[p.g]?M[p.g].name:'');}}catch(e){}return 'Intro & Reveal Tools'+(t?' — '+t:'');}
         function sendBookmark(on){const url=on?location.href:null;if(EMBEDDED){try{window.parent.postMessage({ns:'classtools',cmd:'bookmark',url,label:bmLabel()},'*');}catch(e){}}else{try{url?localStorage.setItem('ct-bookmark',JSON.stringify({url,label:bmLabel()})):localStorage.removeItem('ct-bookmark');}catch(e){}}}
         function toggleBookmark(){if(location.hash.indexOf('d=')<0){flash('Generate or play an activity first, then bookmark it.');return;}bookmarked=!bookmarked;sendBookmark(bookmarked);updateStar();}
         function updateStar(){const b=document.getElementById('starBtn');b.classList.toggle('on',bookmarked);b.innerHTML=bookmarked?'<i class="fas fa-star"></i>':'<i class="far fa-star"></i>';updateStarHint();}

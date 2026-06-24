@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Classroom Picker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #f4f1ff; --bg-2: #e7fbff; --surface: #ffffff; --surface-2: #f6f5ff;
             --ink: #241b4e; --muted: #6b6790; --line: #e7e3f5;
             --primary: #6d28d9; --primary-2: #9333ea; --primary-rgb: 109, 40, 217;
             --danger: #ff3d7f; --radius: 18px;
-            --font-head: 'Bricolage Grotesque', sans-serif; --font-body: 'Hanken Grotesk', sans-serif;
+            --font-head: 'Luckiest Guy', sans-serif; --font-body: 'Nunito', sans-serif;
         }
         .dark-mode {
             --bg: #14122e; --bg-2: #0e1330; --surface: #211d44; --surface-2: #2a2552;
@@ -154,7 +154,7 @@
     <!-- TOP BAR -->
     <div class="topbar">
         <button class="icon-btn" id="backBtn" onclick="goBackHub()" title="Back to tools" style="display:none"><i class="fas fa-arrow-left"></i></button>
-        <div class="brand"><i class="fas fa-dice"></i> Picker</div>
+        <div class="brand"><i class="fas fa-dice"></i> Pickers &amp; Groups</div>
         <div class="star-wrap">
             <button class="star-lg" id="starBtn" onclick="toggleBookmark()" title="Bookmark"><i class="far fa-star"></i></button>
             <span class="star-tip">Click to bookmark — reopens here automatically.</span>
@@ -454,7 +454,7 @@
             const n = names.length, C = R/2, rad = R/2 - 6;
             ctx.clearRect(0, 0, R, R);
             const rim = (getComputedStyle(document.body).getPropertyValue('--surface') || '#fff').trim();
-            if (n === 0) { ctx.beginPath(); ctx.arc(C,C,rad,0,Math.PI*2); ctx.fillStyle='rgba(125,125,125,.15)'; ctx.fill(); ctx.fillStyle='#999'; ctx.font='600 '+Math.round(R*0.05)+'px Hanken Grotesk,Arial'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('Add names', C, C); return; }
+            if (n === 0) { ctx.beginPath(); ctx.arc(C,C,rad,0,Math.PI*2); ctx.fillStyle='rgba(125,125,125,.15)'; ctx.fill(); ctx.fillStyle='#999'; ctx.font='600 '+Math.round(R*0.05)+'px Nunito,Arial'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('Add names', C, C); return; }
             const ang = (2*Math.PI)/n, fs = Math.max(12, Math.min(R*0.06, R*0.62/n));
             for (let i = 0; i < n; i++) {
                 ctx.beginPath(); ctx.moveTo(C,C); ctx.arc(C,C,rad,i*ang,(i+1)*ang); ctx.closePath();
@@ -462,7 +462,7 @@
                 grad.addColorStop(0, base); grad.addColorStop(1, shade(base, -30)); ctx.fillStyle = grad; ctx.fill();
                 ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.stroke();
                 ctx.save(); ctx.translate(C,C); ctx.rotate(i*ang + ang/2);
-                ctx.fillStyle = '#fff'; ctx.font = '700 '+fs+'px Hanken Grotesk, Arial'; ctx.textAlign='right'; ctx.textBaseline='middle';
+                ctx.fillStyle = '#fff'; ctx.font = '700 '+fs+'px Nunito, Arial'; ctx.textAlign='right'; ctx.textBaseline='middle';
                 ctx.shadowColor='rgba(0,0,0,.4)'; ctx.shadowBlur=2; ctx.shadowOffsetY=1;
                 const nm = names[i].length > 16 ? names[i].slice(0,15)+'…' : names[i];
                 ctx.fillText(nm, rad*0.93, 0); ctx.restore();

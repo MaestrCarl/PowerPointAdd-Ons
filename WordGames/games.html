@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Word Games</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root{--bg:#f4f1ff;--bg-2:#e7fbff;--surface:#fff;--ink:#241b4e;--muted:#6b6790;--line:#e7e3f5;
             --primary:#6d28d9;--primary-2:#9333ea;--primary-rgb:109,40,217;--danger:#ff3d7f;--ok:#22c55e;--gold:#ffb020;--radius:16px;
-            --font-head:'Bricolage Grotesque',sans-serif;--font-body:'Hanken Grotesk',sans-serif;}
+            --font-head:'Luckiest Guy',sans-serif;--font-body:'Nunito',sans-serif;}
         .dark-mode{--bg:#14122e;--bg-2:#0e1330;--surface:#211d44;--ink:#efeaff;--muted:#a9a3d6;--line:#352f63;--primary:#a78bfa;--primary-2:#c084fc;--primary-rgb:167,139,250;--danger:#ff5c93;}
         *{box-sizing:border-box;} html,body{height:100%;}
         body{margin:0;font-family:var(--font-body);color:var(--ink);height:100vh;display:flex;flex-direction:column;overflow:hidden;background:radial-gradient(1200px 700px at 85% -15%,var(--bg-2),var(--bg)) fixed;transition:background .3s,color .3s;}
@@ -143,6 +143,10 @@
         .wrow .del{flex:0 0 auto;width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer;}
         .wrow .del:hover{color:var(--danger);border-color:var(--danger);}
         .addw{margin-top:4px;}
+        .wrow{flex-wrap:wrap;}
+        .rtick{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:800;color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:2px 7px;cursor:pointer;}
+        .rtick input{margin:0;width:auto;}
+        #rowsEditor.mrows input[type=text],#catCats.mrows input[type=text]{-webkit-text-security:disc;text-security:disc;}
         .optnote{font-size:11.5px;color:var(--muted);margin:2px 0 8px 2px;line-height:1.4;}
         .dirgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;}
         .seg-toggle{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
@@ -190,7 +194,7 @@
     <canvas id="confetti"></canvas>
     <div class="topbar">
         <button class="icon-btn" id="backBtn" onclick="goBackHub()" title="Back to tools" style="display:none"><i class="fas fa-arrow-left"></i></button>
-        <div class="brand"><i class="fas fa-spell-check"></i> <span id="brandName">Word Games</span></div>
+        <div class="brand"><i class="fas fa-spell-check"></i> <span id="brandName">Word Games &amp; Builders</span></div>
         <div class="star-wrap">
             <button class="star-lg" id="starBtn" onclick="toggleBookmark()" title="Bookmark"><i class="far fa-star"></i></button>
             <span class="star-tip">Click to bookmark — this page reopens here automatically.</span>
@@ -205,7 +209,7 @@
     <main>
         <!-- GALLERY -->
         <div id="gallery">
-            <h2>Word Games</h2>
+            <h2>Word Games &amp; Builders</h2>
             <div class="sub">Choose a game to set up. More games coming soon.</div>
             <div class="gallery" id="galleryGrid"></div>
         </div>
@@ -215,16 +219,26 @@
             <button class="btn btn-soft" onclick="showGallery()" style="margin-bottom:6px"><i class="fas fa-arrow-left"></i> All games</button>
             <h2 id="formTitle">Game</h2>
             <input type="text" id="title" placeholder="Title (optional) — e.g. Science Vocabulary" oninput="saveDraft()" style="margin-bottom:4px">
-            <div id="genericForm">
-            <div class="mask-row">
-                <span class="lab" id="itemsLabel">Words</span>
-                <button class="eye" id="maskBtn" onclick="toggleMask()"><i class="fas fa-eye-slash"></i> <span id="maskTxt">Hidden</span></button>
+            <div class="builder2">
+              <div class="b2-left">
+                <div class="mask-row">
+                    <span class="lab" id="itemsLabel">Words</span>
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                        <div class="seg-toggle" id="modeToggle"><button type="button" id="modeRows" class="on" onclick="setMode('rows')"><i class="fas fa-list"></i> Rows</button><button type="button" id="modePaste" onclick="setMode('paste')"><i class="fas fa-paste"></i> Paste list</button></div>
+                        <button class="eye" id="maskBtn" onclick="toggleMask()"><i class="fas fa-eye-slash"></i> <span id="maskTxt">Hidden</span></button>
+                    </div>
+                </div>
+                <div id="catCats" style="display:none"></div>
+                <div id="rowsEditor"></div>
+                <button type="button" class="btn btn-soft addw" id="addRowBtn" onclick="rowAdd()" style="margin-top:6px"><i class="fas fa-plus"></i> Add word</button>
+                <div id="pasteWrap" style="display:none">
+                    <textarea id="items" class="masked" oninput="onPasteInput()"></textarea>
+                    <div id="itemsHelp" class="hint">One per line.</div>
+                </div>
+                <div id="gameOpts"></div>
+              </div>
+              <div class="b2-right" id="previewPanel" style="display:none"><div class="card"><label class="fld" style="margin-top:0"><i class="fas fa-eye"></i> Live preview</label><div id="b2preview" class="prevwrap"></div><div id="exportRow" style="margin-top:10px"></div></div></div>
             </div>
-            <textarea id="items" class="masked" oninput="saveDraft()"></textarea>
-            <div id="itemsHelp" class="hint">Hidden by default so students don't see answers. Press Enter for a new line.</div>
-            </div><!-- /genericForm -->
-
-            <div id="customBuilder" style="display:none"></div>
 
             <div class="card">
                 <label class="fld" style="margin-top:0">Options</label>
@@ -349,38 +363,26 @@
 
         /* ===== MASK (always default ON; dots so the teacher can type/Enter unseen) ===== */
         let masked=true;
-        function applyMask(){const t=document.getElementById('items');if(t)t.classList.toggle('masked',masked);const b=document.getElementById('maskBtn');if(b){b.classList.toggle('shown',!masked);b.innerHTML=(masked?'<i class="fas fa-eye-slash"></i> ':'<i class="fas fa-eye"></i> ')+'<span id="maskTxt">'+(masked?'Hidden':'Showing')+'</span>';}}
+        function applyMask(){const t=document.getElementById('items');if(t)t.classList.toggle('masked',masked);const re=document.getElementById('rowsEditor');if(re)re.classList.toggle('mrows',masked);const cc=document.getElementById('catCats');if(cc)cc.classList.toggle('mrows',masked);const b=document.getElementById('maskBtn');if(b){b.classList.toggle('shown',!masked);b.innerHTML=(masked?'<i class="fas fa-eye-slash"></i> ':'<i class="fas fa-eye"></i> ')+'<span id="maskTxt">'+(masked?'Hidden':'Showing')+'</span>';}}
         function toggleMask(){ if(masked){ uiConfirm({title:'Show answers?',body:'This will display the words/answers on screen for the whole class. Continue?',yes:'Show answers',icon:'eye',onYes:function(){ masked=false; applyMask(); }}); } else { masked=true; applyMask(); } }
 
         /* ===== GALLERY / FORM NAV ===== */
         let curGame=null, groupsList=[];
         function buildGallery(){ const g=document.getElementById('galleryGrid'); g.innerHTML=''; GAMES.forEach(m=>{ const t=document.createElement('div'); t.className='gtile'+(m.soon?' soon':''); t.style.setProperty('--gc',m.c1); t.style.setProperty('--gc2',m.c2); t.innerHTML='<div class="ic"><i class="fas '+m.icon+'"></i></div><h3>'+m.name+(m.soon?' <span style="font-size:10px;color:var(--muted)">soon</span>':'')+'</h3><p>'+m.desc+'</p>'; if(!m.soon) t.onclick=()=>openForm(m.id); g.appendChild(t); }); }
-        function showGallery(){ location.hash=''; document.getElementById('gallery').style.display='block'; document.getElementById('form').style.display='none'; document.getElementById('player').style.display='none'; document.getElementById('editBtn').style.display='none'; document.getElementById('brandName').textContent='Word Games'; updateStarHint(); }
+        function showGallery(){ location.hash=''; document.getElementById('gallery').style.display='block'; document.getElementById('form').style.display='none'; document.getElementById('player').style.display='none'; document.getElementById('editBtn').style.display='none'; document.getElementById('brandName').textContent='Word Games & Builders'; updateStarHint(); }
         function openForm(id){ curGame=id; const m=META[id];
             document.getElementById('gallery').style.display='none'; document.getElementById('form').style.display='block'; document.getElementById('player').style.display='none';
             document.getElementById('brandName').textContent=m.name;
             document.getElementById('formTitle').textContent=m.name;
-            const custom = (id==='ws'||id==='cw');
-            document.getElementById('genericForm').style.display = custom?'none':'block';
-            document.getElementById('customBuilder').style.display = custom?'block':'none';
-            // reset generic fields to defaults each open
+            // reset shared option controls
             set('title',''); set('items','');
             document.getElementById('optNums').checked=false; document.getElementById('optSyms').checked=false;
             set('optTries','3'); document.getElementById('optGroups').checked=false; groupsList=[]; drawGroups(); toggleGroupsEditor();
             document.getElementById('optTimer').checked=false; toggleTimerEditor();
-            if(!custom){
-                document.getElementById('itemsLabel').textContent = id==='cat'?'Categories':(id==='se'?'Sentences':'Words');
-                document.getElementById('items').placeholder=m.ph||'';
-                document.getElementById('itemsHelp').textContent = m.label + ' · Hidden by default — press Enter for a new line.';
-                document.getElementById('kbRow').style.display = (m.kb===false)?'none':'flex';
-                document.getElementById('triesRow').style.display = m.tries?'flex':'none';
-                document.getElementById('dragRow').style.display = (id==='sc'||id==='se')?'flex':'none';
-            } else {
-                document.getElementById('kbRow').style.display='none';
-                document.getElementById('triesRow').style.display='none';
-                document.getElementById('dragRow').style.display='none';
-                buildCustom(id);
-            }
+            document.getElementById('kbRow').style.display = (id==='hg')?'flex':'none';
+            document.getElementById('triesRow').style.display = m.tries?'flex':'none';
+            document.getElementById('dragRow').style.display = (id==='sc'||id==='se')?'flex':'none';
+            setupEntry(id);
             // restore a saved draft for THIS game only
             if(DRAFT && DRAFT.g===id) applyDraft(DRAFT);
             masked=true; applyMask();
@@ -403,83 +405,118 @@
             return {on:true,mode,secs:total,style:val('optTimerStyle')||'num'};
         }
         function buildPayload(){
+            if(MODE==='rows') rowSync();
             const t=val('title').trim(), seed=Math.floor(Math.random()*1e9), timer=buildTimer();
             const opt=commonOpt(), groups=opt.groups?groupsList.slice():[];
-            if(curGame==='ws'){ const ws=wsWords(); if(!ws.length)return null; const size=(wsSizeManual&&parseInt(val('wsSize')))?Math.max(parseInt(val('wsSize')),longestOf(ws)):wsAutoSize(ws); const built=buildWordSearch(ws.map(w=>w.w),size,wsDirs(),wsSnake,seed); const defs={}; ws.forEach(w=>{if(w.d)defs[w.w]=w.d;}); return {g:'ws',t,grid:built.grid,list:ws.map(w=>w.w),defs,opt,groups,seed,timer}; }
-            if(curGame==='cw'){ const cws=cwWords(); if(cws.length<2)return null; const cw=buildCrossword(cws.map(w=>({w:w.w,clue:w.clue}))); if(!cw.entries.length)return null; return {g:'cw',t,cells:cw.cells,entries:cw.entries,H:cw.H,W:cw.W,opt,groups,seed,timer}; }
+            if(curGame==='ws'){ const ws=wsWords(); if(!ws.length)return null; const size=wsSize(ws); const built=buildWordSearch(ws.map(o=>({w:o.w,dirs:wordDirs(o)})),size,wsSnake,seed); const defs={}; ws.forEach(w=>{if(w.d)defs[w.w]=w.d;}); return {g:'ws',t,grid:built.grid,list:ws.map(w=>w.w),defs,caps:CAPS,opt,groups,seed,timer}; }
+            if(curGame==='cw'){ const cws=cwWords(); if(cws.length<2)return null; const cw=buildCrossword(cws.map(w=>({w:w.w,clue:w.clue}))); if(!cw.entries.length)return null; return {g:'cw',t,cells:cw.cells,entries:cw.entries,H:cw.H,W:cw.W,caps:CAPS,opt,groups,seed,timer}; }
             const raw=parseItems(); if(!raw.length)return null;
             const drag=document.getElementById('optDrag')?document.getElementById('optDrag').checked:true;
-            if(curGame==='hg'){const words=raw.map(l=>{const p=l.split('|');return{w:(p[0]||'').trim(),h:(p[1]||'').trim()};}).filter(o=>o.w);return{g:'hg',t,words,opt,groups,seed,timer};}
+            if(curGame==='hg'){const words=raw.map(l=>{const p=l.split('|');return{w:(p[0]||'').trim(),h:(p[1]||'').trim()};}).filter(o=>o.w);return{g:'hg',t,words,caps:CAPS,opt,groups,seed,timer};}
             if(curGame==='sc'){return{g:'sc',t,words:raw,opt,groups,seed,timer,drag};}
             if(curGame==='se'){return{g:'se',t,sent:raw,opt,groups,seed,timer,drag};}
             if(curGame==='cat'){const cats=raw.map(l=>{const i=l.indexOf('=');if(i<0)return null;const name=l.slice(0,i).trim();const items=l.slice(i+1).split(',').map(s=>s.trim()).filter(Boolean);return items.length?{n:name,items}:null;}).filter(Boolean);return cats.length?{g:'cat',t,cats,opt,groups,seed,timer}:null;}
         }
 
-        /* ===== CUSTOM BUILDERS (Word Search + Crossword) — left form, right live preview ===== */
-        let ROWS=[], wsSnake=false, wsSizeManual=false;
+        /* ===== UNIFIED ENTRY BUILDER (rows + paste) for every word game ===== */
+        let ROWS=[], CATS=[], MODE='rows', wsSnake=false, wsSizeManual=false, CAPS='upper';
+        const ENTRY={
+            hg:{label:'Words',pasteHelp:'One per line. Optional hint after a pipe:  word | hint',fields:[{k:'w',ph:'word',cls:'w'},{k:'h',ph:'hint (optional)',cls:'d'}]},
+            sc:{label:'Words',pasteHelp:'One word per line.',fields:[{k:'w',ph:'word',cls:'d'}]},
+            se:{label:'Sentences',pasteHelp:'One sentence per line.',fields:[{k:'w',ph:'sentence',cls:'d'}]},
+            ws:{label:'Words',pasteHelp:'One per line. Optional definition after a pipe:  word | definition',fields:[{k:'w',ph:'word',cls:'w'},{k:'d',ph:'definition (optional)',cls:'d'}],ticks:true},
+            cw:{label:'Words & clues',pasteHelp:'One per line as  word | clue',fields:[{k:'w',ph:'word',cls:'w'},{k:'c',ph:'clue',cls:'d'}]}
+        };
         function escAttr(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
-        function buildCustom(id){
-            ROWS=[{w:'',d:''}]; wsSnake=false; wsSizeManual=false;
-            const isCw=id==='cw';
-            const wsOpts = id==='ws' ? (
-                '<label class="fld">Directions</label>'+
-                '<div class="dirgrid">'+
-                  '<label class="chk"><input type="checkbox" id="wsH" checked onchange="customChanged()"> Horizontal</label>'+
-                  '<label class="chk"><input type="checkbox" id="wsV" checked onchange="customChanged()"> Vertical</label>'+
-                  '<label class="chk"><input type="checkbox" id="wsD" onchange="customChanged()"> Diagonal</label>'+
-                  '<label class="chk"><input type="checkbox" id="wsR" onchange="customChanged()"> Reverse</label>'+
-                '</div>'+
-                '<div class="optnote">Horizontal &amp; vertical are easiest to spot. Diagonal adds slanted words. Reverse lets words read backwards.</div>'+
-                '<label class="fld">Word path</label>'+
-                '<div class="seg-toggle"><button type="button" id="wsStraight" class="on" onclick="wsShape(false)">Straight</button><button type="button" id="wsSnake" onclick="wsShape(true)">Allow turns</button></div>'+
-                '<div class="optnote">Straight keeps every word in one line. Allow turns lets a word bend around corners while its letters stay connected.</div>'+
-                '<label class="fld">Grid size (squares per side)</label>'+
-                '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><input type="number" id="wsSize" min="5" max="22" style="width:72px" oninput="wsSizeManual=true;wsRender();saveDraft()"><span class="optnote" style="margin:0;flex:1 1 160px">Auto-sizes to your longest word + 2 squares of padding. Bump it up for a harder search.</span></div>'
-            ) : '<div class="optnote" style="margin-top:10px">Tip: add words that share letters so they can cross. Each clue is what students read to solve.</div>';
-            document.getElementById('customBuilder').innerHTML=
-                '<div class="builder2"><div class="b2-left">'+
-                  '<label class="fld" style="margin-top:0">Words &amp; '+(isCw?'clues':'definitions')+'</label>'+
-                  '<div class="optnote">One word per row. '+(isCw?'Write a clue beside each word.':'The definition is an optional hint shown beside the word.')+' Click <b>Add word</b> for more.</div>'+
-                  '<div id="wrows"></div>'+
-                  '<button type="button" class="btn btn-soft addw" onclick="wrAdd()"><i class="fas fa-plus"></i> Add word</button>'+
-                  wsOpts+
-                '</div>'+
-                '<div class="b2-right"><div class="card"><label class="fld" style="margin-top:0"><i class="fas fa-eye"></i> Live preview</label><div id="b2preview" class="prevwrap"></div></div></div>'+
-                '</div>';
-            wrRender();
-            if(id==='ws')wsRender(); else cwPreview();
-        }
-        function wrRender(){ const host=document.getElementById('wrows'); if(!host)return; const isCw=curGame==='cw';
-            host.innerHTML=ROWS.map((r,i)=>'<div class="wrow"><input class="w" type="text" placeholder="word" value="'+escAttr(r.w)+'" oninput="wrSync();customChanged()"><input class="d" type="text" placeholder="'+(isCw?'clue':'definition (optional)')+'" value="'+escAttr(r.d)+'" oninput="wrSync();customChanged()"><button type="button" class="del" onclick="wrRemove('+i+')" title="Remove"><i class="fas fa-xmark"></i></button></div>').join(''); }
-        function wrSync(){ const rows=document.querySelectorAll('#wrows .wrow'); ROWS=Array.from(rows).map(row=>({w:row.querySelector('.w').value,d:row.querySelector('.d').value})); }
-        function wrAdd(){ wrSync(); ROWS.push({w:'',d:''}); wrRender(); const ins=document.querySelectorAll('#wrows .wrow input.w'); if(ins.length)ins[ins.length-1].focus(); customChanged(); }
-        function wrRemove(i){ wrSync(); ROWS.splice(i,1); if(!ROWS.length)ROWS.push({w:'',d:''}); wrRender(); customChanged(); }
-        function customChanged(){ if(curGame==='ws')wsRender(); else if(curGame==='cw')cwPreview(); saveDraft(); }
         function gv(id){const e=document.getElementById(id);return e?e.checked:false;}
         function setChk(id,v){const e=document.getElementById(id);if(e)e.checked=v;}
-        function wsDirs(){ const H=gv('wsH'),V=gv('wsV'),D=gv('wsD'),R=gv('wsR'); let d=[]; if(H){d.push([0,1]); if(R)d.push([0,-1]);} if(V){d.push([1,0]); if(R)d.push([-1,0]);} if(D){d.push([1,1],[1,-1]); if(R)d.push([-1,-1],[-1,1]);} if(!d.length)d=[[0,1],[1,0]]; return d; }
-        function wsWords(){ wrSync(); return ROWS.map(r=>({w:(r.w||'').replace(/[^A-Za-z]/g,'').toUpperCase(),d:(r.d||'').trim()})).filter(o=>o.w.length>1); }
-        function longestOf(words){ return words.length?Math.max.apply(null,words.map(w=>w.w.length)):5; }
-        function wsAutoSize(words){ if(!words.length)return 8; const longest=longestOf(words); const total=words.reduce((a,w)=>a+w.w.length,0); let s=Math.max(longest,Math.ceil(Math.sqrt(total*1.8))); return Math.min(22,s+2); }
-        function wsShape(on){ wsSnake=on; const a=document.getElementById('wsStraight'),b=document.getElementById('wsSnake'); if(a)a.classList.toggle('on',!on); if(b)b.classList.toggle('on',on); wsRender(); saveDraft(); }
-        function wsRender(){ if(curGame!=='ws')return; const words=wsWords(); const auto=wsAutoSize(words); const sizeEl=document.getElementById('wsSize'); let size=auto; if(wsSizeManual&&sizeEl&&parseInt(sizeEl.value)){ size=Math.max(parseInt(sizeEl.value),longestOf(words)); } else if(sizeEl){ sizeEl.value=auto; } const built=buildWordSearch(words.map(w=>w.w),size,wsDirs(),wsSnake,12345); renderWsPreview(built,words); }
-        function renderWsPreview(built,words){ const host=document.getElementById('b2preview'); if(!host)return; if(!words.length){ host.innerHTML='<div class="optnote" style="text-align:center">Add a word to see the grid.</div>'; return; } const size=built.size; const on={}; Object.keys(built.placed).forEach(w=>built.placed[w].forEach(p=>on[p[0]+','+p[1]]=true)); const g=built.grid.map(r=>r.split('')); let html='<div class="pvgrid" style="grid-template-columns:repeat('+size+',1fr)">'; for(let r=0;r<size;r++)for(let c=0;c<size;c++){ html+='<div class="pvcell '+(on[r+','+c]?'w0':'on')+'">'+g[r][c]+'</div>'; } html+='</div>'; if(built.unplaced.length)html+='<div class="optnote" style="color:var(--danger);text-align:center">Couldn\'t fit: '+built.unplaced.map(esc).join(', ')+' — try a bigger grid or more directions.</div>'; host.innerHTML=html; }
-        function buildWordSearch(words,size,dirs,snake,seed){
-            const rng=mulberry(seed); size=Math.max(size,words.length?Math.max.apply(null,words.map(w=>w.length)):5);
-            const grid=Array.from({length:size},()=>Array(size).fill('')); const placed={},unplaced=[];
-            const inb=(r,c)=>r>=0&&r<size&&c>=0&&c<size;
-            function tryStraight(w){ for(let att=0;att<500;att++){ const d=dirs[Math.floor(rng()*dirs.length)]; const r=Math.floor(rng()*size),c=Math.floor(rng()*size); const er=r+d[0]*(w.length-1),ec=c+d[1]*(w.length-1); if(!inb(er,ec))continue; let ok=true;const cells=[]; for(let k=0;k<w.length;k++){const rr=r+d[0]*k,cc=c+d[1]*k;const cur=grid[rr][cc];if(cur&&cur!==w[k]){ok=false;break;}cells.push([rr,cc]);} if(!ok)continue; cells.forEach((p,k)=>grid[p[0]][p[1]]=w[k]); placed[w]=cells; return true; } return false; }
-            function trySnake(w){ for(let att=0;att<800;att++){ const r=Math.floor(rng()*size),c=Math.floor(rng()*size); if(grid[r][c]&&grid[r][c]!==w[0])continue; const path=[[r,c]],used={}; used[r+','+c]=true; let ok=true; for(let k=1;k<w.length;k++){ const cur=path[k-1]; const opts=shuf(dirs.slice(),(seed+att*7+k)|0); let moved=false; for(let oi=0;oi<opts.length;oi++){ const d=opts[oi],rr=cur[0]+d[0],cc=cur[1]+d[1]; if(!inb(rr,cc)||used[rr+','+cc])continue; const gch=grid[rr][cc]; if(gch&&gch!==w[k])continue; path.push([rr,cc]); used[rr+','+cc]=true; moved=true; break; } if(!moved){ok=false;break;} } if(!ok)continue; path.forEach((p,k)=>grid[p[0]][p[1]]=w[k]); placed[w]=path; return true; } return false; }
-            words.slice().sort((a,b)=>b.length-a.length).forEach(w=>{ const done=snake?trySnake(w):tryStraight(w); if(!done)unplaced.push(w); });
+        function defaultRow(g){ return g==='ws'?{w:'',d:'',diag:false,rev:false}:(g==='cw'?{w:'',c:''}:(g==='hg'?{w:'',h:''}:(g==='cat'?{w:'',cat:CATS[0]||''}:{w:''}))); }
+        function setupEntry(id){ MODE='rows'; wsSnake=false; wsSizeManual=false; CAPS='upper';
+            if(id==='cat'){ CATS=['Group 1','Group 2']; ROWS=[defaultRow('cat')]; } else { ROWS=[defaultRow(id)]; CATS=[]; }
+            document.getElementById('itemsLabel').textContent=(id==='cat'?'Categories & words':(ENTRY[id]?ENTRY[id].label:'Words'));
+            document.getElementById('itemsHelp').textContent=(id==='cat'?'One category per line:  Category = item1, item2':(ENTRY[id]?ENTRY[id].pasteHelp:''));
+            document.getElementById('items').placeholder=(id==='cat'?'Mammals = dog, cat, whale\nBirds = eagle, owl':(id==='hg'?'photosynthesis | how plants make food':(id==='se'?'The quick brown fox jumps.':'word')));
+            document.getElementById('catCats').style.display=(id==='cat')?'block':'none';
+            document.getElementById('previewPanel').style.display=(id==='ws'||id==='cw')?'block':'none';
+            buildGameOpts(id);
+            document.getElementById('modeRows').classList.add('on'); document.getElementById('modePaste').classList.remove('on');
+            document.getElementById('rowsEditor').style.display='block'; document.getElementById('addRowBtn').style.display='inline-flex'; document.getElementById('pasteWrap').style.display='none';
+            if(id==='cat')catRender();
+            rowsRender(); set('items',rowsToText()); previewUpdate();
+        }
+        function buildGameOpts(id){ const host=document.getElementById('gameOpts'); let h='';
+            if(id==='ws'){
+                h+='<label class="fld">Directions (default for every word)</label><div class="dirgrid">'+chk('wsH','Horizontal',true)+chk('wsV','Vertical',true)+chk('wsD','Diagonal',false)+chk('wsR','Reverse',false)+'</div>'+
+                   '<div class="optnote">These are the defaults. Use the <b>D</b> / <b>R</b> ticks beside a word to force diagonal or reverse for that word only.</div>'+
+                   '<label class="fld">Word path</label><div class="seg-toggle"><button type="button" id="wsStraight" class="on" onclick="wsShape(false)">Straight</button><button type="button" id="wsSnake" onclick="wsShape(true)">Allow turns</button></div>'+
+                   '<div class="optnote">Straight keeps each word in one line. Allow turns lets a word bend around corners while its letters stay connected.</div>'+
+                   '<label class="fld">Grid size (squares per side)</label><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><input type="number" id="wsSize" min="5" max="22" style="width:72px" oninput="wsSizeManual=true;previewUpdate();saveDraft()"><span class="optnote" style="margin:0;flex:1 1 150px">Auto-sizes to the longest word + 2 squares of padding. Bump it up for a harder search.</span></div>';
+            }
+            if(id==='ws'||id==='cw'||id==='hg'){ h+='<label class="fld">Letter case</label><div class="seg-toggle" id="caseToggle"><button type="button" id="caseUp" class="on" onclick="setCase(\'upper\')">UPPERCASE</button><button type="button" id="caseLo" onclick="setCase(\'lower\')">lowercase</button></div>'; }
+            host.innerHTML=h;
+        }
+        function chk(id,label,def){return '<label class="chk"><input type="checkbox" id="'+id+'"'+(def?' checked':'')+' onchange="previewUpdate();saveDraft()"> '+label+'</label>';}
+        function setCase(v){ CAPS=v; const u=document.getElementById('caseUp'),l=document.getElementById('caseLo'); if(u)u.classList.toggle('on',v==='upper'); if(l)l.classList.toggle('on',v==='lower'); previewUpdate(); saveDraft(); }
+        function wsShape(on){ wsSnake=on; const a=document.getElementById('wsStraight'),b=document.getElementById('wsSnake'); if(a)a.classList.toggle('on',!on); if(b)b.classList.toggle('on',on); previewUpdate(); saveDraft(); }
+        function setMode(m){ if(m===MODE)return; if(m==='paste'){ rowSync(); MODE='paste'; document.getElementById('rowsEditor').style.display='none'; document.getElementById('addRowBtn').style.display='none'; document.getElementById('catCats').style.display='none'; document.getElementById('pasteWrap').style.display='block'; } else { MODE='rows'; parseToRows(); rowsRender(); if(curGame==='cat'){catRender();document.getElementById('catCats').style.display='block';} document.getElementById('rowsEditor').style.display='block'; document.getElementById('addRowBtn').style.display='inline-flex'; document.getElementById('pasteWrap').style.display='none'; }
+            document.getElementById('modeRows').classList.toggle('on',MODE==='rows'); document.getElementById('modePaste').classList.toggle('on',MODE==='paste'); applyMask(); }
+        function onPasteInput(){ previewUpdate(); saveDraft(); }
+        function rowsRender(){ const host=document.getElementById('rowsEditor'); if(!host)return; const g=curGame;
+            if(g==='cat'){ host.innerHTML=ROWS.map((r,i)=>'<div class="wrow" data-i="'+i+'"><input class="d" type="text" placeholder="word / item" value="'+escAttr(r.w)+'" oninput="rowSync()"><select onchange="rowSync()">'+CATS.map(c=>'<option'+(c===r.cat?' selected':'')+'>'+esc(c)+'</option>').join('')+'</select><button type="button" class="del" onclick="rowRemove('+i+')"><i class="fas fa-xmark"></i></button></div>').join(''); applyMask(); return; }
+            const E=ENTRY[g]; if(!E){host.innerHTML='';return;}
+            host.innerHTML=ROWS.map((r,i)=>{ let inner=E.fields.map(f=>'<input class="'+f.cls+'" type="text" placeholder="'+f.ph+'" value="'+escAttr(r[f.k])+'" oninput="rowSync()">').join(''); if(E.ticks){ inner+='<label class="rtick" title="Allow this word diagonally"><input type="checkbox" '+(r.diag?'checked':'')+' onchange="rowSync()">D</label><label class="rtick" title="Allow this word reversed"><input type="checkbox" '+(r.rev?'checked':'')+' onchange="rowSync()">R</label>'; } return '<div class="wrow" data-i="'+i+'">'+inner+'<button type="button" class="del" onclick="rowRemove('+i+')"><i class="fas fa-xmark"></i></button></div>'; }).join(''); applyMask();
+        }
+        function rowSync(){ const g=curGame; const rows=document.querySelectorAll('#rowsEditor .wrow');
+            if(g==='cat'){ ROWS=Array.from(rows).map(row=>({w:row.querySelector('input[type=text]').value,cat:(row.querySelector('select')||{}).value||''})); }
+            else { const E=ENTRY[g]; ROWS=Array.from(rows).map(row=>{ const txt=row.querySelectorAll('input[type=text]'); const o={}; E.fields.forEach((f,i)=>o[f.k]=txt[i]?txt[i].value:''); if(E.ticks){ const cb=row.querySelectorAll('input[type=checkbox]'); o.diag=cb[0]?cb[0].checked:false; o.rev=cb[1]?cb[1].checked:false; } return o; }); }
+            set('items',rowsToText()); previewUpdate(); saveDraft();
+        }
+        function rowAdd(){ rowSync(); ROWS.push(defaultRow(curGame)); rowsRender(); const ins=document.querySelectorAll('#rowsEditor .wrow input[type=text]'); if(ins.length)ins[ins.length-1].focus(); set('items',rowsToText()); previewUpdate(); saveDraft(); }
+        function rowRemove(i){ rowSync(); ROWS.splice(i,1); if(!ROWS.length)ROWS.push(defaultRow(curGame)); rowsRender(); set('items',rowsToText()); previewUpdate(); saveDraft(); }
+        function rowsToText(){ const g=curGame;
+            if(g==='cat'){ return CATS.map(name=>name+' = '+ROWS.filter(r=>r.cat===name&&r.w.trim()).map(r=>r.w.trim()).join(', ')).join('\n'); }
+            if(g==='hg'){ return ROWS.filter(r=>r.w.trim()).map(r=>r.w.trim()+(r.h&&r.h.trim()?' | '+r.h.trim():'')).join('\n'); }
+            if(g==='ws'){ return ROWS.filter(r=>r.w.trim()).map(r=>{const flags=(r.diag?'d':'')+(r.rev?'r':'');let line=r.w.trim();if((r.d&&r.d.trim())||flags)line+=' | '+(r.d?r.d.trim():'');if(flags)line+=' | '+flags;return line;}).join('\n'); }
+            if(g==='cw'){ return ROWS.filter(r=>r.w.trim()).map(r=>r.w.trim()+(r.c&&r.c.trim()?' | '+r.c.trim():'')).join('\n'); }
+            return ROWS.filter(r=>r.w.trim()).map(r=>r.w.trim()).join('\n');
+        }
+        function parseToRows(){ const g=curGame; const lines=parseItems();
+            if(g==='cat'){ CATS=[]; ROWS=[]; lines.forEach(l=>{const i=l.indexOf('=');if(i<0)return;const name=l.slice(0,i).trim();if(name&&CATS.indexOf(name)<0)CATS.push(name);l.slice(i+1).split(',').map(s=>s.trim()).filter(Boolean).forEach(it=>ROWS.push({w:it,cat:name}));}); if(!CATS.length)CATS=['Group 1','Group 2']; if(!ROWS.length)ROWS=[defaultRow('cat')]; return; }
+            if(g==='hg'){ ROWS=lines.map(l=>{const p=l.split('|');return{w:(p[0]||'').trim(),h:(p[1]||'').trim()};}); }
+            else if(g==='ws'){ ROWS=lines.map(l=>{const p=l.split('|').map(s=>s.trim());const f=(p[2]||'').toLowerCase();return{w:p[0]||'',d:p[1]||'',diag:f.indexOf('d')>=0,rev:f.indexOf('r')>=0};}); }
+            else if(g==='cw'){ ROWS=lines.map(l=>{const p=l.split('|').map(s=>s.trim());return{w:p[0]||'',c:p[1]||''};}); }
+            else { ROWS=lines.map(l=>({w:l})); }
+            if(!ROWS.length)ROWS=[defaultRow(g)];
+        }
+        function catRender(){ const host=document.getElementById('catCats'); if(!host)return; host.innerHTML='<label class="fld" style="margin-top:0">Categories</label><div class="grpEdit">'+CATS.map((c,i)=>'<span class="grpChip">'+esc(c)+'<button type="button" onclick="catDel('+i+')"><i class="fas fa-xmark"></i></button></span>').join('')+'</div><div style="display:flex;gap:8px;margin-top:6px"><input type="text" id="catNew" placeholder="Add a category" onkeydown="if(event.key===\'Enter\'){event.preventDefault();catAdd();}"><button type="button" class="btn btn-soft" onclick="catAdd()"><i class="fas fa-plus"></i></button></div><label class="fld">Words &amp; their category</label>'; }
+        function catAdd(){ const i=document.getElementById('catNew'); const n=(i.value||'').trim(); if(!n)return; if(CATS.indexOf(n)<0)CATS.push(n); i.value=''; catRender(); rowsRender(); set('items',rowsToText()); previewUpdate(); saveDraft(); }
+        function catDel(i){ const name=CATS[i]; CATS.splice(i,1); ROWS.forEach(r=>{if(r.cat===name)r.cat=CATS[0]||'';}); catRender(); rowsRender(); set('items',rowsToText()); previewUpdate(); saveDraft(); }
+        function wordDirs(o){ const H=gv('wsH'),V=gv('wsV'),D=gv('wsD')||o.diag,R=gv('wsR')||o.rev; let d=[]; if(H){d.push([0,1]); if(R)d.push([0,-1]);} if(V){d.push([1,0]); if(R)d.push([-1,0]);} if(D){d.push([1,1],[1,-1]); if(R)d.push([-1,-1],[-1,1]);} if(!d.length)d=[[0,1],[1,0]]; return d; }
+        function wsWords(){ return parseItems().map(l=>{const p=l.split('|').map(s=>s.trim());const f=(p[2]||'').toLowerCase();return{w:(p[0]||'').replace(/[^A-Za-z]/g,'').toUpperCase(),d:p[1]||'',diag:f.indexOf('d')>=0,rev:f.indexOf('r')>=0};}).filter(o=>o.w.length>1); }
+        function cwWords(){ return parseItems().map(l=>{const p=l.split('|').map(s=>s.trim());return{w:(p[0]||'').replace(/[^A-Za-z]/g,'').toUpperCase(),clue:p[1]||''};}).filter(o=>o.w.length>1); }
+        function longestOf(ws){ return ws.length?Math.max.apply(null,ws.map(w=>w.w.length)):5; }
+        function wsAutoSize(ws){ if(!ws.length)return 8; const longest=longestOf(ws); const total=ws.reduce((a,w)=>a+w.w.length,0); return Math.min(22,Math.max(longest,Math.ceil(Math.sqrt(total*1.8)))+2); }
+        function wsSize(ws){ const el=document.getElementById('wsSize'); const auto=wsAutoSize(ws); if(wsSizeManual&&el&&parseInt(el.value))return Math.max(parseInt(el.value),longestOf(ws)); if(el)el.value=auto; return auto; }
+        function previewUpdate(){ if(curGame==='ws')wsRender(); else if(curGame==='cw')cwPreview(); }
+        function lcStyle(){ return CAPS==='lower'?'text-transform:lowercase':''; }
+        function wsRender(){ const host=document.getElementById('b2preview'); if(!host)return; const ws=wsWords(); if(!ws.length){host.innerHTML='<div class="optnote" style="text-align:center">Add a word to see the grid.</div>';document.getElementById('exportRow').innerHTML='';return;} const size=wsSize(ws); const built=buildWordSearch(ws.map(o=>({w:o.w,dirs:wordDirs(o)})),size,wsSnake,12345); const on={}; Object.keys(built.placed).forEach(w=>built.placed[w].forEach(p=>on[p[0]+','+p[1]]=true)); const g=built.grid.map(r=>r.split('')); let html='<div class="pvgrid" style="grid-template-columns:repeat('+built.size+',1fr);'+lcStyle()+'">'; for(let r=0;r<built.size;r++)for(let c=0;c<built.size;c++){html+='<div class="pvcell '+(on[r+','+c]?'w0':'on')+'">'+g[r][c]+'</div>';} html+='</div>'; if(built.unplaced.length)html+='<div class="optnote" style="color:var(--danger);text-align:center">Couldn\'t fit: '+built.unplaced.map(esc).join(', ')+' — try a bigger grid or more directions.</div>'; host.innerHTML=html; renderExport(); }
+        function cwPreview(){ const host=document.getElementById('b2preview'); if(!host)return; const ws=cwWords(); if(ws.length<2){host.innerHTML='<div class="optnote" style="text-align:center">Add at least two words that share a letter.</div>';document.getElementById('exportRow').innerHTML='';return;} const cw=buildCrossword(ws.map(w=>({w:w.w,clue:w.clue}))); let html='<div class="pvgrid" style="grid-template-columns:repeat('+cw.W+',1fr);max-width:300px;'+lcStyle()+'">'; for(let r=0;r<cw.H;r++)for(let c=0;c<cw.W;c++){const ch=cw.cells[r][c];const n=cw.entries.find(e=>e.r===r&&e.c===c);html+='<div class="pvcell '+(ch?'cw':'cw blank')+'">'+(n?'<span class="num">'+n.num+'</span>':'')+(ch||'')+'</div>';} html+='</div>'; host.innerHTML=html; renderExport(); }
+        function renderExport(){ const host=document.getElementById('exportRow'); if(!host)return; host.innerHTML='<button type="button" class="btn btn-soft" style="width:100%" onclick="exportPNG(false)"><i class="fas fa-download"></i> Download puzzle (PNG)</button><button type="button" class="btn btn-soft" style="width:100%;margin-top:6px" onclick="exportPNG(true)"><i class="fas fa-key"></i> Download answer key (PNG)</button><div class="optnote" style="text-align:center">Black &amp; white, ready to print.</div>'; }
+        function buildWordSearch(wordObjs,size,snake,seed){
+            const rng=mulberry(seed); const maxLen=wordObjs.length?Math.max.apply(null,wordObjs.map(o=>o.w.length)):5; size=Math.max(size,maxLen);
+            const grid=Array.from({length:size},()=>Array(size).fill('')); const placed={},unplaced=[]; const inb=(r,c)=>r>=0&&r<size&&c>=0&&c<size;
+            function tryStraight(w,dirs){ for(let att=0;att<500;att++){ const d=dirs[Math.floor(rng()*dirs.length)]; const r=Math.floor(rng()*size),c=Math.floor(rng()*size); const er=r+d[0]*(w.length-1),ec=c+d[1]*(w.length-1); if(!inb(er,ec))continue; let ok=true;const cells=[]; for(let k=0;k<w.length;k++){const rr=r+d[0]*k,cc=c+d[1]*k;const cur=grid[rr][cc];if(cur&&cur!==w[k]){ok=false;break;}cells.push([rr,cc]);} if(!ok)continue; cells.forEach((p,k)=>grid[p[0]][p[1]]=w[k]); placed[w]=cells; return true; } return false; }
+            function trySnake(w,dirs){ for(let att=0;att<800;att++){ const r=Math.floor(rng()*size),c=Math.floor(rng()*size); if(grid[r][c]&&grid[r][c]!==w[0])continue; const path=[[r,c]],used={}; used[r+','+c]=true; let ok=true; for(let k=1;k<w.length;k++){ const cur=path[k-1]; const opts=shuf(dirs.slice(),(seed+att*7+k)|0); let moved=false; for(let oi=0;oi<opts.length;oi++){const d=opts[oi],rr=cur[0]+d[0],cc=cur[1]+d[1];if(!inb(rr,cc)||used[rr+','+cc])continue;const gch=grid[rr][cc];if(gch&&gch!==w[k])continue;path.push([rr,cc]);used[rr+','+cc]=true;moved=true;break;} if(!moved){ok=false;break;} } if(!ok)continue; path.forEach((p,k)=>grid[p[0]][p[1]]=w[k]); placed[w]=path; return true; } return false; }
+            wordObjs.slice().sort((a,b)=>b.w.length-a.w.length).forEach(o=>{ const done=snake?trySnake(o.w,o.dirs):tryStraight(o.w,o.dirs); if(!done)unplaced.push(o.w); });
             const A='ABCDEFGHIJKLMNOPQRSTUVWXYZ'; for(let r=0;r<size;r++)for(let c=0;c<size;c++)if(!grid[r][c])grid[r][c]=A[Math.floor(rng()*26)];
             return {grid:grid.map(r=>r.join('')),size,placed,unplaced};
         }
-        function wsCollect(){ wrSync(); return Object.assign({g:'ws',t:val('title'),rows:ROWS.map(r=>({w:r.w,d:r.d})),wsH:gv('wsH'),wsV:gv('wsV'),wsD:gv('wsD'),wsR:gv('wsR'),snake:wsSnake,size:val('wsSize')},sharedOpts()); }
-        function wsApply(d){ ROWS=(d.rows&&d.rows.length)?d.rows.map(r=>({w:r.w||'',d:r.d||''})):[{w:'',d:''}]; setChk('wsH',d.wsH!==false); setChk('wsV',d.wsV!==false); setChk('wsD',!!d.wsD); setChk('wsR',!!d.wsR); wsSnake=!!d.snake; const a=document.getElementById('wsStraight'),b=document.getElementById('wsSnake'); if(a)a.classList.toggle('on',!wsSnake); if(b)b.classList.toggle('on',wsSnake); if(d.size){wsSizeManual=true;set('wsSize',d.size);} wrRender(); wsRender(); }
-        function cwWords(){ wrSync(); return ROWS.map(r=>({w:(r.w||'').replace(/[^A-Za-z]/g,'').toUpperCase(),clue:(r.d||'').trim()})).filter(o=>o.w.length>1); }
-        function cwCollect(){ wrSync(); return Object.assign({g:'cw',t:val('title'),rows:ROWS.map(r=>({w:r.w,d:r.d}))},sharedOpts()); }
-        function cwApply(d){ ROWS=(d.rows&&d.rows.length)?d.rows.map(r=>({w:r.w||'',d:r.d||''})):[{w:'',d:''}]; wrRender(); cwPreview(); }
-        function cwPreview(){ if(curGame!=='cw')return; const words=cwWords(); const host=document.getElementById('b2preview'); if(!host)return; if(words.length<2){ host.innerHTML='<div class="optnote" style="text-align:center">Add at least two words that share a letter.</div>'; return; } const cw=buildCrossword(words.map(w=>({w:w.w,clue:w.clue}))); let html='<div class="pvgrid" style="grid-template-columns:repeat('+cw.W+',1fr);max-width:300px">'; for(let r=0;r<cw.H;r++)for(let c=0;c<cw.W;c++){ const ch=cw.cells[r][c]; const n=cw.entries.find(e=>e.r===r&&e.c===c); html+='<div class="pvcell '+(ch?'cw':'cw blank')+'">'+(n?'<span class="num">'+n.num+'</span>':'')+(ch||'')+'</div>'; } html+='</div>'; host.innerHTML=html; }
+        function exportPNG(answer){ if(curGame==='ws')exportWsPNG(answer); else if(curGame==='cw')exportCwPNG(answer); }
+        function dlCanvas(canvas,name){ try{ const a=document.createElement('a'); a.href=canvas.toDataURL('image/png'); a.download=name; document.body.appendChild(a); a.click(); a.remove(); }catch(e){ flash('Could not export here — open in a browser tab to download.'); } }
+        function lcase(s){ return CAPS==='lower'?String(s).toLowerCase():String(s).toUpperCase(); }
+        function exportWsPNG(answer){ const ws=wsWords(); if(!ws.length){flash('Add words first.');return;} const size=wsSize(ws); const built=buildWordSearch(ws.map(o=>({w:o.w,dirs:wordDirs(o)})),size,wsSnake,12345); const g=built.grid.map(r=>r.split('')); const on={}; Object.keys(built.placed).forEach(w=>built.placed[w].forEach(p=>on[p[0]+','+p[1]]=true)); const cell=46,pad=40,top=90; const W=pad*2+size*cell, listH=80+Math.ceil(ws.length/3)*26, H=top+size*cell+listH; const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const x=cv.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,W,H); x.fillStyle='#000'; x.textAlign='center'; x.textBaseline='middle'; x.font='700 30px Arial'; x.fillText(val('title')||'Word Search',W/2,40); x.font='700 '+Math.round(cell*0.5)+'px Arial'; for(let r=0;r<size;r++)for(let c=0;c<size;c++){ const X=pad+c*cell,Y=top+r*cell; x.strokeStyle='#bbb'; x.lineWidth=1; x.strokeRect(X,Y,cell,cell); if(answer&&on[r+','+c]){ x.fillStyle='#000'; x.fillRect(X+1,Y+1,cell-2,cell-2); x.fillStyle='#fff'; } else x.fillStyle='#000'; x.fillText(lcase(g[r][c]),X+cell/2,Y+cell/2+2); } x.fillStyle='#000'; x.textAlign='left'; x.font='700 20px Arial'; x.fillText('Find these words:',pad,top+size*cell+34); x.font='400 18px Arial'; ws.forEach((w,i)=>{ const col=i%3,row=Math.floor(i/3); x.fillText('• '+lcase(w.w),pad+col*((W-pad*2)/3),top+size*cell+64+row*26); }); dlCanvas(cv,(val('title')||'wordsearch')+(answer?'-answers':'')+'.png'); }
+        function exportCwPNG(answer){ const ws=cwWords(); if(ws.length<2){flash('Add at least two crossing words.');return;} const cw=buildCrossword(ws.map(w=>({w:w.w,clue:w.clue}))); const cell=46,pad=40,top=90; const gW=pad*2+cw.W*cell; const acr=cw.entries.filter(e=>e.dir==='A').sort((a,b)=>a.num-b.num); const dwn=cw.entries.filter(e=>e.dir==='D').sort((a,b)=>a.num-b.num); const clueH=70+(acr.length+dwn.length+2)*24; const W=Math.max(gW,520), H=top+cw.H*cell+clueH; const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const x=cv.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,W,H); x.fillStyle='#000'; x.textAlign='center'; x.textBaseline='middle'; x.font='700 30px Arial'; x.fillText(val('title')||'Crossword',W/2,40); const numAt={}; cw.entries.forEach(e=>numAt[e.r+','+e.c]=e.num); for(let r=0;r<cw.H;r++)for(let c=0;c<cw.W;c++){ const ch=cw.cells[r][c]; if(!ch)continue; const X=pad+c*cell,Y=top+r*cell; x.fillStyle='#fff'; x.fillRect(X,Y,cell,cell); x.strokeStyle='#000'; x.lineWidth=1.5; x.strokeRect(X,Y,cell,cell); if(numAt[r+','+c]){ x.fillStyle='#000'; x.textAlign='left'; x.textBaseline='top'; x.font='700 12px Arial'; x.fillText(numAt[r+','+c],X+2,Y+2); } if(answer){ x.fillStyle='#000'; x.textAlign='center'; x.textBaseline='middle'; x.font='700 '+Math.round(cell*0.5)+'px Arial'; x.fillText(lcase(ch),X+cell/2,Y+cell/2+2); } } x.fillStyle='#000'; x.textAlign='left'; x.textBaseline='alphabetic'; let yy=top+cw.H*cell+34; x.font='700 20px Arial'; x.fillText('Across',pad,yy); yy+=26; x.font='400 17px Arial'; acr.forEach(e=>{ x.fillText(e.num+'. '+(e.clue||'—'),pad,yy); yy+=24; }); yy+=10; x.font='700 20px Arial'; x.fillText('Down',pad,yy); yy+=26; x.font='400 17px Arial'; dwn.forEach(e=>{ x.fillText(e.num+'. '+(e.clue||'—'),pad,yy); yy+=24; }); dlCanvas(cv,(val('title')||'crossword')+(answer?'-answers':'')+'.png'); }
+
         function buildCrossword(entries){
             const words=entries.map(e=>({w:(e.w||'').toUpperCase().replace(/[^A-Z]/g,''),clue:e.clue||''})).filter(e=>e.w.length>1);
             words.sort((a,b)=>b.w.length-a.w.length);
@@ -515,9 +552,9 @@
         let DRAFT=null;
         function sharedOpts(){ const dg=document.getElementById('optDrag'); return {tries:val('optTries'),drag:dg?dg.checked:true,groupsOn:document.getElementById('optGroups').checked,groups:groupsList,timerOn:document.getElementById('optTimer').checked,timerMode:val('optTimerMode'),timerMin:val('optTimerMin'),timerSec:val('optTimerSec'),timerStyle:val('optTimerStyle')}; }
         function applyShared(d){ if(d.tries)set('optTries',d.tries); const dg=document.getElementById('optDrag'); if(dg)dg.checked=d.drag!==false; document.getElementById('optGroups').checked=!!d.groupsOn; groupsList=d.groups||[]; drawGroups(); toggleGroupsEditor(); document.getElementById('optTimer').checked=!!d.timerOn; if(d.timerMode)set('optTimerMode',d.timerMode); if(d.timerMin!=null&&d.timerMin!=='')set('optTimerMin',d.timerMin); if(d.timerSec!=null&&d.timerSec!=='')set('optTimerSec',d.timerSec); if(d.timerStyle)set('optTimerStyle',d.timerStyle); toggleTimerEditor(); }
-        function saveDraft(){ if(!curGame)return; try{ let d; if(curGame==='ws')d=wsCollect(); else if(curGame==='cw')d=cwCollect(); else d=Object.assign({g:curGame,t:val('title'),items:val('items'),nums:document.getElementById('optNums').checked,syms:document.getElementById('optSyms').checked},sharedOpts()); DRAFT=d; localStorage.setItem('ct-wg-draft',JSON.stringify(d)); }catch(e){} updateStarHint(); }
+        function saveDraft(){ if(!curGame)return; try{ const d=Object.assign({g:curGame,t:val('title'),items:val('items'),mode:MODE,caps:CAPS,nums:gv('optNums'),syms:gv('optSyms')},sharedOpts()); if(curGame==='ws'){ d.wsH=gv('wsH'); d.wsV=gv('wsV'); d.wsD=gv('wsD'); d.wsR=gv('wsR'); d.snake=wsSnake; d.size=val('wsSize'); } DRAFT=d; localStorage.setItem('ct-wg-draft',JSON.stringify(d)); }catch(e){} updateStarHint(); }
         function loadDraft(){ try{ DRAFT=JSON.parse(localStorage.getItem('ct-wg-draft'))||null; }catch(e){ DRAFT=null; } }
-        function applyDraft(d){ set('title',d.t); if(d.g==='ws'){ wsApply(d); } else if(d.g==='cw'){ cwApply(d); } else { set('items',d.items); document.getElementById('optNums').checked=!!d.nums; document.getElementById('optSyms').checked=!!d.syms; } applyShared(d); }
+        function applyDraft(d){ set('title',d.t||''); set('items',d.items||''); document.getElementById('optNums').checked=!!d.nums; document.getElementById('optSyms').checked=!!d.syms; if(d.caps){ CAPS=d.caps; const u=document.getElementById('caseUp'),l=document.getElementById('caseLo'); if(u)u.classList.toggle('on',CAPS==='upper'); if(l)l.classList.toggle('on',CAPS==='lower'); } if(curGame==='ws'){ setChk('wsH',d.wsH!==false); setChk('wsV',d.wsV!==false); setChk('wsD',!!d.wsD); setChk('wsR',!!d.wsR); wsSnake=!!d.snake; const a=document.getElementById('wsStraight'),b=document.getElementById('wsSnake'); if(a)a.classList.toggle('on',!wsSnake); if(b)b.classList.toggle('on',wsSnake); if(d.size){wsSizeManual=true;set('wsSize',d.size);} } applyShared(d); parseToRows(); rowsRender(); if(curGame==='cat')catRender(); previewUpdate(); if(d.mode==='paste')setMode('paste'); }
         function goEdit(){ const wasPlaying=location.hash.indexOf('d=')>=0; const id=cfg?cfg.g:curGame; location.hash=''; if(id&&META[id]) openForm(id); if(wasPlaying) document.getElementById('regenNotice').style.display='block'; }
 
         /* ===== SHARE + QR ===== */
@@ -571,7 +608,7 @@
         let cfg=null, scores=[], activeGroup=0, idx=0;
         function render(){
             const m=location.hash.replace(/^#/,'').match(/d=(.+)$/);
-            if(m){ let p; try{p=dec(m[1]);}catch(e){p=null;} if(p&&PLAYERS[p.g]){ document.getElementById('gallery').style.display='none'; document.getElementById('form').style.display='none'; document.getElementById('player').style.display='flex'; document.getElementById('editBtn').style.display='inline-flex'; document.getElementById('brandName').textContent=META[p.g]?META[p.g].name:'Word Games'; cfg=p; if(p.g==='hg'||p.g==='sc'){p.words=shuf(p.words,p.seed+777);} else if(p.g==='se'){p.sent=shuf(p.sent,p.seed+777);} scores=(p.groups||[]).map(()=>0); activeGroup=0; idx=0; timerInit(); PLAYERS[p.g](); timerPaint(); updateStarHint(); return; } }
+            if(m){ let p; try{p=dec(m[1]);}catch(e){p=null;} if(p&&PLAYERS[p.g]){ document.getElementById('gallery').style.display='none'; document.getElementById('form').style.display='none'; document.getElementById('player').style.display='flex'; document.getElementById('editBtn').style.display='inline-flex'; document.getElementById('brandName').textContent=META[p.g]?META[p.g].name:'Word Games & Builders'; cfg=p; if(p.g==='hg'||p.g==='sc'){p.words=shuf(p.words,p.seed+777);} else if(p.g==='se'){p.sent=shuf(p.sent,p.seed+777);} scores=(p.groups||[]).map(()=>0); activeGroup=0; idx=0; timerInit(); PLAYERS[p.g](); timerPaint(); updateStarHint(); return; } }
             // not playing -> gallery or current form
             timerStop();
             document.getElementById('player').style.display='none';
@@ -600,7 +637,7 @@
                 '<div class="word" id="hgWord"></div><div class="msg" id="hgMsg"></div>'+
                 '<div class="hints"><button class="hbtn" id="h1" onclick="hgHint1()"><i class="fas fa-ban"></i> Remove letters</button><button class="hbtn" id="h2" onclick="hgHint2()"><i class="fas fa-percent"></i> 50/50</button><button class="hbtn" id="h3" onclick="hgHint3()"><i class="fas fa-key"></i> Reveal a letter</button></div>'+
                 '<div class="keys" id="hgKeys"></div><div class="play-actions"><button class="btn btn-soft" onclick="nextIdx()"><i class="fas fa-forward"></i> Next word</button></div>';
-            const wordEl=document.getElementById('hgWord'),keysEl=document.getElementById('hgKeys'),msg=document.getElementById('hgMsg'),livesEl=document.getElementById('lives');
+            const wordEl=document.getElementById('hgWord'),keysEl=document.getElementById('hgKeys'),msg=document.getElementById('hgMsg'),livesEl=document.getElementById('lives'); if(cfg.caps==='lower')wordEl.style.textTransform='lowercase';
             function draw(){wordEl.innerHTML=answer.split('').map(ch=>ch===' '?'<span class="slot space"></span>':'<span class="slot'+(guessed.has(ch)?' rev':'')+'">'+(guessed.has(ch)?esc(ch):'')+'</span>').join('');}
             function setLives(){livesEl.innerHTML='<i class="fas fa-heart"></i> '+lives;}
             function win(){Array.from(keysEl.children).forEach(b=>b.disabled=true);const pts=Math.max(1,lives);award(pts);bumpGroup();msg.textContent='🎉 Correct! +'+pts;msg.className='msg win';sWin();confetti();}
@@ -616,7 +653,24 @@
 
         /* ===== SCRAMBLE ===== */
         function scramble(w,seed){if(w.length<2)return w;let s,k=seed;do{s=shuf(w.split(''),k).join('');k++;}while(s===w&&w.length>1);return s;}
+        function playScrambleDrag(){
+            const word=cfg.words[idx],scr=scramble(word,cfg.seed+idx).toUpperCase();let h1=1;
+            const player=document.getElementById('player');
+            player.innerHTML=titleBar()+timerBar()+groupsBar()+
+                '<div class="scorebar"><span class="pill">Word '+(idx+1)+'/'+cfg.words.length+'</span></div>'+
+                '<div class="hint">Drag the letters into the right order.</div>'+
+                '<div class="dtiles" id="scTiles"></div><div class="msg" id="scMsg"></div>'+
+                '<div class="hints"><button class="hbtn" id="s1" onclick="scDHint()"><i class="fas fa-1"></i> First letter to front</button></div>'+
+                '<div class="play-actions"><button class="btn btn-primary" onclick="scCheckDrag()"><i class="fas fa-check"></i> Check</button><button class="btn btn-soft" onclick="nextIdx()"><i class="fas fa-forward"></i> Next</button></div>';
+            const cont=document.getElementById('scTiles'),msg=document.getElementById('scMsg');
+            scr.split('').forEach((ch,i)=>{const t=document.createElement('div');t.className='dtile';t.dataset.idx=i;t.dataset.ch=ch;t.textContent=ch;cont.appendChild(t);});
+            makeSortable(cont);
+            window.scCheckDrag=function(){ const cur=Array.from(cont.children).map(t=>t.dataset.ch).join(''); if(cur===word.toUpperCase()){award(1);bumpGroup();msg.textContent='🎉 Correct!';msg.className='msg win';sWin();confetti();Array.from(cont.children).forEach(t=>t.style.borderColor='var(--ok)');}else{msg.textContent='Not yet — keep arranging!';msg.className='msg lose';sBad();cont.classList.remove('shake');void cont.offsetWidth;cont.classList.add('shake');} };
+            window.scDHint=function(){ if(!h1)return; h1=0; const b=document.getElementById('s1'); if(b)b.disabled=true; sHint(); const target=word.toUpperCase()[0]; const tile=Array.from(cont.children).find(t=>t.dataset.ch===target); if(tile)cont.insertBefore(tile,cont.firstChild); };
+            timerPaint();
+        }
         function playScramble(){
+            if(cfg.drag!==false) return playScrambleDrag();
             const word=cfg.words[idx],scr=scramble(word,cfg.seed+idx);let tries=cfg.opt.tries,h1=1,h2=1,h3=1;
             const player=document.getElementById('player');
             player.innerHTML=titleBar()+timerBar()+groupsBar()+
@@ -635,7 +689,22 @@
         }
 
         /* ===== SENTENCE ===== */
+        function playSentenceDrag(){
+            const sentence=cfg.sent[idx],words=sentence.replace(/\s+/g,' ').trim().split(' '),order=shuf(words.map((w,i)=>i),cfg.seed+idx);
+            const player=document.getElementById('player');
+            player.innerHTML=titleBar()+timerBar()+groupsBar()+
+                '<div class="scorebar"><span class="pill">Sentence '+(idx+1)+'/'+cfg.sent.length+'</span></div>'+
+                '<div class="hint">Drag the words into the right order.</div>'+
+                '<div class="dtiles" id="seTiles"></div><div class="msg" id="seMsg"></div>'+
+                '<div class="play-actions"><button class="btn btn-primary" onclick="seCheckDrag()"><i class="fas fa-check"></i> Check</button><button class="btn btn-soft" onclick="nextIdx()"><i class="fas fa-forward"></i> Next</button></div>';
+            const cont=document.getElementById('seTiles'),msg=document.getElementById('seMsg');
+            order.forEach(i=>{const t=document.createElement('div');t.className='dtile';t.style.fontSize='clamp(.95rem,2.4vmin,1.4rem)';t.dataset.i=i;t.textContent=words[i];cont.appendChild(t);});
+            makeSortable(cont);
+            window.seCheckDrag=function(){ const cur=Array.from(cont.children).map(t=>words[+t.dataset.i]).join(' '); if(cur===words.join(' ')){award(1);bumpGroup();msg.textContent='🎉 Correct!';msg.className='msg win';sWin();confetti();Array.from(cont.children).forEach(t=>t.style.borderColor='var(--ok)');}else{msg.textContent='Not yet — keep arranging!';msg.className='msg lose';sBad();cont.classList.remove('shake');void cont.offsetWidth;cont.classList.add('shake');} };
+            timerPaint();
+        }
         function playSentence(){
+            if(cfg.drag!==false) return playSentenceDrag();
             const sentence=cfg.sent[idx],words=sentence.replace(/\s+/g,' ').trim().split(' '),order=shuf(words.map((w,i)=>i),cfg.seed+idx);let answer=[],tries=cfg.opt.tries,h1=1,h2=1,h3=1;
             const player=document.getElementById('player');
             player.innerHTML=titleBar()+timerBar()+groupsBar()+
@@ -682,7 +751,7 @@
                 '<div class="wswrap"><div class="wsgrid" id="wsgrid" style="--n:'+size+'"></div></div>'+
                 '<div class="wslist" id="wslist"></div><div class="msg" id="wsMsg">Tap letters in order to trace a word.</div>'+
                 '<div class="play-actions"><button class="btn btn-soft" onclick="wsClear()"><i class="fas fa-eraser"></i> Clear</button><button class="btn btn-soft" onclick="PLAYERS.ws()"><i class="fas fa-rotate-left"></i> Restart</button></div>';
-            const gridEl=document.getElementById('wsgrid'),listEl=document.getElementById('wslist'),msg=document.getElementById('wsMsg'),scoreEl=document.getElementById('wsScore');
+            const gridEl=document.getElementById('wsgrid'),listEl=document.getElementById('wslist'),msg=document.getElementById('wsMsg'),scoreEl=document.getElementById('wsScore'); if(cfg.caps==='lower'){gridEl.style.textTransform='lowercase';listEl.style.textTransform='lowercase';}
             function drawList(){ listEl.innerHTML=toFind.map(w=>'<span class="wsword'+(found.has(w)?' done':'')+'">'+esc(w)+(defs[w]?'<span class="wd">'+esc(defs[w])+'</span>':'')+'</span>').join(''); }
             function cellAt(r,c){ return gridEl.querySelector('.wscell[data-r="'+r+'"][data-c="'+c+'"]'); }
             for(let r=0;r<size;r++)for(let c=0;c<size;c++){const b=document.createElement('button');b.className='wscell';b.textContent=grid[r][c];b.dataset.r=r;b.dataset.c=c;b.onclick=()=>cellClick(r,c);gridEl.appendChild(b);}
@@ -711,7 +780,7 @@
                 '<div class="cwclues"><h4>Across</h4>'+across.map(e=>'<div class="cwclue" id="clue-A-'+e.num+'" onclick="cwFocus(\'A\','+e.num+')"><b>'+e.num+'</b><span>'+esc(e.clue||'—')+'</span></div>').join('')+
                 '<h4>Down</h4>'+down.map(e=>'<div class="cwclue" id="clue-D-'+e.num+'" onclick="cwFocus(\'D\','+e.num+')"><b>'+e.num+'</b><span>'+esc(e.clue||'—')+'</span></div>').join('')+'</div></div>'+
                 '<div class="msg" id="cwMsg"></div><div class="play-actions"><button class="btn btn-soft" onclick="cwCheck()"><i class="fas fa-check-double"></i> Check</button><button class="btn btn-soft" onclick="cwReveal()"><i class="fas fa-eye"></i> Reveal</button><button class="btn btn-soft" onclick="PLAYERS.cw()"><i class="fas fa-rotate-left"></i> Restart</button></div>';
-            const gridEl=document.getElementById('cwgrid'); const numAt={}; entries.forEach(e=>numAt[e.r+','+e.c]=e.num);
+            const gridEl=document.getElementById('cwgrid'); if(cfg.caps==='lower')gridEl.style.textTransform='lowercase'; const numAt={}; entries.forEach(e=>numAt[e.r+','+e.c]=e.num);
             for(let r=0;r<H;r++)for(let c=0;c<W;c++){ const ch=cells[r][c]; const cell=document.createElement('div'); cell.className='cwcell'+(ch?'':' blank'); if(ch){ const n=numAt[r+','+c]; cell.innerHTML=(n?'<span class="cn">'+n+'</span>':'')+'<input maxlength="1" data-r="'+r+'" data-c="'+c+'" autocomplete="off">'; } gridEl.appendChild(cell); }
             function cellInput(r,c){ return gridEl.querySelector('input[data-r="'+r+'"][data-c="'+c+'"]'); }
             let dir='A';
@@ -727,7 +796,7 @@
 
         /* ===== BOOKMARK ===== */
         let bookmarked=false;
-        function bmLabel(){ let t=''; try{const m=location.hash.match(/d=(.+)$/);if(m){const p=dec(m[1]);t=(p.t?p.t+' · ':'')+(META[p.g]?META[p.g].name:'');}}catch(e){} return 'Word Games'+(t?' — '+t:''); }
+        function bmLabel(){ let t=''; try{const m=location.hash.match(/d=(.+)$/);if(m){const p=dec(m[1]);t=(p.t?p.t+' · ':'')+(META[p.g]?META[p.g].name:'');}}catch(e){} return 'Word Games & Builders'+(t?' — '+t:''); }
         function sendBookmark(on){const url=on?location.href:null;if(EMBEDDED){try{window.parent.postMessage({ns:'classtools',cmd:'bookmark',url,label:bmLabel()},'*');}catch(e){}}else{try{url?localStorage.setItem('ct-bookmark',JSON.stringify({url,label:bmLabel()})):localStorage.removeItem('ct-bookmark');}catch(e){}}}
         function toggleBookmark(){if(location.hash.indexOf('d=')<0){flash('Generate or play a game first, then bookmark it.');return;}bookmarked=!bookmarked;sendBookmark(bookmarked);updateStar();}
         function updateStar(){const b=document.getElementById('starBtn');b.classList.toggle('on',bookmarked);b.innerHTML=bookmarked?'<i class="fas fa-star"></i>':'<i class="far fa-star"></i>';updateStarHint();}
