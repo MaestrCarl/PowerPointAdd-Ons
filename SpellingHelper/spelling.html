@@ -7,6 +7,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link rel="stylesheet" href="../shared/classtools-ui.css">
+<script src="../shared/classtools-ui.js" defer></script>
 <style>
 :root{
   --bg:#f4f1ff;--bg-2:#e7fbff;--surface:#ffffff;--surface-2:#f6f5ff;
@@ -159,7 +161,7 @@ input[type=range]{width:100%;}
         </div>
         <div id="status" class="hint">Tip: your list saves on this device.</div>
       </div>
-      <div class="view" id="buildPreview"></div>
+      <div class="view" id="buildPreview" data-ct-shell data-ct-hint="Live preview&#10;Your spelling words appear here as you type."></div>
     </div>
   </div>
 
@@ -177,7 +179,7 @@ input[type=range]{width:100%;}
   </div>
 
   <!-- PLAYER -->
-  <div id="playView" class="pane" style="display:none">
+  <div id="playView" class="pane" data-ct-play style="display:none">
     <div class="player" id="playInner"></div>
   </div>
 
@@ -195,6 +197,8 @@ let MODE='type', WORDS=[], voices=[], idx=0, score=0, results=[], student=null, 
 
 /* ---------- helpers ---------- */
 function $(id){return document.getElementById(id);}
+/* shared play-modal close → return to the builder */
+window.ctClosePlay=function(){var p=$('playView');if(p)p.style.display='none';var b=$('buildView');if(b)b.style.display='block';};
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function flash(m){const s=$('status');if(!s)return;s.textContent=m;s.style.color='var(--danger)';setTimeout(()=>{s.textContent='Tip: your list saves on this device.';s.style.color='';},2400);}

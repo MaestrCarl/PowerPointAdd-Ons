@@ -7,6 +7,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link rel="stylesheet" href="../shared/classtools-ui.css">
+<script src="../shared/classtools-ui.js" defer></script>
 <style>
 :root{--bg:#f4f1ff;--bg-2:#e7fbff;--surface:#fff;--surface-2:#f6f5ff;--ink:#241b4e;--muted:#6b6790;--line:#e7e3f5;
   --primary:#6d28d9;--primary-2:#9333ea;--primary-rgb:109,40,217;--danger:#ff3d7f;--ok:#22c55e;--gold:#ffb020;--radius:18px;
@@ -94,6 +96,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid rgba(var(--primary-rgb
   </div>
   <div class="spacer"></div>
   <button class="icon-btn" id="shareBtn" onclick="openShare()" title="Share link & QR"><i class="fas fa-share-nodes"></i></button>
+  <button class="icon-btn" id="presentBtn" onclick="presentBoard()" title="Present board fullscreen"><i class="fas fa-display"></i></button>
   <button class="icon-btn" id="setupBtn" onclick="toggleSetup()" title="Show/hide settings"><i class="fas fa-sliders"></i></button>
   <button class="icon-btn" id="muteBtn" onclick="toggleMute()" title="Sound"><i class="fas fa-volume-high"></i></button>
   <button class="icon-btn" id="darkBtn" onclick="toggleDark()" title="Dark mode"><i class="fas fa-moon"></i></button>
@@ -143,6 +146,10 @@ input:focus,select:focus,textarea:focus{outline:2px solid rgba(var(--primary-rgb
       <div class="empty" id="empty">Add teams to start scoring.</div>
     </div>
   </div>
+  <div id="scorePresent" data-ct-play data-ct-back="#scorePresentBack" style="display:none;flex-direction:column;height:100%;gap:10px">
+    <div id="scorePresentBody" style="flex:1;min-height:0;overflow:auto;width:100%"></div>
+    <div style="text-align:center"><button class="btn btn-soft" id="scorePresentBack" onclick="exitPresent()"><i class="fas fa-pen"></i> Back to setup</button></div>
+  </div>
 </main>
 
 <div class="modal" id="shareModal">
@@ -171,6 +178,10 @@ const PAL=['#6d28d9','#ff3d7f','#14d6c4','#ffb020','#2f6bff','#22c55e','#ef4444'
 const THEME_KEY='ct-theme';
 let teams=[]; // {n,m,s,c}
 let announced=false;
+
+/* PRESENT (fullscreen blurred play modal) — moves the live board in & out */
+function presentBoard(){ const b=document.getElementById('board'); const host=document.getElementById('scorePresentBody'); if(b&&host){ host.appendChild(b); document.getElementById('scorePresent').style.display='flex'; } }
+function exitPresent(){ const b=document.getElementById('board'); const view=document.querySelector('.view'); const emp=document.getElementById('empty'); if(b&&view){ view.insertBefore(b, emp||null); } document.getElementById('scorePresent').style.display='none'; }
 
 /* THEME */
 function readDark(){try{return localStorage.getItem(THEME_KEY)==='dark';}catch(e){return false;}}

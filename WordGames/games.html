@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="../shared/classtools-ui.css">
+    <script src="../shared/classtools-ui.js" defer></script>
     <style>
         :root{--bg:#f4f1ff;--bg-2:#e7fbff;--surface:#fff;--ink:#241b4e;--muted:#6b6790;--line:#e7e3f5;
             --primary:#6d28d9;--primary-2:#9333ea;--primary-rgb:109,40,217;--danger:#ff3d7f;--ok:#22c55e;--gold:#ffb020;--radius:16px;
@@ -247,7 +249,7 @@
                 </div>
                 <div id="gameOpts"></div>
               </div>
-              <div class="b2-right" id="previewPanel" style="display:none"><div class="card"><label class="fld" style="margin-top:0"><i class="fas fa-eye"></i> Live preview</label><div id="b2preview" class="prevwrap"></div><div id="exportRow" style="margin-top:10px"></div></div></div>
+              <div class="b2-right" id="previewPanel" style="display:none"><div class="card"><label class="fld" style="margin-top:0"><i class="fas fa-eye"></i> Live preview</label><div id="b2preview" class="prevwrap" data-ct-shell data-ct-hint="Live preview&#10;Your game board appears here as you add words."></div><div id="exportRow" style="margin-top:10px"></div></div></div>
             </div>
 
             <div class="card">
@@ -298,7 +300,7 @@
         </div>
 
         <!-- PLAYER -->
-        <div id="player" class="play" style="display:none"></div>
+        <div id="player" class="play" data-ct-play data-ct-back="#backBtn" style="display:none"></div>
     </main>
     <input type="file" id="setupFile" accept=".txt,.json" style="display:none">
 
@@ -662,7 +664,7 @@
             if(!TMR)return;
             if(TMR.style==='ring'){
                 const ring=document.getElementById('ctRing');
-                if(ring){ const C=2*Math.PI*52; let frac; if(TMR.mode==='down')frac=TMR.remain/TMR.secs; else frac=(TMR.elapsed%60)/60; ring.style.strokeDasharray=C; ring.style.strokeDashoffset=C*(1-Math.max(0,Math.min(1,frac))); }
+                if(ring){ const C=2*Math.PI*52; let frac; if(TMR.mode==='down')frac=TMR.remain/TMR.secs; else frac=(TMR.elapsed%60)/60; ring.style.strokeDasharray=C; const off=C*(1-Math.max(0,Math.min(1,frac))); if(window.ctEaseStroke){ring.classList.add('ct-smooth-ring');ctEaseStroke(ring,off,950);}else ring.style.strokeDashoffset=off; }
             } else {
                 const n=document.getElementById('ctNum'); if(n)n.textContent=fmtT(TMR.mode==='down'?TMR.remain:TMR.elapsed);
             }

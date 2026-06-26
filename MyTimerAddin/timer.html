@@ -6,6 +6,8 @@
     <title>Classroom Timer</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/classtools-ui.css">
+    <script src="../shared/classtools-ui.js" defer></script>
     <style>
         :root {
             --bg: #f4f1ff; --bg-2: #e7fbff; --surface: #ffffff; --surface-2: #f6f5ff;
@@ -100,14 +102,15 @@
         /* animated rainbow sheen always moving */
         .ring-glow { background: conic-gradient(from 0deg, #6d28d9, #ff3d7f, #14d6c4, #ffb020, #2f6bff, #22c55e, #6d28d9); opacity: .30; animation: ringspin 5s linear infinite; }
         /* progress arc — grows clockwise as time runs out */
-        .ring-prog { background: conic-gradient(var(--ring-col, var(--primary)) calc(var(--p, 0) * 1%), rgba(125,125,125,.16) 0); transition: background .25s linear; }
+        /* progress driven continuously by rAF (ctSmooth) — no CSS stepping */
+        .ring-prog { background: conic-gradient(var(--ring-col, var(--primary)) calc(var(--p, 0) * 1%), rgba(125,125,125,.16) 0); will-change: background; }
         @keyframes ringspin { to { transform: rotate(360deg); } }
         .ring-hole { position: relative; z-index: 2; width: calc(100% - var(--rt,13px)*2 - 8px); height: calc(100% - var(--rt,13px)*2 - 8px);
             border-radius: 50%; background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; box-shadow: inset 0 2px 10px rgba(0,0,0,.06); }
         .ring-hole .disp { margin: 0; font-size: clamp(1.5rem, 5vw, 2.1rem); }
         .ring-hole .state { font-size: .72rem; }
         /* orbiting runner for Race — sits on the leading edge of the progress arc */
-        .orbit { position: absolute; inset: 0; z-index: 3; pointer-events: none; transition: transform .35s linear; }
+        .orbit { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
         .orbit .runner { position: absolute; left: 50%; top: 0; transform: translate(-50%, -2px) scaleX(-1); font-size: 26px; }
         .orbit .runner.bob { animation: bob .5s ease-in-out infinite; }
         @keyframes bob { 0%,100% { transform: translate(-50%,-2px) scaleX(-1); } 50% { transform: translate(-50%,-7px) scaleX(-1.08); } }
@@ -167,7 +170,7 @@
             <div id="race" class="panel"><button class="btn add-btn" onclick="addTimer('race')"><i class="fas fa-plus"></i> Add Race</button><div class="hint">Circular countdown — the colour ring fills and a runner laps the dial.</div><div id="race-list"></div></div>
         </div>
 
-        <div id="presentView" class="pane">
+        <div id="presentView" class="pane" data-ct-play data-ct-back="#p-edit">
             <div class="p-state" id="p-state"></div>
             <div class="p-stage">
                 <div class="ringwrap p-ringwrap" id="p-ring" style="--rs:clamp(240px,52vmin,520px);--rt:22px;visibility:hidden">
@@ -179,7 +182,7 @@
                 <button class="btn go" onclick="pStart()"><i class="fas fa-play"></i> Start</button>
                 <button class="btn ghost" onclick="pPause()"><i class="fas fa-pause"></i> Pause</button>
                 <button class="btn ghost" onclick="pReset()"><i class="fas fa-rotate-left"></i> Reset</button>
-                <button class="btn ghost" onclick="setMode(false)"><i class="fas fa-pen"></i> Edit</button>
+                <button class="btn ghost" id="p-edit" onclick="setMode(false)"><i class="fas fa-pen"></i> Edit</button>
             </div>
         </div>
     </main>
@@ -248,8 +251,21 @@
             {id:'race',name:'Race',icon:'fa-trophy',desc:'Circular dial with a lapping runner.'}
         ];
         function buildModeGallery(){ const g=document.getElementById('modeGallery'); if(!g)return; g.innerHTML=''; TMODES.forEach(m=>{ const c=document.createElement('div'); c.className='tcard'; c.innerHTML='<div class="ic"><i class="fas '+m.icon+'"></i></div><h3>'+m.name+'</h3><p>'+m.desc+'</p>'; c.onclick=()=>openMode(m.id); g.appendChild(c); }); }
-        function openMode(name){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); const el=document.getElementById(name); if(el)el.classList.add('active'); document.getElementById('modeGallery').style.display='none'; document.getElementById('modeBack').style.display='flex'; const m=TMODES.find(x=>x.id===name); document.getElementById('modeTitle').textContent=m?m.name:''; saveSoon(); }
-        function showModeGallery(){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); document.getElementById('modeGallery').style.display='grid'; document.getElementById('modeBack').style.display='none'; }
+        function openMode(name){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); const el=document.getElementById(name); if(el)el.classList.add('active'); document.getElementById('modeGallery').style.display='none'; document.getElementById('modeBack').style.display='flex'; const cb=document.querySelector('.classbar'); if(cb)cb.style.display='flex'; const m=TMODES.find(x=>x.id===name); document.getElementById('modeTitle').textContent=m?m.name:''; saveSoon(); }
+        /* item 6: continuous, eased ring progress so the colour sweep glides */
+        function smoothRings(){
+            document.querySelectorAll('.ring-prog').forEach(rp=>{
+                const tgt=parseFloat(rp.dataset.target||'0')||0;
+                let cur=parseFloat(rp.dataset.cur); if(isNaN(cur)) cur=parseFloat(rp.style.getPropertyValue('--p'))||0;
+                let nx=cur+(tgt-cur)*0.14; if(Math.abs(tgt-cur)<0.04) nx=tgt;
+                rp.dataset.cur=nx; rp.style.setProperty('--p',nx);
+                const id=rp.id.replace('ringp-','').replace('p-','');
+                const orb=document.getElementById('orbit-'+id); if(orb) orb.style.transform='rotate('+(nx*3.6)+'deg)';
+            });
+            requestAnimationFrame(smoothRings);
+        }
+        requestAnimationFrame(smoothRings);
+        function showModeGallery(){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); document.getElementById('modeGallery').style.display='grid'; document.getElementById('modeBack').style.display='none'; const cb=document.querySelector('.classbar'); if(cb)cb.style.display='none'; }
         function openTab(evt,name){ openMode(name); }
         const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
         const COUNTDOWNISH = ['countdown','silent','race','loop'];
@@ -299,17 +315,16 @@
             if(RING){
                 const perc = t.total>0 ? Math.max(0, Math.min(100,((t.total-Math.max(0,t.elapsed))/t.total)*100)) : 0;
                 const rp = document.getElementById('ringp-'+t.id);
-                if(rp){ rp.style.setProperty('--p', perc); rp.style.setProperty('--ring-col', ending ? 'var(--danger)' : 'var(--primary)'); }
-                if(t.type==='race'){ const orb=document.getElementById('orbit-'+t.id); if(orb) orb.style.transform='rotate('+(perc*3.6)+'deg)'; }
+                if(rp){ rp.dataset.target = perc; rp.style.setProperty('--ring-col', ending ? 'var(--danger)' : 'var(--primary)'); }
             }
             // ----- present-view ring -----
             if(activeId===t.id){
                 const pr=document.getElementById('p-ringp');
-                if(pr){ const showRing = RING && t.total>0; const pwrap=document.getElementById('p-ring'); if(pwrap) pwrap.style.visibility = showRing? 'visible':'hidden'; const perc=showRing?Math.max(0,Math.min(100,((t.total-Math.max(0,t.elapsed))/t.total)*100)):0; pr.style.setProperty('--p',perc); pr.style.setProperty('--ring-col', ending?'var(--danger)':'var(--primary)'); }
+                if(pr){ const showRing = RING && t.total>0; const pwrap=document.getElementById('p-ring'); if(pwrap) pwrap.style.visibility = showRing? 'visible':'hidden'; const perc=showRing?Math.max(0,Math.min(100,((t.total-Math.max(0,t.elapsed))/t.total)*100)):0; pr.dataset.target=perc; pr.style.setProperty('--ring-col', ending?'var(--danger)':'var(--primary)'); }
             }
         }
         function pauseTimer(id,manual){ const t=timers.find(x=>x.id===id); if(!t) return; if(manual&&t.running) playPause(); t.running=false; clearInterval(t.interval); updateUI(t); }
-        function resetTimer(id){ playClick(); const t=timers.find(x=>x.id===id); if(!t) return; pauseTimer(id); t.elapsed=0; t.total=0; t.round=1; t.phase='Work'; const l=document.getElementById('laps-'+id); if(l) l.innerHTML=''; t.laps=[]; const rp=document.getElementById('ringp-'+id); if(rp) rp.style.setProperty('--p',0); const orb=document.getElementById('orbit-'+id); if(orb) orb.style.transform='rotate(0deg)'; updateUI(t); }
+        function resetTimer(id){ playClick(); const t=timers.find(x=>x.id===id); if(!t) return; pauseTimer(id); t.elapsed=0; t.total=0; t.round=1; t.phase='Work'; const l=document.getElementById('laps-'+id); if(l) l.innerHTML=''; t.laps=[]; const rp=document.getElementById('ringp-'+id); if(rp){ rp.dataset.target=0; rp.dataset.cur=0; rp.style.setProperty('--p',0);} const orb=document.getElementById('orbit-'+id); if(orb) orb.style.transform='rotate(0deg)'; updateUI(t); }
         function addLap(id){ playClick(); const t=timers.find(x=>x.id===id); const str=document.getElementById('disp-'+id).innerText; const li=document.createElement('li'); li.innerText='Lap '+(t.laps.length+1)+': '+str; document.getElementById('laps-'+id).appendChild(li); t.laps.push(str); }
         function flashCard(id){ const w=document.getElementById('wrapper-'+id); if(!w) return; w.classList.remove('flash'); void w.offsetWidth; w.classList.add('flash'); }
 

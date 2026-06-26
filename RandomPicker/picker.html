@@ -6,6 +6,8 @@
     <title>Pickers, Pairings &amp; Groupings</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../shared/classtools-ui.css">
+    <script src="../shared/classtools-ui.js" defer></script>
     <style>
         :root {
             --bg: #f4f1ff; --bg-2: #e7fbff; --surface: #ffffff; --surface-2: #f6f5ff;
@@ -344,7 +346,7 @@
         </div>
 
         <!-- PRESENT (fullscreen) VIEW -->
-        <div id="presentView" class="pane" style="display:none;flex-direction:column;height:100%">
+        <div id="presentView" class="pane" data-ct-play data-ct-back="#present-actions button" style="display:none;flex-direction:column;height:100%">
             <div class="view-body" id="presentStage" style="padding:14px">Ready...</div>
             <div class="present-actions" id="present-actions" style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap;padding:10px"></div>
         </div>
@@ -476,8 +478,8 @@
             {id:'spinner',name:'Spinner',icon:'fa-life-ring',desc:'Spin a wheel of names with a reveal modal.'}
         ];
         function buildModeGallery(){ const g=document.getElementById('modeGallery'); if(!g)return; g.innerHTML=''; PMODES.forEach(m=>{ const c=document.createElement('div'); c.className='tcard'; c.innerHTML='<div class="ic"><i class="fas '+m.icon+'"></i></div><h3>'+m.name+'</h3><p>'+m.desc+'</p>'; c.onclick=()=>openMode(m.id); g.appendChild(c); }); }
-        function openMode(name){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); const el=document.getElementById(name); if(el)el.classList.add('active'); document.getElementById('modeGallery').style.display='none'; document.getElementById('modeBack').style.display='flex'; const m=PMODES.find(x=>x.id===name); document.getElementById('modeTitle').textContent=m?m.name:''; renderRosters(); if(name==='spinner'){ sizeWheel(); renderWheel(); } saveSoon(); }
-        function showModeGallery(){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); document.getElementById('modeGallery').style.display='grid'; document.getElementById('modeBack').style.display='none'; }
+        function openMode(name){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); const el=document.getElementById(name); if(el)el.classList.add('active'); document.getElementById('modeGallery').style.display='none'; document.getElementById('modeBack').style.display='flex'; const cb=document.querySelector('.classbar'); if(cb)cb.style.display='flex'; const m=PMODES.find(x=>x.id===name); document.getElementById('modeTitle').textContent=m?m.name:''; renderRosters(); if(name==='spinner'){ sizeWheel(); renderWheel(); } saveSoon(); }
+        function showModeGallery(){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); document.getElementById('modeGallery').style.display='grid'; document.getElementById('modeBack').style.display='none'; const cb=document.querySelector('.classbar'); if(cb)cb.style.display='none'; }
         function getList(id) { return val(id).split('\n').map(n => n.trim()).filter(n => n !== ''); }
         function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
         function flashStatus(m) { const s = document.getElementById('status'); s.textContent = m; s.style.color = 'var(--danger)'; setTimeout(() => { s.textContent = 'Tip: your names & settings save into the PowerPoint file.'; s.style.color = ''; }, 2400); }

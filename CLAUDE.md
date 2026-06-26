@@ -17,6 +17,15 @@ Repo: `https://github.com/MaestrCarl/PowerPointAdd-Ons` (push from the user's Ma
 - `Scoreboard/scoreboard.html` — rebuilt with **sidebar (settings) + viewer** layout. Adds quick multi-add, configurable quick-point buttons (`incs`), step, allow-negative, rank-by-score, show/hide members & rank, **win target** with auto **Announce winner** modal + confetti, inline rename / recolour / set-exact-score (contenteditable), export/import (JSON), share link + QR. Theme follows live `ct-theme`.
 - `IntroTools/intro.html` — "Intro & Reveal Tools": mystery box, envelopes, doors, wheel, scratch, hidden reveal.
 
+## Shared UI layer (`shared/classtools-ui.css` + `classtools-ui.js`)
+Loaded by every tool via `../shared/classtools-ui.(css|js)` (defer). Auto-upgrading, opt-in by attribute — no per-tool rewrites:
+- **Full-screen blurred play modal** (item 1): any element with `data-ct-play` is lifted into a centered card over a blurred scrim whenever it becomes visible (detected by `display`/`visibility` via a MutationObserver). A floating × is injected; closing calls `window.ctClosePlay()` if defined, else clicks the `data-ct-back` selector, else `#backBtn`. Surfaces: WordGames/Intro `#player`, Timer `#presentView`, Picker `#presentView`, Scoreboard `#scorePresent` (live board moved in/out), Splitter/Spelling `#playView`.
+- **Left-sidebar settings** (item 2): `.b2-left` (games/intro) gets a sidebar card look; `.ct-build/.ct-side/.ct-view` available for any tool. Picker/Scoreboard/Splitter/Spelling already use `.side`.
+- **Non-collapsing preview shell** (item 3): `data-ct-shell` + `data-ct-hint` gives a dashed min-height canvas with a placeholder while empty (`#b2preview`, `#introPreview`, `#buildPreview`).
+- **Smooth ring** (item 6): `window.ctEaseStroke(circle,offset,ms)` rAF-eases `stroke-dashoffset`. Timer drives its conic `--p` via a local rAF easing loop (`smoothRings()`); games timer ring uses `ctEaseStroke`.
+- **Field placement** (item 5): Timer & Picker hide the `.classbar` (Activity/Grade/Section/Subject) on the mode gallery; it shows only inside an open mode.
+- **Hub title** (item 4): the duplicate `.hub-header h1` was removed; only the top-bar brand reads "ClassTools".
+
 ## Shared conventions (duplicated per file on purpose — keeps each tool standalone)
 - **Theme & fonts**: CSS vars on `:root` + `.dark-mode`. `--font-head:'Baloo 2'` (headings), `--font-body:'Nunito'` (body), loaded from Google Fonts. **Luckiest Guy is reserved for the hub "ClassTools" logo only** (`--font-logo` in `Toolbox/index.html`, applied to `.topbar .brand` + `.hub-header h1`); do NOT use it elsewhere — it reads as wacky at body sizes. To re-skin, change the two `--font-*` vars + the Google Fonts `<link>` (kept per-file). Primary purple `#6d28d9`/`#9333ea`. Palette `PAL`/`PALETTE` = `['#6d28d9','#ff3d7f','#14d6c4','#ffb020','#2f6bff','#22c55e','#ef4444','#f97316']`.
 - **Dark mode sync** across tools via `localStorage['ct-theme']` + `storage` listener. `applyTheme(dark)` / `toggleDark()`.
