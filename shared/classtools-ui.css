@@ -6,6 +6,11 @@
    --primary, --primary-2, --primary-rgb, --muted, --radius, --font-head).
    ============================================================ */
 
+/* ---------- 0) CONSISTENT TOP-BAR ELEMENTS ---------- */
+/* Brand must not resize as you navigate (some tools used vw-based clamp). */
+.topbar .brand{ font-size:18px !important; white-space:nowrap; }
+.topbar .brand i{ font-size:18px !important; }
+
 /* ---------- 1) FULL-SCREEN BLURRED PLAY MODAL ---------- */
 /* A tool marks its play surface with data-ct-play. When that element
    becomes visible the shared script adds body.ct-playing, lifts the
@@ -22,33 +27,34 @@ body.ct-playing .ct-scrim{ opacity:1; pointer-events:auto; }
 
 body.ct-playing [data-ct-play].ct-play-surface{
   position:fixed; z-index:1600;
-  inset:clamp(6px,1.6vmin,18px);
+  left:50%; top:50%; transform:translate(-50%,-50%);
+  width:min(94vw, 880px); max-width:94vw; max-height:92vh;
   background:var(--surface); color:var(--ink);
   border:1px solid var(--line);
-  border-radius:clamp(16px,3vmin,26px);
-  box-shadow:0 36px 90px rgba(0,0,0,.42);
+  border-radius:20px;
+  box-shadow:0 30px 80px rgba(0,0,0,.45);
   overflow:auto; -webkit-overflow-scrolling:touch;
-  padding:clamp(46px,5vmin,56px) clamp(16px,3.2vmin,40px) clamp(16px,3.2vmin,40px);
-  display:flex; flex-direction:column;
-  animation:ctPlayIn .36s cubic-bezier(.18,.89,.32,1.28);
+  padding:20px 22px 22px;
+  display:flex; flex-direction:column; gap:10px;
+  animation:ctPlayIn .32s cubic-bezier(.18,.89,.32,1.28);
 }
-/* fill the modal: the tool's play content stretches instead of floating in a small box */
-body.ct-playing [data-ct-play].ct-play-surface > *{ flex:1 1 auto; width:100%; min-height:0; }
+@keyframes ctPlayIn{ from{ transform:translate(-50%,-50%) scale(.93); opacity:0; } to{ transform:translate(-50%,-50%) scale(1); opacity:1; } }
+/* main play content grows to fill the card; control rows keep natural height */
+body.ct-playing [data-ct-play].ct-play-surface > *{ width:100%; }
 body.ct-playing [data-ct-play].ct-play-surface .play,
-body.ct-playing [data-ct-play].ct-play-surface .player{ height:100%; }
-@keyframes ctPlayIn{ from{ transform:scale(.92); opacity:0; } to{ transform:none; opacity:1; } }
+body.ct-playing [data-ct-play].ct-play-surface .player{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; justify-content:center; }
+/* keep buttons inside the modal a pleasant, modest size */
+body.ct-playing [data-ct-play].ct-play-surface .btn{ padding:9px 15px; font-size:14px; }
+body.ct-playing [data-ct-play].ct-play-surface .present-actions{ flex:0 0 auto; }
 
-/* floating close (×) injected by the shared script */
+/* close (×) — docked to the card's top-right by the shared script */
 .ct-play-close{
-  position:fixed; z-index:1700;
-  top:clamp(16px,3.4vmin,38px); right:clamp(16px,3.4vmin,38px);
-  width:42px; height:42px; border-radius:13px; border:none; cursor:pointer;
-  background:linear-gradient(135deg,var(--primary),var(--primary-2));
-  color:#fff; font-size:17px; display:none;
-  align-items:center; justify-content:center;
-  box-shadow:0 10px 24px rgba(var(--primary-rgb),.45); transition:.14s;
+  position:absolute; z-index:1700; top:10px; right:12px;
+  width:34px; height:34px; border-radius:11px; border:none; cursor:pointer;
+  background:rgba(127,127,127,.16); color:var(--muted);
+  font-size:15px; display:none; align-items:center; justify-content:center; transition:.14s;
 }
-.ct-play-close:hover{ transform:scale(1.06); }
+.ct-play-close:hover{ background:var(--primary); color:#fff; }
 .ct-play-close:active{ transform:scale(.92); }
 body.ct-playing .ct-play-close{ display:inline-flex; }
 
@@ -117,14 +123,19 @@ body.ct-playing .ct-play-close{ display:inline-flex; }
   padding-left:0 !important; padding-right:0 !important;
   overflow:hidden !important; opacity:0; border-width:0 !important;
 }
-/* floating "show settings" tab when collapsed */
+/* slim "show settings" tab pinned to the left edge — never overlaps content */
 .ct-sb-show{
-  display:none; position:absolute; left:6px; top:8px; z-index:30;
-  border:1px solid var(--line); background:var(--surface); color:var(--primary);
-  border-radius:10px; padding:7px 11px; font-weight:800; font-size:12px; cursor:pointer;
-  box-shadow:0 6px 16px rgba(0,0,0,.12);
+  display:none; position:absolute; left:0; top:0; bottom:0; z-index:30;
+  width:30px; border:1px solid var(--line); border-left:none; border-radius:0 12px 12px 0;
+  background:var(--surface); color:var(--primary); cursor:pointer; font-size:14px;
+  align-items:center; justify-content:center; box-shadow:4px 0 14px rgba(0,0,0,.08);
 }
-.ct-sb-collapsed .ct-sb-show{ display:inline-flex; }
+.ct-sb-show:hover{ background:var(--bg); }
+.ct-sb-collapsed > .ct-sb-show{ display:flex; }
+/* push the viewer clear of the tab so nothing is obscured */
+.ct-sb-collapsed > .ct-view,
+.ct-sb-collapsed > .b2-right,
+.ct-sb-collapsed > .view{ margin-left:40px; }
 
 /* the Activity/Grade/Section/Subject bar, when relocated into a sidebar column */
 .ct-build .classbar.ct-side{

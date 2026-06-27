@@ -43,12 +43,14 @@
     current = el;
     document.body.classList.add('ct-playing');
     el.classList.add('ct-play-surface');
+    el.appendChild(closeBtn); // dock the × inside the card (absolute, top-right)
   }
   function exit() {
     if (!current) { document.body.classList.remove('ct-playing'); return; }
     current.classList.remove('ct-play-surface');
     current = null;
     document.body.classList.remove('ct-playing');
+    if (closeBtn.parentNode !== document.body) document.body.appendChild(closeBtn);
   }
 
   closeBtn.addEventListener('click', function () {
