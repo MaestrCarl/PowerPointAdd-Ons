@@ -141,10 +141,10 @@
             box-shadow: 0 20px 55px rgba(var(--primary-rgb), .32); border: 2px solid rgba(var(--primary-rgb), .45);
             animation: pop .6s cubic-bezier(.18,.89,.32,1.28); max-width: 94%; }
         .winner-label { font-family: var(--font-head); font-size: clamp(.85rem, 2.4vmin, 1.5rem); letter-spacing: 5px; color: var(--primary); font-weight: 700; }
-        .winner-name { font-family: var(--font-head); font-weight: 700; font-size: clamp(2rem, 11vmin, 8rem); line-height: 1.02; word-break: break-word; animation: glow 1.8s ease-in-out infinite; }
+        .winner-name { font-family: var(--font-head); font-weight: 700; font-size: clamp(1.8rem, 9vmin, 6rem); line-height: 1.05; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; animation: glow 1.8s ease-in-out infinite; }
         @keyframes pop { 0% { transform: scale(.3) rotate(-6deg); opacity: 0; } 60% { transform: scale(1.08) rotate(2deg); opacity: 1; } 100% { transform: scale(1) rotate(0); } }
         @keyframes glow { 0%,100% { text-shadow: 0 0 0 rgba(var(--primary-rgb), 0); } 50% { text-shadow: 0 0 26px rgba(var(--primary-rgb), .5); } }
-        .shuffle-name { margin: auto; font-family: var(--font-head); font-weight: 700; font-size: clamp(1.8rem, 9vmin, 7rem); opacity: .85; animation: flip .12s ease; }
+        .shuffle-name { margin: auto; font-family: var(--font-head); font-weight: 700; font-size: clamp(1.6rem, 8vmin, 5.5rem); opacity: .85; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; animation: flip .12s ease; }
         @keyframes flip { from { transform: translateY(12px) scale(.96); opacity: 0; } to { transform: translateY(0) scale(1); opacity: .85; } }
 
         .grid { flex: 1 1 auto; display: grid; grid-template-columns: repeat(var(--cols, 2), 1fr); gap: clamp(7px, 1.4vmin, 14px); min-height: 0; }
@@ -163,7 +163,7 @@
         .chip { background: rgba(var(--primary-rgb), .12); color: var(--ink); border-radius: 20px; font-weight: 700;
             font-size: clamp(.74rem, 2vmin, 1.15rem); padding: clamp(3px, .9vmin, 8px) clamp(8px, 1.6vmin, 14px);
             display: inline-flex; align-items: center; gap: 6px; opacity: 0; transform: scale(.7);
-            white-space: normal; word-break: break-word; }
+            white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
         .chip.in { animation: chipIn .35s cubic-bezier(.18,.89,.32,1.28) forwards; }
         .chip.lead { background: rgba(255,176,32,.22); box-shadow: inset 0 0 0 1.5px var(--gold); }
         .chip.lead i { color: var(--gold); }
@@ -230,7 +230,7 @@
                 <div class="work">
                     <div class="side">
                         <h4>Names</h4>
-                        <textarea id="list-picker" data-ct-class-target="#list-picker" placeholder="Enter names here (one per line)..." oninput="onNamesInput()"></textarea>
+                        <textarea id="list-picker" data-ct-list-target="#list-picker" placeholder="Enter names here (one per line)..." oninput="onNamesInput()"></textarea>
                         <label class="chk"><input type="checkbox" id="pk-remove" onchange="saveSoon()"> Remove name once selected</label>
                         <label class="chk"><input type="checkbox" id="pk-noRepeat" checked onchange="saveSoon()"> Avoid repeats until everyone is picked</label>
                         <button class="btn btn-primary" onclick="runPicker()"><i class="fas fa-wand-magic-sparkles"></i> Pick a Student</button>
@@ -258,7 +258,7 @@
                 <div class="work">
                     <div class="side">
                         <h4>Names</h4>
-                        <textarea id="list-groups" data-ct-class-target="#list-groups" placeholder="Enter names here (one per line)..." oninput="onNamesInput()"></textarea>
+                        <textarea id="list-groups" data-ct-list-target="#list-groups" placeholder="Enter names here (one per line)..." oninput="onNamesInput()"></textarea>
                         <div class="row">Number of groups: <input type="number" id="num-groups" value="3" min="1" max="20" oninput="saveSoon()"></div>
                         <label class="chk"><input type="checkbox" id="gp-bySize" onchange="saveSoon()"> Set size per group instead</label>
                         <details class="ct-collapsible"><summary><i class="fas fa-crown"></i> Pre-assign group leaders (optional)</summary><div class="hint" style="margin:6px 0">Tap a crown to make that student a leader — spread one per group.</div><div class="roster" id="roster-groups"></div></details>
@@ -285,7 +285,7 @@
                 <div class="work">
                     <div class="side">
                         <h4>Names</h4>
-                        <textarea id="list-pairs" data-ct-class-target="#list-pairs" placeholder="Enter names here (one per line)..." oninput="onNamesInput()"></textarea>
+                        <textarea id="list-pairs" data-ct-list-target="#list-pairs" placeholder="Enter names here (one per line)..." oninput="onNamesInput()"></textarea>
                         <div class="row">Leftover student:
                             <select id="pr-odd" onchange="saveSoon()">
                                 <option value="solo">stays solo</option>
@@ -316,7 +316,7 @@
                 <div class="work">
                     <div class="side">
                         <h4>Names</h4>
-                        <textarea id="list-spinner" data-ct-class-target="#list-spinner" placeholder="Paste names here (one per line)..." oninput="spinnerSetNames()" style="min-height:150px"></textarea>
+                        <textarea id="list-spinner" data-ct-list-target="#list-spinner" placeholder="Paste names here (one per line)..." oninput="spinnerSetNames()" style="min-height:150px"></textarea>
                         <label class="chk"><input type="checkbox" id="sp-remove" onchange="saveSoon()"> Remove name after spin</label>
                         <div class="btn-row">
                             <button class="btn btn-soft" onclick="resetWheel()"><i class="fas fa-rotate-left"></i> Restore all names</button>
@@ -484,7 +484,8 @@
         function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
         function flashStatus(m) { const s = document.getElementById('status'); s.textContent = m; s.style.color = 'var(--danger)'; setTimeout(() => { s.textContent = 'Tip: your names & settings save into the PowerPoint file.'; s.style.color = ''; }, 2400); }
         function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-        function layoutFor(n) { if (n <= 2) return { cols: 1, fit: true }; if (n <= 4) return { cols: 2, fit: true }; if (n <= 6) return { cols: 3, fit: true }; if (n <= 10) return { cols: Math.ceil(n/2), fit: true }; return { cols: 4, fit: false }; }
+        /* Always fit (no scroll) — more columns as count grows; cards & chips shrink to fit. */
+        function layoutFor(n) { const cols = n<=2?1 : n<=4?2 : n<=9?3 : n<=16?4 : n<=25?5 : 6; return { cols, fit: true }; }
 
         /* ============ ROSTER CHIPS (leaders / avoid) ============ */
         function renderRosters() {
@@ -555,12 +556,13 @@
         /* ============ PRESENT (blurred full-screen modal) ============ */
         /* Opens the present modal and returns its stage element so an action
            can render/animate directly inside the blurred modal.            */
+        window.ctClosePlay = function(){ const pv=document.getElementById('presentView'); if(pv) pv.style.display='none'; const ev=document.getElementById('editView'); if(ev) ev.style.display='block'; document.body.classList.remove('ct-playing'); };
         function actionStage(){
             document.getElementById('editView').style.display = 'none';
             const pv = document.getElementById('presentView'); pv.style.display = 'flex';
             const bar = document.getElementById('present-actions'); bar.innerHTML = '';
             const back = document.createElement('button'); back.className = 'btn btn-soft'; back.innerHTML = '<i class="fas fa-pen"></i> Back to setup';
-            back.onclick = () => { pv.style.display = 'none'; document.getElementById('editView').style.display = 'block'; };
+            back.onclick = () => { window.ctClosePlay(); };
             const again = document.createElement('button'); again.className = 'btn go'; again.innerHTML = '<i class="fas fa-rotate-right"></i> Again';
             again.onclick = () => { const fn = actionStage._again; if (typeof fn === 'function') fn(); };
             bar.append(again, back);

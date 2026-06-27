@@ -49,10 +49,10 @@ body.ct-playing [data-ct-play].ct-play-surface .present-actions{ flex:0 0 auto; 
 
 /* close (×) — docked to the card's top-right by the shared script */
 .ct-play-close{
-  position:absolute; z-index:1700; top:10px; right:12px;
-  width:34px; height:34px; border-radius:11px; border:none; cursor:pointer;
-  background:rgba(127,127,127,.16); color:var(--muted);
-  font-size:15px; display:none; align-items:center; justify-content:center; transition:.14s;
+  position:absolute; z-index:1700; top:9px; right:10px;
+  width:30px; height:30px; border-radius:9px; border:none; cursor:pointer;
+  background:rgba(127,127,127,.14); color:var(--muted);
+  font-size:13px; display:none; align-items:center; justify-content:center; transition:.14s;
 }
 .ct-play-close:hover{ background:var(--primary); color:#fff; }
 .ct-play-close:active{ transform:scale(.92); }
@@ -109,14 +109,14 @@ body.ct-playing .ct-play-close{ display:inline-flex; }
 
 /* ---------- COLLAPSIBLE SIDEBAR (all tools) ---------- */
 /* A small handle to collapse the settings column and give the viewer the room. */
-.ct-side, .b2-left, .side{ transition:flex-basis .22s ease, max-width .22s ease, padding .22s ease, opacity .18s ease; }
+.ct-side, .b2-left, .side{ transition:flex-basis .26s cubic-bezier(.4,0,.2,1), max-width .26s cubic-bezier(.4,0,.2,1), padding .26s cubic-bezier(.4,0,.2,1), opacity .18s ease, border-width .26s; }
 .ct-collapse{
   display:inline-flex; align-items:center; justify-content:center; gap:6px;
-  border:1px solid var(--line); background:var(--surface); color:var(--muted);
-  border-radius:10px; padding:6px 10px; font-family:var(--font-body,inherit);
-  font-weight:800; font-size:12px; cursor:pointer; margin-bottom:10px;
+  border:none; background:transparent; color:var(--muted);
+  border-radius:8px; padding:5px 8px; font-family:var(--font-body,inherit);
+  font-weight:700; font-size:12px; cursor:pointer; margin:-2px 0 6px auto;
 }
-.ct-collapse:hover{ color:var(--primary); border-color:var(--primary); }
+.ct-collapse:hover{ color:var(--primary); background:rgba(var(--primary-rgb),.10); }
 /* collapsed state set on the .work / .builder2 / .ct-build wrapper */
 .ct-sb-collapsed .ct-side, .ct-sb-collapsed .b2-left, .ct-sb-collapsed .side{
   flex-basis:0 !important; max-width:0 !important; min-width:0 !important;
@@ -125,12 +125,13 @@ body.ct-playing .ct-play-close{ display:inline-flex; }
 }
 /* slim "show settings" tab pinned to the left edge — never overlaps content */
 .ct-sb-show{
-  display:none; position:absolute; left:0; top:0; bottom:0; z-index:30;
-  width:30px; border:1px solid var(--line); border-left:none; border-radius:0 12px 12px 0;
-  background:var(--surface); color:var(--primary); cursor:pointer; font-size:14px;
-  align-items:center; justify-content:center; box-shadow:4px 0 14px rgba(0,0,0,.08);
+  display:none; position:absolute; left:0; top:50%; transform:translateY(-50%); z-index:30;
+  width:26px; height:64px; border:1px solid var(--line); border-left:none; border-radius:0 14px 14px 0;
+  background:var(--surface); color:var(--primary); cursor:pointer; font-size:13px;
+  align-items:center; justify-content:center; box-shadow:3px 0 12px rgba(0,0,0,.08);
+  transition:width .18s ease, background .15s;
 }
-.ct-sb-show:hover{ background:var(--bg); }
+.ct-sb-show:hover{ width:32px; background:rgba(var(--primary-rgb),.08); }
 .ct-sb-collapsed > .ct-sb-show{ display:flex; }
 /* push the viewer clear of the tab so nothing is obscured */
 .ct-sb-collapsed > .ct-view,
