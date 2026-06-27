@@ -91,7 +91,21 @@
     if (!active && current && visible(current)) active = current;
     if (active) enter(active); else exit();
     refreshShells();
+    if (active) requestAnimationFrame(function () { fitAll(active); });
   }
+
+  /* ---- item 5: shrink-to-fit text so names show fully without scrolling ---- */
+  function fitText(el) {
+    if (!el || !el.parentElement) return;
+    var max = parseFloat(el.getAttribute('data-ct-fit-max')) || parseFloat(getComputedStyle(el).fontSize) || 40;
+    var min = parseFloat(el.getAttribute('data-ct-fit-min')) || 11;
+    el.style.whiteSpace = 'nowrap';
+    var avail = el.parentElement.clientWidth - 6; if (avail <= 0) return;
+    var size = max, guard = 0; el.style.fontSize = size + 'px';
+    while (el.scrollWidth > avail && size > min && guard < 240) { size -= 1; el.style.fontSize = size + 'px'; guard++; }
+  }
+  function fitAll(root) { (root || document).querySelectorAll('.ct-fit').forEach(fitText); }
+  window.ctFitText = fitText; window.ctFitAll = fitAll;
   function schedule() { if (!raf) raf = requestAnimationFrame(scan); }
 
   function boot() {

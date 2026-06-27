@@ -163,7 +163,7 @@
         .chip { background: rgba(var(--primary-rgb), .12); color: var(--ink); border-radius: 20px; font-weight: 700;
             font-size: clamp(.74rem, 2vmin, 1.15rem); padding: clamp(3px, .9vmin, 8px) clamp(8px, 1.6vmin, 14px);
             display: inline-flex; align-items: center; gap: 6px; opacity: 0; transform: scale(.7);
-            white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+            white-space: normal; overflow-wrap: anywhere; max-width: 100%; }
         .chip.in { animation: chipIn .35s cubic-bezier(.18,.89,.32,1.28) forwards; }
         .chip.lead { background: rgba(255,176,32,.22); box-shadow: inset 0 0 0 1.5px var(--gold); }
         .chip.lead i { color: var(--gold); }
@@ -585,16 +585,16 @@
             const target = actionStage();
             const start = performance.now(); let delay = 55;
             (function cycle() {
-                target.innerHTML = '<div class="shuffle-name">' + esc(full[Math.floor(Math.random()*full.length)]) + '</div>';
+                target.innerHTML = '<div class="shuffle-name ct-fit" data-ct-fit-max="78">' + esc(full[Math.floor(Math.random()*full.length)]) + '</div>';
                 playTick(); delay *= 1.12;
                 if (delay < 320 && performance.now() - start < 2200) setTimeout(cycle, delay); else reveal();
             })();
             function reveal() {
                 const idx = Math.floor(Math.random() * pool.length);
                 const picked = pool[idx];
-                target.innerHTML = '<div class="winner-card"><span class="winner-label">SELECTED</span><span class="winner-name">' + esc(picked) + '</span></div>';
+                target.innerHTML = '<div class="winner-card"><span class="winner-label">SELECTED</span><span class="winner-name ct-fit" data-ct-fit-max="84">' + esc(picked) + '</span></div>';
                 playReveal(); confetti(1900);
-                lastResult = { label: 'Random Picker', body: 'Selected: ' + picked, present: '<div class="winner-card"><span class="winner-label">SELECTED</span><span class="winner-name">' + esc(picked) + '</span></div>' };
+                lastResult = { label: 'Random Picker', body: 'Selected: ' + picked, present: '<div class="winner-card"><span class="winner-label">SELECTED</span><span class="winner-name ct-fit" data-ct-fit-max="84">' + esc(picked) + '</span></div>' };
                 pushHistory('picker', picked);
                 // remove from pool / list
                 if (chk('pk-noRepeat')) pickerPool = pool.filter((_, i) => i !== idx);
@@ -775,7 +775,7 @@
             const n = names.length, ang = 360/n, pa = (360-(rotation%360))%360, idx = Math.floor(pa/ang)%n, winner = names[idx];
             spinning = false; pendingWinnerIdx = idx;
             pushHistory('spinner', winner);
-            lastResult = { label: 'Spinner', body: 'Winner: ' + winner, present: '<div class="winner-card"><span class="winner-label">WINNER</span><span class="winner-name">' + esc(winner) + '</span></div>' };
+            lastResult = { label: 'Spinner', body: 'Winner: ' + winner, present: '<div class="winner-card"><span class="winner-label">WINNER</span><span class="winner-name ct-fit" data-ct-fit-max="84">' + esc(winner) + '</span></div>' };
             playReveal(); confetti(1800);
             // Show modal — the wheel still displays the winning slice under the pointer.
             document.getElementById('winModalLabel').textContent = 'WINNER';

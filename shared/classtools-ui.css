@@ -39,8 +39,9 @@ body.ct-playing [data-ct-play].ct-play-surface{
   animation:ctPlayIn .32s cubic-bezier(.18,.89,.32,1.28);
 }
 @keyframes ctPlayIn{ from{ transform:translate(-50%,-50%) scale(.93); opacity:0; } to{ transform:translate(-50%,-50%) scale(1); opacity:1; } }
-/* main play content grows to fill the card; control rows keep natural height */
-body.ct-playing [data-ct-play].ct-play-surface > *{ width:100%; }
+/* main play content grows to fill the card; control rows keep natural height.
+   NB: exclude the close button so it stays a small top-right square (item 8). */
+body.ct-playing [data-ct-play].ct-play-surface > *:not(.ct-play-close){ width:100%; }
 body.ct-playing [data-ct-play].ct-play-surface .play,
 body.ct-playing [data-ct-play].ct-play-surface .player{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; justify-content:center; }
 /* keep buttons inside the modal a pleasant, modest size */
@@ -122,7 +123,9 @@ body.ct-playing .ct-play-close{ display:inline-flex; }
 /* collapsed state set on the .work / .builder2 / .ct-build wrapper */
 .ct-sb-collapsed .ct-side, .ct-sb-collapsed .b2-left, .ct-sb-collapsed .side{
   flex-basis:0 !important; max-width:0 !important; min-width:0 !important;
-  padding-left:0 !important; padding-right:0 !important;
+  padding:0 !important; margin:0 !important;
+  /* also collapse height so a 0-width column's content can't grow the page (item 4) */
+  max-height:0 !important; min-height:0 !important;
   overflow:hidden !important; opacity:0; border-width:0 !important;
 }
 /* slim "show settings" tab pinned to the left edge — never overlaps content */
