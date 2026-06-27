@@ -136,9 +136,8 @@
 </head>
 <body>
     <div class="topbar">
-        <button class="icon-btn" id="backBtn" onclick="goBackHub()" title="Back to tools" style="display:none"><i class="fas fa-arrow-left"></i></button>
-        <div class="brand"><i class="fas fa-stopwatch"></i> Timer Tools</div>
-        <div class="star-wrap">
+        <div class="brand" id="brandHome" onclick="goBackHub()" title="Back to all tools" style="cursor:pointer"><i class="fas fa-stopwatch"></i> Timer Tools</div>
+        <div class="star-wrap" id="starWrap" style="display:none">
             <button class="star-lg" id="starBtn" onclick="toggleBookmark()" title="Bookmark"><i class="far fa-star"></i></button>
             <span class="star-tip">Click to bookmark — reopens here automatically.</span>
         </div>
@@ -251,7 +250,7 @@
             {id:'race',name:'Race',icon:'fa-trophy',desc:'Circular dial with a lapping runner.'}
         ];
         function buildModeGallery(){ const g=document.getElementById('modeGallery'); if(!g)return; g.innerHTML=''; TMODES.forEach(m=>{ const c=document.createElement('div'); c.className='tcard'; c.innerHTML='<div class="ic"><i class="fas '+m.icon+'"></i></div><h3>'+m.name+'</h3><p>'+m.desc+'</p>'; c.onclick=()=>openMode(m.id); g.appendChild(c); }); }
-        function openMode(name){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); const el=document.getElementById(name); if(el)el.classList.add('active'); document.getElementById('modeGallery').style.display='none'; document.getElementById('modeBack').style.display='flex'; const cb=document.querySelector('.classbar'); if(cb)cb.style.display='flex'; const m=TMODES.find(x=>x.id===name); document.getElementById('modeTitle').textContent=m?m.name:''; saveSoon(); }
+        function openMode(name){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); const el=document.getElementById(name); if(el)el.classList.add('active'); document.getElementById('modeGallery').style.display='none'; document.getElementById('modeBack').style.display='flex'; const cb=document.querySelector('.classbar'); if(cb)cb.style.display='flex'; ctStar(true); const m=TMODES.find(x=>x.id===name); document.getElementById('modeTitle').textContent=m?m.name:''; saveSoon(); }
         /* item 6: continuous, eased ring progress so the colour sweep glides */
         function smoothRings(){
             document.querySelectorAll('.ring-prog').forEach(rp=>{
@@ -265,7 +264,7 @@
             requestAnimationFrame(smoothRings);
         }
         requestAnimationFrame(smoothRings);
-        function showModeGallery(){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); document.getElementById('modeGallery').style.display='grid'; document.getElementById('modeBack').style.display='none'; const cb=document.querySelector('.classbar'); if(cb)cb.style.display='none'; }
+        function showModeGallery(){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); document.getElementById('modeGallery').style.display='grid'; document.getElementById('modeBack').style.display='none'; const cb=document.querySelector('.classbar'); if(cb)cb.style.display='none'; ctStar(false); }
         function openTab(evt,name){ openMode(name); }
         const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
         const COUNTDOWNISH = ['countdown','silent','race','loop'];
@@ -347,7 +346,7 @@
         /* ===== HUB NAV + BOOKMARK ===== */
         const EMBEDDED = window.parent && window.parent !== window;
         function goBackHub(){ playClick(); try{ window.parent.postMessage({ns:'classtools',cmd:'close'},'*'); }catch(e){} }
-        if(EMBEDDED){ const b=document.getElementById('backBtn'); if(b) b.style.display='inline-flex'; }
+        function ctStar(show){ const w=document.getElementById('starWrap'); if(w) w.style.display=show?'flex':'none'; }
         let bookmarked = false;
         function toggleBookmark(){
             if(!timers.length){ showAlert('Add a timer first, then bookmark.','Bookmark'); return; }

@@ -126,4 +126,33 @@
   };
 
   window.ctRefreshUI = schedule; // tools can poke a re-scan after big DOM swaps
+
+  /* ---- explicit play-modal control ----
+     ctPlay.open(el)  -> show el (display) so it's lifted into the blurred modal
+     ctPlay.close(el) -> hide el; the scan then drops the modal
+     Tools call these at the moment an action/round actually starts.        */
+  window.ctPlay = {
+    open: function (el) {
+      if (!el) return;
+      if (!el.hasAttribute('data-ct-play')) el.setAttribute('data-ct-play', '');
+      el.style.display = el.dataset.ctDisplay || 'flex';
+      schedule();
+    },
+    close: function (el) {
+      if (el) el.style.display = 'none';
+      else if (current) current.style.display = 'none';
+      schedule();
+    }
+  };
+
+  /* ---- collapsible sidebar ----
+     A tool adds <button class="ct-collapse" onclick="ctToggleSidebar(this,'.work')">…
+     and a <button class="ct-sb-show" onclick="ctToggleSidebar(this,'.work')"> tab.
+     We toggle .ct-sb-collapsed on the nearest wrapper matching `sel`.            */
+  window.ctToggleSidebar = function (btn, sel) {
+    var wrap = sel ? (btn.closest(sel) || document.querySelector(sel)) : btn.parentElement;
+    if (!wrap) return;
+    wrap.classList.toggle('ct-sb-collapsed');
+    schedule();
+  };
 })();

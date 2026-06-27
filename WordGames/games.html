@@ -205,9 +205,8 @@
 <body>
     <canvas id="confetti"></canvas>
     <div class="topbar">
-        <button class="icon-btn" id="backBtn" onclick="goBackHub()" title="Back to tools" style="display:none"><i class="fas fa-arrow-left"></i></button>
-        <div class="brand"><i class="fas fa-spell-check"></i> <span id="brandName">Word Games &amp; Builders</span></div>
-        <div class="star-wrap">
+        <div class="brand" id="brandHome" onclick="goHome()" title="Back to all tools" style="cursor:pointer"><i class="fas fa-spell-check"></i> <span id="brandName">Word Games &amp; Builders</span></div>
+        <div class="star-wrap" id="starWrap" style="display:none">
             <button class="star-lg" id="starBtn" onclick="toggleBookmark()" title="Bookmark"><i class="far fa-star"></i></button>
             <span class="star-tip">Click to bookmark — this page reopens here automatically.</span>
         </div>
@@ -316,7 +315,7 @@
         <h3 id="confirmTitle"><i class="fas fa-eye" style="color:var(--gold)"></i> Show answers?</h3>
         <p class="hint" id="confirmBody" style="margin:6px 0 0;font-size:13.5px"></p>
         <div class="modal-actions">
-            <button class="btn btn-soft" onclick="confirmNo()">Cancel</button>
+            <button class="btn btn-soft" id="confirmNo" onclick="confirmNo()">Cancel</button>
             <button class="btn btn-primary" id="confirmYes" onclick="confirmYes()">Show</button>
         </div>
     </div></div>
@@ -353,7 +352,12 @@
             if(EMBEDDED){ try{window.parent.postMessage({ns:'classtools',cmd:'close'},'*');}catch(e){} }
         }
         function goBackHub(){ smartBack(); }
-        function updateBack(){ const b=document.getElementById('backBtn'); if(!b)return; const playing=location.hash.indexOf('d=')>=0; const formVisible=document.getElementById('form').style.display==='block'; b.style.display=(EMBEDDED||playing||formVisible||inBuzzer)?'inline-flex':'none'; }
+        /* Brand = home: return straight to the hub (top level). In-page 'All games' handles step-back. */
+        function goHome(){ if(EMBEDDED){ try{window.parent.postMessage({ns:'classtools',cmd:'close'},'*'); return; }catch(e){} } showGallery(); }
+        /* play-modal close (×) returns to the game list */
+        window.ctClosePlay=function(){ showGallery(); };
+        /* Star shows only inside a specific game (builder or play), never on the gallery list. */
+        function updateBack(){ const playing=location.hash.indexOf('d=')>=0; const formVisible=document.getElementById('form').style.display==='block'; const inside=playing||formVisible||inBuzzer; const w=document.getElementById('starWrap'); if(w) w.style.display=inside?'flex':'none'; }
         let actx=null,mgn=null,muted=false;
         function ea(){if(!actx){const A=window.AudioContext||window.webkitAudioContext;actx=new A();mgn=actx.createGain();mgn.gain.value=.16;mgn.connect(actx.destination);}if(actx.state==='suspended')actx.resume();}
         function tn(f,d,t,v,w){if(muted)return;ea();const t0=actx.currentTime+(w||0),o=actx.createOscillator(),g=actx.createGain();o.type=t||'sine';o.frequency.value=f;g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(v||.5,t0+.012);g.gain.exponentialRampToValueAtTime(.0001,t0+d);o.connect(g);g.connect(mgn);o.start(t0);o.stop(t0+d+.03);}
@@ -373,15 +377,20 @@
         function openModal(id){document.getElementById(id).classList.add('show');}
         function closeModal(id){document.getElementById(id).classList.remove('show');}
         /* In-page confirm dialog (replaces the ugly native confirm popup) */
-        let _confirmCb=null;
-        function uiConfirm(opts){ _confirmCb=opts.onYes||null; document.getElementById('confirmTitle').innerHTML='<i class="fas fa-'+(opts.icon||'eye')+'" style="color:var(--gold)"></i> '+esc(opts.title||'Are you sure?'); document.getElementById('confirmBody').textContent=opts.body||''; document.getElementById('confirmYes').innerHTML='<i class="fas fa-check"></i> '+esc(opts.yes||'Confirm'); openModal('confirmModal'); }
-        function confirmYes(){ closeModal('confirmModal'); const cb=_confirmCb; _confirmCb=null; if(cb)cb(); }
-        function confirmNo(){ closeModal('confirmModal'); _confirmCb=null; }
+        let _confirmCb=null,_confirmNoCb=null;
+        function uiConfirm(opts){ _confirmCb=opts.onYes||null; _confirmNoCb=opts.onNo||null; document.getElementById('confirmTitle').innerHTML='<i class="fas fa-'+(opts.icon||'eye')+'" style="color:var(--gold)"></i> '+esc(opts.title||'Are you sure?'); document.getElementById('confirmBody').textContent=opts.body||''; document.getElementById('confirmYes').innerHTML='<i class="fas fa-check"></i> '+esc(opts.yes||'Confirm'); document.getElementById('confirmNo').textContent=opts.no||'Cancel'; openModal('confirmModal'); }
+        function confirmYes(){ closeModal('confirmModal'); const cb=_confirmCb; _confirmCb=null; _confirmNoCb=null; if(cb)cb(); }
+        function confirmNo(){ closeModal('confirmModal'); const cb=_confirmNoCb; _confirmCb=null; _confirmNoCb=null; if(cb)cb(); }
 
         /* ===== MASK (always default ON; dots so the teacher can type/Enter unseen) ===== */
         let masked=true;
+        const MASK_KEY='ct-mask-games';
+        function maskPref(){ try{ return localStorage.getItem(MASK_KEY)!=='0'; }catch(e){ return true; } } /* default hidden */
+        function setMasked(v){ masked=v; try{ localStorage.setItem(MASK_KEY, v?'1':'0'); }catch(e){} applyMask(); }
         function applyMask(){const t=document.getElementById('items');if(t)t.classList.toggle('masked',masked);const re=document.getElementById('rowsEditor');if(re)re.classList.toggle('mrows',masked);const cc=document.getElementById('catCats');if(cc)cc.classList.toggle('mrows',masked);const b=document.getElementById('maskBtn');if(b){b.classList.toggle('shown',!masked);b.innerHTML=(masked?'<i class="fas fa-eye-slash"></i> ':'<i class="fas fa-eye"></i> ')+'<span id="maskTxt">'+(masked?'Hidden':'Showing')+'</span>';}}
-        function toggleMask(){ if(masked){ uiConfirm({title:'Show answers?',body:'This will display the words/answers on screen for the whole class. Continue?',yes:'Show answers',icon:'eye',onYes:function(){ masked=false; applyMask(); }}); } else { masked=true; applyMask(); } }
+        function toggleMask(){ if(masked){ uiConfirm({title:'Show answers?',body:'This will display the words/answers on screen for the whole class. Continue?',yes:'Show answers',icon:'eye',onYes:function(){ setMasked(false); }}); } else { setMasked(true); } }
+        /* On opening a builder: keep hidden, but if it was last left visible warn before revealing. */
+        function maskHeadsUp(){ masked=true; applyMask(); if(!maskPref() && parseItems().length){ uiConfirm({title:'Items were set to show',body:'These words/answers were visible last time. Keep them hidden from the class, or continue showing them?',yes:'Keep hidden',icon:'eye-slash',onYes:function(){ setMasked(true); },no:'Continue anyway',onNo:function(){ setMasked(false); }}); } }
 
         /* ===== GALLERY / FORM NAV ===== */
         let curGame=null, groupsList=[];
@@ -427,8 +436,8 @@
             setupEntry(id);
             // restore a saved draft for THIS game only
             if(DRAFT && DRAFT.g===id) applyDraft(DRAFT);
-            masked=true; applyMask();
-            updateStarHint();
+            maskHeadsUp();
+            updateBack(); updateStarHint();
         }
 
         function toggleGroupsEditor(){document.getElementById('groupsEditor').style.display=document.getElementById('optGroups').checked?'block':'none';}

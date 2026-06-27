@@ -181,9 +181,8 @@
 <body>
     <canvas id="confetti"></canvas>
     <div class="topbar">
-        <button class="icon-btn" id="backBtn" onclick="goBackHub()" title="Back to tools" style="display:none"><i class="fas fa-arrow-left"></i></button>
-        <div class="brand"><i class="fas fa-wand-sparkles"></i> <span id="brandName">Intro &amp; Reveal Tools</span></div>
-        <div class="star-wrap"><button class="star-lg" id="starBtn" onclick="toggleBookmark()" title="Bookmark"><i class="far fa-star"></i></button><span class="star-tip">Click to bookmark — reopens here automatically.</span></div>
+        <div class="brand" id="brandHome" onclick="goHome()" title="Back to all tools" style="cursor:pointer"><i class="fas fa-wand-sparkles"></i> <span id="brandName">Intro &amp; Reveal Tools</span></div>
+        <div class="star-wrap" id="starWrap" style="display:none"><button class="star-lg" id="starBtn" onclick="toggleBookmark()" title="Bookmark"><i class="far fa-star"></i></button><span class="star-tip">Click to bookmark — reopens here automatically.</span></div>
         <div class="spacer"></div>
         <button class="icon-btn" id="shareBtn" onclick="openShare()" title="Share link & QR"><i class="fas fa-share-nodes"></i></button>
         <button class="icon-btn" id="editBtn" onclick="goEdit()" title="Edit / Reconfigure" style="display:none"><i class="fas fa-pen"></i></button>
@@ -236,7 +235,7 @@
     <div class="modal" id="confirmModal"><div class="modal-card">
         <h3 id="confirmTitle"><i class="fas fa-eye" style="color:var(--gold)"></i> Show?</h3>
         <p class="hint" id="confirmBody" style="margin:6px 0 0;font-size:13.5px"></p>
-        <div class="modal-actions"><button class="btn btn-soft" onclick="confirmNo()">Cancel</button><button class="btn btn-primary" id="confirmYes" onclick="confirmYes()">Show</button></div>
+        <div class="modal-actions"><button class="btn btn-soft" id="confirmNo" onclick="confirmNo()">Cancel</button><button class="btn btn-primary" id="confirmYes" onclick="confirmYes()">Show</button></div>
     </div></div>
     <div class="modal reveal-modal" id="revealModal"><div class="reveal3d" id="reveal3d">
         <div class="reveal-inner" id="revealInner"></div>
@@ -277,7 +276,10 @@
             if(EMBEDDED){ try{window.parent.postMessage({ns:'classtools',cmd:'close'},'*');}catch(e){} }
         }
         function goBackHub(){ smartBack(); }
-        function updateBack(){ const b=document.getElementById('backBtn'); if(!b)return; const playing=location.hash.indexOf('d=')>=0; const formVisible=document.getElementById('form').style.display==='block'; b.style.display=(EMBEDDED||playing||formVisible)?'inline-flex':'none'; }
+        function goHome(){ if(EMBEDDED){ try{window.parent.postMessage({ns:'classtools',cmd:'close'},'*'); return; }catch(e){} } showGallery(); }
+        /* play-modal close (×) returns to the activity list */
+        window.ctClosePlay=function(){ showGallery(); };
+        function updateBack(){ const playing=location.hash.indexOf('d=')>=0; const formVisible=document.getElementById('form').style.display==='block'; const inside=playing||formVisible; const w=document.getElementById('starWrap'); if(w) w.style.display=inside?'flex':'none'; }
         let actx=null,mgn=null,muted=false;
         function ea(){if(!actx){const A=window.AudioContext||window.webkitAudioContext;actx=new A();mgn=actx.createGain();mgn.gain.value=.16;mgn.connect(actx.destination);}if(actx.state==='suspended')actx.resume();}
         function tn(f,d,t,v,w){if(muted)return;ea();const t0=actx.currentTime+(w||0),o=actx.createOscillator(),g=actx.createGain();o.type=t||'sine';o.frequency.value=f;g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(v||.5,t0+.012);g.gain.exponentialRampToValueAtTime(.0001,t0+d);o.connect(g);g.connect(mgn);o.start(t0);o.stop(t0+d+.03);}
@@ -298,11 +300,16 @@
         function closeModal(id){document.getElementById(id).classList.remove('show');}
         let masked=true;
         function applyMask(){const t=document.getElementById('items');if(t)t.classList.toggle('masked',masked);const b=document.getElementById('maskBtn');if(b){b.classList.toggle('shown',!masked);b.innerHTML=(masked?'<i class="fas fa-eye-slash"></i> ':'<i class="fas fa-eye"></i> ')+'<span>'+(masked?'Hidden':'Showing')+'</span>';}}
-        function toggleMask(){ if(masked){ uiConfirm({title:'Show items?',body:'This will display the items on screen for the whole class. Continue?',yes:'Show',onYes:function(){masked=false;applyMask();}}); } else { masked=true; applyMask(); } }
+        function toggleMask(){ if(masked){ uiConfirm({title:'Show items?',body:'This will display the items on screen for the whole class. Continue?',yes:'Show',onYes:function(){setMasked(false);}}); } else { setMasked(true); } }
         let _confirmCb=null;
-        function uiConfirm(o){_confirmCb=o.onYes||null;document.getElementById('confirmTitle').innerHTML='<i class="fas fa-eye" style="color:var(--gold)"></i> '+esc(o.title||'Are you sure?');document.getElementById('confirmBody').textContent=o.body||'';document.getElementById('confirmYes').innerHTML='<i class="fas fa-check"></i> '+esc(o.yes||'Confirm');openModal('confirmModal');}
-        function confirmYes(){closeModal('confirmModal');const cb=_confirmCb;_confirmCb=null;if(cb)cb();}
-        function confirmNo(){closeModal('confirmModal');_confirmCb=null;}
+        let _confirmNoCb=null;
+        function uiConfirm(o){_confirmCb=o.onYes||null;_confirmNoCb=o.onNo||null;document.getElementById('confirmTitle').innerHTML='<i class="fas fa-'+(o.icon||'eye')+'" style="color:var(--gold)"></i> '+esc(o.title||'Are you sure?');document.getElementById('confirmBody').textContent=o.body||'';document.getElementById('confirmYes').innerHTML='<i class="fas fa-check"></i> '+esc(o.yes||'Confirm');document.getElementById('confirmNo').textContent=o.no||'Cancel';openModal('confirmModal');}
+        function confirmYes(){closeModal('confirmModal');const cb=_confirmCb;_confirmCb=null;_confirmNoCb=null;if(cb)cb();}
+        function confirmNo(){closeModal('confirmModal');const cb=_confirmNoCb;_confirmCb=null;_confirmNoCb=null;if(cb)cb();}
+        const MASK_KEY='ct-mask-intro';
+        function maskPref(){ try{ return localStorage.getItem(MASK_KEY)!=='0'; }catch(e){ return true; } }
+        function setMasked(v){ masked=v; try{ localStorage.setItem(MASK_KEY, v?'1':'0'); }catch(e){} applyMask(); }
+        function maskHeadsUp(){ masked=true; applyMask(); if(!maskPref() && parseItems().length){ uiConfirm({title:'Items were set to show',body:'These items were visible last time. Keep them hidden from the class, or continue showing them?',yes:'Keep hidden',icon:'eye-slash',onYes:function(){ setMasked(true); },no:'Continue anyway',onNo:function(){ setMasked(false); }}); } }
 
         /* ===== ITEM MEDIA ===== */
         function parseItem(line){const v=line.trim();if(/^https?:\/\/\S+\.(png|jpe?g|gif|webp|svg)(\?\S*)?$/i.test(v))return{t:'img',v};if(/^https?:\/\/\S+\.(mp4|webm|ogg)(\?\S*)?$/i.test(v))return{t:'video',v};return{t:'text',v};}
@@ -313,14 +320,14 @@
         let cur=null;
         function buildGallery(){const g=document.getElementById('galleryGrid');g.innerHTML='';ACTS.forEach(m=>{const t=document.createElement('div');t.className='gtile'+(m.soon?' soon':'');t.style.setProperty('--gc',m.c1);t.style.setProperty('--gc2',m.c2);t.innerHTML='<div class="ic"><i class="fas '+m.icon+'"></i></div><h3>'+m.name+'</h3><p>'+m.desc+'</p>';if(!m.soon)t.onclick=()=>openForm(m.id);g.appendChild(t);});}
         function showGallery(){location.hash='';document.getElementById('gallery').style.display='block';document.getElementById('form').style.display='none';document.getElementById('player').style.display='none';document.getElementById('editBtn').style.display='none';document.getElementById('brandName').textContent='Intro & Reveal Tools';updateStarHint();}
-        function openForm(id){cur=id;const m=M[id];document.getElementById('gallery').style.display='none';document.getElementById('form').style.display='block';document.getElementById('player').style.display='none';document.getElementById('brandName').textContent=m.name;document.getElementById('formTitle').textContent=m.name;document.getElementById('itemsLabel').textContent='Items';document.getElementById('items').placeholder=m.ph||'';document.getElementById('itemsHelp').textContent=m.label+' · Hidden by default — Enter makes a new line.';document.getElementById('optCard').style.display=(m.opt==='pick')?'block':'none';masked=true;applyMask();introPreview();updateStarHint();}
+        function openForm(id){cur=id;const m=M[id];document.getElementById('gallery').style.display='none';document.getElementById('form').style.display='block';document.getElementById('player').style.display='none';document.getElementById('brandName').textContent=m.name;document.getElementById('formTitle').textContent=m.name;document.getElementById('itemsLabel').textContent='Items';document.getElementById('items').placeholder=m.ph||'';document.getElementById('itemsHelp').textContent=m.label+' · Hidden by default — Enter makes a new line.';document.getElementById('optCard').style.display=(m.opt==='pick')?'block':'none';maskHeadsUp();introPreview();updateBack();updateStarHint();}
         function parseItems(){return val('items').split('\n').map(s=>s.trim()).filter(Boolean);}
         function buildPayload(){const t=val('title').trim(),raw=parseItems();if(!raw.length)return null;const seed=Math.floor(Math.random()*1e9);const opt={};if(M[cur].opt==='pick'){opt.pick=Math.max(1,parseInt(val('optPick'))||1);opt.exclude=document.getElementById('optExclude').checked;}return{g:cur,t,items:raw,opt,seed};}
         function linkFor(p){return location.origin+location.pathname+'#d='+enc(p);}
         function generate(){const p=buildPayload();if(!p){flash('Add at least one item.');return;}location.hash='d='+enc(p);}
         function flash(m){const n=document.getElementById('itemsHelp');const o=n.textContent;n.textContent=m;n.style.color='var(--danger)';setTimeout(()=>{n.textContent=o;n.style.color='';},2400);}
         function saveDraft(){try{localStorage.setItem('ct-intro-draft',JSON.stringify({g:cur,t:val('title'),items:val('items'),pick:val('optPick'),exclude:document.getElementById('optExclude').checked}));}catch(e){}try{introPreview();}catch(e){}updateStarHint();}
-        function loadDraft(){try{const d=JSON.parse(localStorage.getItem('ct-intro-draft'));if(d&&d.g&&M[d.g]){openForm(d.g);set('title',d.t);set('items',d.items);if(d.pick)set('optPick',d.pick);document.getElementById('optExclude').checked=d.exclude!==false;masked=true;applyMask();}}catch(e){}}
+        function loadDraft(){try{const d=JSON.parse(localStorage.getItem('ct-intro-draft'));if(d&&d.g&&M[d.g]){openForm(d.g);set('title',d.t);set('items',d.items);if(d.pick)set('optPick',d.pick);document.getElementById('optExclude').checked=d.exclude!==false;maskHeadsUp();introPreview();}}catch(e){}}
         function goEdit(){const wasPlaying=location.hash.indexOf('d=')>=0;const id=cfg?cfg.g:cur;location.hash='';if(id&&M[id])openForm(id);if(wasPlaying)document.getElementById('regenNotice').style.display='block';}
         function currentLink(){if(location.hash.indexOf('d=')>=0)return location.href;const p=buildPayload();return p?linkFor(p):null;}
         function openShare(){const url=currentLink();if(!url){flash('Add at least one item first.');return;}document.getElementById('shareLink').value=url;const box=document.getElementById('qrBox');box.innerHTML='';try{new QRCode(box,{text:url,width:188,height:188,colorDark:'#241b4e',colorLight:'#ffffff'});}catch(e){box.innerHTML='<span class="hint">QR unavailable offline.</span>';}openModal('shareModal');}

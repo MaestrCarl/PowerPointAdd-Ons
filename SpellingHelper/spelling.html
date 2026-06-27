@@ -121,8 +121,7 @@ input[type=range]{width:100%;}
 <body>
 <canvas id="confetti"></canvas>
 <div class="topbar">
-  <button class="icon-btn" id="backBtn" onclick="goBackHub()" title="Back to tools" style="display:none"><i class="fas fa-arrow-left"></i></button>
-  <div class="brand"><i class="fas fa-spell-check"></i> Spelling Helper</div>
+  <div class="brand" id="brandHome" onclick="goBackHub()" title="Back to all tools" style="cursor:pointer"><i class="fas fa-spell-check"></i> Spelling Helper</div>
   <div class="star-wrap">
     <button class="star-lg" id="starBtn" onclick="toggleBookmark()" title="Bookmark"><i class="far fa-star"></i></button>
     <span class="star-tip">Click to bookmark — reopens here automatically.</span>
@@ -481,7 +480,6 @@ function rebuildCert(d){
 /* ---------- hub nav + bookmark ---------- */
 const EMBEDDED=window.parent&&window.parent!==window;
 function goBackHub(){playClick();try{window.parent.postMessage({ns:'classtools',cmd:'close'},'*');}catch(e){}}
-if(EMBEDDED){const b=$('backBtn');if(b)b.style.display='inline-flex';}
 let bookmarked=false;
 function toggleBookmark(){if(!parseWords().length){flash('Add words first, then bookmark.');return;}bookmarked=!bookmarked;const url=bookmarked?location.href:null;const label='Spelling Helper';if(EMBEDDED){try{window.parent.postMessage({ns:'classtools',cmd:'bookmark',url,label},'*');}catch(e){}}else{try{url?localStorage.setItem('ct-bookmark',JSON.stringify({url,label})):localStorage.removeItem('ct-bookmark');}catch(e){}}updateStar();}
 function updateStar(){const b=$('starBtn');b.classList.toggle('on',bookmarked);b.innerHTML=bookmarked?'<i class="fas fa-star"></i>':'<i class="far fa-star"></i>';updateStarHint();}

@@ -88,8 +88,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid rgba(var(--primary-rgb
 <body>
 <canvas id="confetti"></canvas>
 <div class="topbar">
-  <button class="icon-btn" id="backBtn" onclick="goBackHub()" title="Back to tools" style="display:none"><i class="fas fa-arrow-left"></i></button>
-  <div class="brand"><i class="fas fa-ranking-star"></i> Scoreboard &amp; Scoring</div>
+  <div class="brand" id="brandHome" onclick="goBackHub()" title="Back to all tools" style="cursor:pointer"><i class="fas fa-ranking-star"></i> Scoreboard &amp; Scoring</div>
   <div class="star-wrap">
     <button class="star-lg" id="starBtn" onclick="toggleBookmark()" title="Bookmark"><i class="far fa-star"></i></button>
     <span class="star-tip">Click to bookmark — reopens here automatically.</span>
@@ -290,7 +289,6 @@ function load(){
 /* BOOKMARK */
 const EMBEDDED=window.parent&&window.parent!==window;
 function goBackHub(){ try{ window.parent.postMessage({ns:'classtools',cmd:'close'},'*'); }catch(e){} }
-if(EMBEDDED){ const b=document.getElementById('backBtn'); if(b) b.style.display='inline-flex'; }
 let bookmarked=false;
 function toggleBookmark(){
     if(!teams.length){ flash('Add at least one team before bookmarking.'); return; }
