@@ -115,6 +115,7 @@ input[type=text],input[type=number],select{padding:8px 10px;border:1px solid var
       <button class="ct-sb-show" type="button" onclick="ctToggleSidebar(this,'.work')"><i class="fas fa-angles-right"></i></button>
       <div class="side">
         <button class="ct-collapse" type="button" onclick="ctToggleSidebar(this,'.work')" title="Hide settings"><i class="fas fa-angles-left"></i> Hide</button>
+        <div data-ct-activity></div>
         <h4>Words</h4>
         <textarea id="words" placeholder="One word per line.&#10;&#10;Split precisely with a dash (or / · |):&#10;but-ter-fly&#10;com-pu-ter | a machine that computes&#10;&#10;Or just type a word and let auto-split chop it:&#10;rainbow"></textarea>
         <div class="hint">Use a delimiter for exact syllables: <b>but-ter-fly</b>. Plain words are auto-split. Add a hint with <b>| your hint</b>.</div>

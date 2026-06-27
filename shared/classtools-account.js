@@ -49,7 +49,9 @@
   })();
   var TOOLS_LIST = [['picker', 'Pickers & Groups'], ['timer', 'Timer Tools'], ['intro', 'Intro & Reveal'], ['wordgames', 'Word Games'], ['spelling', 'Spelling Helper'], ['splitter', 'Word Splitter'], ['scoreboard', 'Scoreboard']];
   var TOOL_FOLDER = { wordgames: 'WordGames', picker: 'Pickers', timer: 'Timer', scoreboard: 'Scoreboard', intro: 'IntroTools', splitter: 'WordSplitter', spelling: 'SpellingHelper', hub: 'ClassTools' };
-  var TYPES = [['class', 'Class list (students)'], ['words', 'Word / spelling list'], ['names', 'Name list'], ['questions', 'Questions'], ['items', 'General items']];
+  var TYPES = [['class', 'Class list (students)'], ['words', 'Word / spelling list'], ['questions', 'Questions'], ['items', 'General items'], ['media', 'Media (images/links)']];
+  var profile = { name: '', subjects: [], photo: '' };
+  var settings = { defaultDark: false };
   function typeLabel(t) { for (var i = 0; i < TYPES.length; i++) if (TYPES[i][0] === t) return TYPES[i][1]; return t; }
 
   /* ---- helpers ---- */
@@ -87,8 +89,21 @@
   }
 
   /* ---- localStorage mirror ---- */
-  function saveLocal() { try { localStorage.setItem(KEY, JSON.stringify({ folderName: folderName, lists: lists })); } catch (e) {} }
-  function loadLocal() { try { var d = JSON.parse(localStorage.getItem(KEY)); if (d) { folderName = d.folderName || null; lists = (d.lists || []).map(norm); } } catch (e) {} }
+  function saveLocal() { try { localStorage.setItem(KEY, JSON.stringify({ folderName: folderName, lists: lists, profile: profile, settings: settings })); } catch (e) {} }
+  function loadLocal() { try { var d = JSON.parse(localStorage.getItem(KEY)); if (d) { folderName = d.folderName || null; lists = (d.lists || []).map(norm); profile = d.profile || profile; settings = d.settings || settings; } } catch (e) {} }
+  async function writeAccount() {
+    if (!dirHandle || !(await ensurePerm(dirHandle, true))) return false;
+    try {
+      var dir = await dirHandle.getDirectoryHandle('Account', { create: true });
+      var md = '---\nname: ' + (profile.name || '') + '\nsubjects: ' + (profile.subjects || []).join(', ') + '\nphoto: ' + (profile.photo ? 'profile-photo' : '') + '\ndefaultDark: ' + (!!settings.defaultDark) + '\nupdated: ' + today() + '\n---\n\n# ' + (profile.name || 'My ClassTools account') + '\n\nSubjects: ' + (profile.subjects || []).join(', ') + '\n';
+      var fh = await dir.getFileHandle('account.md', { create: true }); var w = await fh.createWritable(); await w.write(md); await w.close();
+      if (profile.photo && profile.photo.indexOf('data:') === 0) {
+        try { var ext = (profile.photo.match(/^data:image\/(\w+)/) || [, 'png'])[1]; var blob = await (await fetch(profile.photo)).blob();
+          var pf = await dir.getFileHandle('profile-photo.' + ext, { create: true }); var pw = await pf.createWritable(); await pw.write(blob); await pw.close(); } catch (e) {}
+      }
+      return true;
+    } catch (e) { return false; }
+  }
   function norm(L) { L.tools = L.tools || []; L.subjects = L.subjects || []; L.items = L.items || []; L.updated = L.updated || today(); return L; }
 
   /* ---- IndexedDB: remember the folder handle across sessions ---- */
@@ -148,6 +163,60 @@
 
   function persist(changed) { saveLocal(); if (changed) writeList(changed); fireChange(); }
 
+  /* ---- class → subject folder tree + activity saving (item 7) ---- */
+  function safeName(s) { return String(s || '').replace(/[\/\\:*?"<>|]+/g, '-').replace(/\s+/g, ' ').trim().slice(0, 60) || 'Untitled'; }
+  async function ensureDir(parts) { var d = dirHandle; for (var i = 0; i < parts.length; i++) { d = await d.getDirectoryHandle(safeName(parts[i]), { create: true }); } return d; }
+  function classes() { return lists.filter(function (L) { return L.type === 'class'; }); }
+  function subjectsFor(name) { var c = classes().filter(function (L) { return L.title === name; })[0]; return c ? (c.subjects || []) : []; }
+  async function ensureClassFolders() {
+    if (!dirHandle || !(await ensurePerm(dirHandle, true))) return;
+    var cs = classes();
+    for (var i = 0; i < cs.length; i++) { try { await ensureDir([cs[i].title]); var subs = cs[i].subjects || []; for (var j = 0; j < subs.length; j++) await ensureDir([cs[i].title, subs[j]]); } catch (e) {} }
+  }
+  /* activity index (so tools can offer "load previous activity") */
+  var actIndex = []; try { actIndex = JSON.parse(localStorage.getItem('ct-activities') || '[]'); } catch (e) { actIndex = []; }
+  function saveActIndex() { try { localStorage.setItem('ct-activities', JSON.stringify(actIndex.slice(-400))); } catch (e) {} }
+  function activityMd(meta, content) {
+    return '---\ntool: ' + TOOL + '\nkind: ' + (meta.kind || '') + '\ntitle: ' + (meta.title || '') + '\nclass: ' + (meta.className || '') + '\nsubject: ' + (meta.subject || '') + '\ngrade: ' + (meta.grade || '') + '\nsection: ' + (meta.section || '') + '\nupdated: ' + today() + '\n---\n\n' + content + '\n';
+  }
+  async function saveActivity(meta, content) {
+    meta = meta || {}; var fn = 'ct__setup__' + TOOL + '__' + slug(meta.kind || 'activity') + '__' + slug(meta.title || 'activity') + '__' + uid() + '__' + today() + '.md';
+    var md = activityMd(meta, content);
+    if (!dirHandle || !(await ensurePerm(dirHandle, true))) { download(fn, md); return false; }
+    if (!meta.className) { openChooser(meta, content); return false; }   // ask where to save
+    var parts = [meta.className]; if (meta.subject) parts.push(meta.subject);
+    try {
+      var d = await ensureDir(parts); var fh = await d.getFileHandle(fn, { create: true }); var w = await fh.createWritable(); await w.write(md); await w.close();
+      actIndex.push({ tool: TOOL, kind: meta.kind || '', title: meta.title || 'Activity', className: meta.className, subject: meta.subject || '', path: parts.concat(fn), date: today() }); saveActIndex();
+      toast('Saved to “' + [folderName].concat(parts).join('/') + '”'); return true;
+    } catch (e) { download(fn, md); return false; }
+  }
+  function listActivities(tool) { return actIndex.filter(function (a) { return !tool || a.tool === tool; }).slice().reverse(); }
+  async function readActivity(entry) {
+    if (!dirHandle || !entry || !entry.path) return null;
+    try { var d = dirHandle; for (var i = 0; i < entry.path.length - 1; i++) d = await d.getDirectoryHandle(safeName(entry.path[i])); var fh = await d.getFileHandle(entry.path[entry.path.length - 1]); var f = await fh.getFile(); var t = await f.text(); return t.replace(/^---[\s\S]*?---\n+/, ''); } catch (e) { return null; }
+  }
+
+  /* ---- "where do you want to save?" chooser modal ---- */
+  var chooserEl = null;
+  function openChooser(meta, content) {
+    if (!chooserEl) { chooserEl = document.createElement('div'); chooserEl.className = 'ct-acc-scrim'; chooserEl.style.zIndex = 3200; document.body.appendChild(chooserEl); }
+    var cs = classes();
+    var opts = cs.map(function (c) { return '<option value="' + esc(c.title) + '">' + esc(c.title) + '</option>'; }).join('');
+    chooserEl.innerHTML = '<div class="ct-acc-drawer" style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);right:auto;bottom:auto;width:min(420px,94vw);border-radius:18px;border:1px solid var(--line)">' +
+      '<h2><i class="fas fa-folder-tree" style="color:var(--primary)"></i> Save activity</h2>' +
+      '<div class="ct-acc-note">Choose where to file “' + esc(meta.title || 'this activity') + '”. It will be saved as Markdown under the class &amp; subject folder.</div>' +
+      '<label class="ct-acc-lbl">Class</label><select id="ctChClass">' + (cs.length ? opts : '') + '<option value="">— General (no class) —</option></select>' +
+      '<label class="ct-acc-lbl" style="display:block;margin-top:8px">Subject</label><input type="text" id="ctChSubj" placeholder="e.g. Science" value="' + esc(meta.subject || '') + '">' +
+      '<div class="ct-acc-row" style="margin-top:12px"><button class="btn btn-primary" id="ctChSave"><i class="fas fa-check"></i> Save here</button><button class="btn btn-soft" id="ctChCancel">Cancel</button></div></div>';
+    chooserEl.style.display = 'block'; chooserEl.classList.add('show');
+    chooserEl.querySelector('#ctChCancel').onclick = function () { chooserEl.classList.remove('show'); chooserEl.style.display = 'none'; };
+    chooserEl.querySelector('#ctChSave').onclick = function () {
+      meta.className = chooserEl.querySelector('#ctChClass').value || 'General'; meta.subject = chooserEl.querySelector('#ctChSubj').value.trim();
+      chooserEl.classList.remove('show'); chooserEl.style.display = 'none'; saveActivity(meta, content);
+    };
+  }
+
   /* ---- choose / reconnect folder ---- */
   async function chooseFolder() {
     if (!fsSupported) { exportBundle(); return; }
@@ -199,20 +268,31 @@
 
   function render() {
     if (!drawer) return;
-    var storage = fsSupported
-      ? (folderName ? ('<i class="fas fa-circle-check" style="color:var(--ok)"></i> Connected to <b>' + esc(folderName) + '</b>. Lists live in <b>' + esc(folderName) + '/Lists</b> as Markdown and load automatically.')
-        : 'Pick a folder (ideally one that syncs — Drive / iCloud / OneDrive). Lists save there as Markdown and reload automatically next time.')
-      : 'This browser can’t auto-save to a folder. Lists are kept on this device; use Export / Import to move a Markdown file.';
     var h = '';
     h += '<button class="ct-acc-x" onclick="ctAccount._close()" aria-label="Close"><i class="fas fa-xmark"></i></button>';
     h += '<h2><i class="fas fa-user" style="color:var(--primary)"></i> My ClassTools</h2>';
-    h += '<div class="ct-acc-note"><i class="fas fa-shield-halved"></i> Everything stays on <b>your device / your folder</b> — nothing is uploaded. Point this at a synced folder to use the same lists on any computer.</div>';
-    h += '<h3>Storage</h3><div class="ct-acc-note">' + storage + '</div><div class="ct-acc-row">';
-    if (fsSupported) h += '<button class="btn btn-primary" style="width:auto" onclick="ctAccount.chooseFolder()"><i class="fas fa-folder-open"></i> ' + (folderName ? 'Change folder' : 'Choose folder') + '</button>';
-    if (fsSupported) h += '<button class="btn btn-soft" onclick="ctAccount.scan()"><i class="fas fa-magnifying-glass"></i> Scan folder</button>';
-    h += '<button class="btn btn-soft" onclick="ctAccount.export()"><i class="fas fa-file-arrow-down"></i> Export .md</button>';
-    h += '<button class="btn btn-soft" onclick="ctAccount.import()"><i class="fas fa-file-arrow-up"></i> Import .md</button></div>';
 
+    /* ---- profile ---- */
+    h += '<div class="ct-acc-profile">' +
+      (profile.photo ? '<img class="ct-acc-photo" src="' + esc(profile.photo) + '" onclick="ctAccount._photo()" title="Change photo">' : '<div class="ct-acc-photo" onclick="ctAccount._photo()" title="Add photo"><i class="fas fa-camera"></i></div>') +
+      '<div style="flex:1 1 auto;min-width:0"><input type="text" id="ctAccName" placeholder="Your name" value="' + esc(profile.name) + '" oninput="ctAccount._profileEdited()" style="margin-bottom:6px">' +
+      '<input type="text" id="ctAccProfSubj" placeholder="Your subjects (comma-separated)" value="' + esc((profile.subjects || []).join(', ')) + '" oninput="ctAccount._profileEdited()"></div></div>';
+    h += '<label class="chk" style="display:flex;gap:7px;align-items:center;color:var(--muted);font-weight:700;font-size:13px;margin:2px 0 6px"><input type="checkbox" id="ctAccDark"' + (settings.defaultDark ? ' checked' : '') + ' onchange="ctAccount._profileEdited()"> Default to dark theme</label>';
+    h += '<div class="ct-acc-row"><button class="btn btn-soft" id="ctAccSaveProf" onclick="ctAccount._saveProfile()"><i class="fas fa-floppy-disk"></i> Save profile</button></div>';
+
+    h += '<div class="ct-acc-note"><i class="fas fa-shield-halved"></i> Everything stays on <b>your device / your folder</b> — nothing is uploaded. Use a synced folder (Drive / iCloud) to share across computers.</div>';
+
+    /* ---- storage ---- */
+    h += '<h3>Storage</h3>';
+    h += '<div style="margin-bottom:8px"><span class="ct-acc-badge ' + (folderName ? 'on' : 'off') + '"><i class="fas fa-' + (folderName ? 'circle-check' : 'circle-dot') + '"></i> ' + (folderName ? 'Connected: ' + esc(folderName) : (fsSupported ? 'No folder yet' : 'On this device')) + '</span></div>';
+    if (fsSupported && folderName) h += '<div class="ct-acc-note">Lists live in <b>' + esc(folderName) + '/Lists</b>; classes/setups in their own folders.</div>';
+    h += '<div class="ct-acc-row">';
+    if (fsSupported) h += '<button class="btn btn-primary" onclick="ctAccount.chooseFolder()"><i class="fas fa-folder-open"></i> ' + (folderName ? 'Change' : 'Choose folder') + '</button>';
+    if (fsSupported) h += '<button class="btn btn-soft" onclick="ctAccount.scan()"><i class="fas fa-magnifying-glass"></i> Scan</button>';
+    h += '<button class="btn btn-soft" onclick="ctAccount.export()"><i class="fas fa-file-arrow-down"></i> Export</button>';
+    h += '<button class="btn btn-soft" onclick="ctAccount.import()"><i class="fas fa-file-arrow-up"></i> Import</button></div>';
+
+    /* ---- lists ---- */
     h += '<h3>My lists</h3>';
     if (editingId !== null || isNew) {
       var L = isNew ? { id: '', type: 'class', title: '', tools: [], subjects: [], items: [] } : (getList(editingId) || {});
@@ -222,15 +302,22 @@
         '<label class="ct-acc-lbl" style="display:block;margin-top:8px">Title</label><input type="text" id="ctAccTitle" placeholder="e.g. Grade 7 - Rizal" value="' + esc(L.title) + '">' +
         '<div id="ctAccSubjWrap" style="' + (L.type === 'class' ? '' : 'display:none') + '"><label class="ct-acc-lbl" style="display:block;margin-top:8px">Subjects (comma-separated)</label><input type="text" id="ctAccSubj" placeholder="Science, Math" value="' + esc((L.subjects || []).join(', ')) + '"></div>' +
         (TOOL !== 'hub' ? '<label class="chk" style="margin-top:8px;display:flex;gap:7px;align-items:center;color:var(--muted);font-weight:700;font-size:13px"><input type="checkbox" id="ctAccThisTool"' + (thisOnly ? ' checked' : '') + '> Tag to this tool only (otherwise available everywhere)</label>' : '') +
-        '<label class="ct-acc-lbl" style="display:block;margin-top:8px">Items (one per line)</label><textarea id="ctAccItems" placeholder="Ana&#10;Ben&#10;Carlo">' + esc((L.items || []).join('\n')) + '</textarea>' +
-        '<div class="ct-acc-row"><button class="btn btn-primary" style="width:auto" onclick="ctAccount._save()"><i class="fas fa-check"></i> Save list</button><button class="btn btn-soft" onclick="ctAccount._cancel()">Cancel</button></div></div>';
+        '<label class="ct-acc-lbl" style="display:block;margin-top:8px">Items (one per line' + (L.type === 'media' ? '; paste image/video links' : '') + ')</label><textarea id="ctAccItems" placeholder="Ana&#10;Ben&#10;Carlo">' + esc((L.items || []).join('\n')) + '</textarea>' +
+        '<div class="ct-acc-row"><button class="btn btn-primary" onclick="ctAccount._save()"><i class="fas fa-check"></i> Save list</button><button class="btn btn-soft" onclick="ctAccount._cancel()">Cancel</button></div></div>';
     } else {
       if (!lists.length) h += '<div class="ct-acc-note">No lists yet. Create a class roster or any list to reuse it in every tool.</div>';
-      lists.forEach(function (L) {
-        var scope = (L.tools && L.tools.length) ? L.tools.map(function (t) { var n = TOOLS_LIST.filter(function (x) { return x[0] === t; })[0]; return n ? n[1] : t; }).join(', ') : 'All tools';
-        h += '<div class="ct-acc-classcard"><div class="nm"><i class="fas fa-list" style="color:var(--primary)"></i> ' + esc(L.title) + ' <span class="ct-acc-pill">' + (L.items || []).length + ' items</span></div>' +
-          '<div class="meta">' + esc(typeLabel(L.type)) + ' · ' + esc(scope) + (L.updated ? ' · ' + esc(L.updated) : '') + (L.subjects && L.subjects.length ? ' · ' + esc(L.subjects.join(', ')) : '') + '</div>' +
-          '<div class="acts"><button class="btn btn-soft" onclick="ctAccount._edit(\'' + L.id + '\')"><i class="fas fa-pen"></i> Edit</button><button class="btn btn-soft" onclick="ctAccount._del(\'' + L.id + '\')"><i class="fas fa-trash"></i></button></div></div>';
+      // group lists by type into collapsible sections
+      var groups = {}; lists.forEach(function (L) { (groups[L.type] = groups[L.type] || []).push(L); });
+      TYPES.forEach(function (t) {
+        var arr = groups[t[0]]; if (!arr || !arr.length) return;
+        h += '<details class="ct-acc-group" open><summary>' + t[1] + ' <span class="ct-acc-pill">' + arr.length + '</span></summary>';
+        arr.forEach(function (L) {
+          var scope = (L.tools && L.tools.length) ? 'this tool' : 'all tools';
+          h += '<div class="ct-acc-classcard"><div class="nm"><i class="fas fa-list" style="color:var(--primary)"></i> <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(L.title) + '</span><span class="ct-acc-pill">' + (L.items || []).length + '</span>' +
+            '<span class="acts"><button class="btn btn-soft" onclick="ctAccount._edit(\'' + L.id + '\')" title="Edit"><i class="fas fa-pen"></i></button><button class="btn btn-soft" onclick="ctAccount._del(\'' + L.id + '\')" title="Delete"><i class="fas fa-trash"></i></button></span></div>' +
+            '<div class="meta">' + esc(scope) + (L.updated ? ' · ' + esc(L.updated) : '') + (L.subjects && L.subjects.length ? ' · ' + esc(L.subjects.join(', ')) : '') + '</div></div>';
+        });
+        h += '</details>';
       });
       h += '<button class="btn btn-soft" style="margin-top:6px" onclick="ctAccount._new()"><i class="fas fa-plus"></i> New list</button>';
     }
@@ -250,6 +337,20 @@
     _edit: function (id) { editingId = id; isNew = false; render(); },
     _cancel: function () { editingId = null; isNew = false; render(); },
     _typeChange: function () { var t = document.getElementById('ctAccType').value, w = document.getElementById('ctAccSubjWrap'); if (w) w.style.display = (t === 'class') ? '' : 'none'; },
+    _photo: function () {
+      var inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*';
+      inp.onchange = function () { var f = inp.files[0]; if (!f) return; var r = new FileReader(); r.onload = function () { profile.photo = String(r.result); saveLocal(); writeAccount(); render(); }; r.readAsDataURL(f); };
+      inp.click();
+    },
+    _profileEdited: function () { var b = document.getElementById('ctAccSaveProf'); if (b) { b.classList.add('btn-primary'); b.innerHTML = '<i class="fas fa-floppy-disk"></i> Save profile *'; } },
+    _saveProfile: function () {
+      profile.name = (document.getElementById('ctAccName').value || '').trim();
+      profile.subjects = (document.getElementById('ctAccProfSubj').value || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+      settings.defaultDark = !!document.getElementById('ctAccDark').checked;
+      saveLocal(); writeAccount();
+      try { if (settings.defaultDark && !localStorage.getItem('ct-theme')) { localStorage.setItem('ct-theme', 'dark'); } } catch (e) {}
+      toast(dirHandle ? 'Profile saved to “' + folderName + '/Account”' : 'Profile saved on this device'); render();
+    },
     _del: function (id) { lists = lists.filter(function (L) { return L.id !== id; }); deleteListFile(id); saveLocal(); fireChange(); render(); },
     _save: function () {
       var type = document.getElementById('ctAccType').value, title = (document.getElementById('ctAccTitle').value || '').trim();
@@ -260,7 +361,7 @@
       var L;
       if (isNew) { L = norm({ id: uid(), type: type, title: title, tools: tools, subjects: subj, items: items, updated: today() }); lists.push(L); }
       else { L = getList(editingId); if (L) { L.type = type; L.title = title; L.tools = tools; L.subjects = subj; L.items = items; L.updated = today(); } }
-      persist(L); toast(dirHandle ? 'Saved to “' + folderName + '/Lists”' : 'Saved on this device'); editingId = null; isNew = false; render(); buildListPickers();
+      persist(L); if (L.type === 'class') ensureClassFolders(); toast(dirHandle ? 'Saved to “' + folderName + '/Lists”' : 'Saved on this device'); editingId = null; isNew = false; render(); buildListPickers();
     },
     /* save a list straight from a tool (tagged to this tool) */
     saveList: function (type, title, items, allTools) { var L = norm({ id: uid(), type: type || 'items', title: title || 'List', tools: allTools ? [] : (TOOL !== 'hub' ? [TOOL] : []), subjects: [], items: items || [], updated: today() }); lists.push(L); persist(L); buildListPickers(); toast('List “' + title + '” saved'); return L.id; },
@@ -272,7 +373,10 @@
           var fh = await d.getFileHandle(fn, { create: true }); var w = await fh.createWritable(); await w.write(content); await w.close(); toast('Saved to “' + folderName + '/' + (TOOL_FOLDER[TOOL] || 'ClassTools') + '”'); return true; } catch (e) {}
       }
       download(fn, content); return false;
-    }
+    },
+    /* class/subject folder tree + activity saving (item 7) */
+    classes: classes, subjectsFor: subjectsFor, ensureClassFolders: ensureClassFolders,
+    saveActivity: saveActivity, listActivities: listActivities, readActivity: readActivity
   };
 
   /* ---- "Load a list" control injected into tools ---- */
@@ -290,6 +394,7 @@
           var L = getList(this.value); if (!L) return;
           var tgt = document.querySelector(host.getAttribute('data-ct-list-target') || host.getAttribute('data-ct-class-target')) || host;
           if (tgt && 'value' in tgt) { tgt.value = (L.items || []).join('\n'); tgt.dispatchEvent(new Event('input', { bubbles: true })); }
+          if (typeof window.ctOnListLoad === 'function') { try { window.ctOnListLoad(tgt, L); } catch (e) {} }
         });
         var ts = ctrl.querySelector('.ct-lp-type'); if (ts) ts.addEventListener('change', function () { fillOptions(ctrl, this.value, lockType); });
       }
@@ -306,6 +411,42 @@
   }
   listeners.push(buildListPickers);
 
-  function boot() { loadLocal(); buildChrome(); render(); buildListPickers(); reconnect(); }
+  /* ---- collapsible Activity bar (item 3): class/subject feed the save path ---- */
+  function fillSubjects(host) {
+    var cl = host.querySelector('.ct-act-class'), sub = host.querySelector('.ct-act-subject'); if (!sub) return;
+    var subs = subjectsFor(cl.value); var cur = sub.value;
+    sub.innerHTML = '<option value="">Subject…</option>' + subs.map(function (s) { return '<option' + (s === cur ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('');
+  }
+  function refreshActivity(host) {
+    var cl = host.querySelector('.ct-act-class');
+    if (cl) { var cur = cl.value; cl.innerHTML = '<option value="">Class…</option>' + classes().map(function (c) { return '<option' + (c.title === cur ? ' selected' : '') + '>' + esc(c.title) + '</option>'; }).join(''); fillSubjects(host); }
+    var prev = host.querySelector('.ct-act-prev');
+    if (prev) { var acts = listActivities(TOOL); prev.innerHTML = '<option value="">Load a previous activity…</option>' + acts.map(function (a) { return '<option>' + esc(a.title) + (a.className ? ' — ' + esc(a.className) : '') + (a.date ? ' (' + a.date + ')' : '') + '</option>'; }).join(''); }
+  }
+  function buildActivityBars() {
+    document.querySelectorAll('[data-ct-activity]').forEach(function (host) {
+      if (!host.__ctBuilt) {
+        host.__ctBuilt = true;
+        host.innerHTML = '<details class="ct-act"><summary><i class="fas fa-flag"></i> <span class="ct-act-sum">Activity</span></summary><div class="ct-act-body">' +
+          '<input class="ct-act-title" placeholder="Activity title">' +
+          '<div class="ct-act-row"><select class="ct-act-class" title="Class"></select><select class="ct-act-subject" title="Subject"></select></div>' +
+          '<div class="ct-act-row"><input class="ct-act-grade" placeholder="Grade"><input class="ct-act-section" placeholder="Section"></div>' +
+          '<select class="ct-act-prev"></select></div></details>';
+        host.querySelector('.ct-act-class').addEventListener('change', function () { fillSubjects(host); });
+        host.querySelector('.ct-act-title').addEventListener('input', function () { host.querySelector('.ct-act-sum').textContent = this.value || 'Activity'; });
+        host.querySelector('.ct-act-prev').addEventListener('change', async function () {
+          var e = listActivities(TOOL)[this.selectedIndex - 1]; if (!e) return;
+          host.querySelector('.ct-act-title').value = e.title || ''; host.querySelector('.ct-act-sum').textContent = e.title || 'Activity';
+          var cl = host.querySelector('.ct-act-class'); if (e.className) { cl.value = e.className; fillSubjects(host); } var sub = host.querySelector('.ct-act-subject'); if (e.subject) sub.value = e.subject;
+          var content = await readActivity(e); if (content != null && typeof window.ctOnActivityLoad === 'function') { try { window.ctOnActivityLoad(content, e); } catch (ex) {} }
+        });
+      }
+      refreshActivity(host);
+    });
+  }
+  listeners.push(buildActivityBars);
+  window.ctActivity = { get: function () { var h = document.querySelector('[data-ct-activity]'); if (!h) return {}; var q = function (c) { var e = h.querySelector(c); return e ? e.value : ''; }; return { title: q('.ct-act-title'), className: q('.ct-act-class'), subject: q('.ct-act-subject'), grade: q('.ct-act-grade'), section: q('.ct-act-section') }; } };
+
+  function boot() { loadLocal(); buildChrome(); render(); buildListPickers(); buildActivityBars(); reconnect(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

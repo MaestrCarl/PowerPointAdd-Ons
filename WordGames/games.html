@@ -238,6 +238,8 @@
                     <button class="ct-collapse" type="button" onclick="ctToggleSidebar(this,'.builder2')" title="Hide settings"><i class="fas fa-angles-left"></i> Hide</button>
                 </div>
                 <h2 id="formTitle" style="margin:0 0 6px">Game</h2>
+                <div data-ct-activity></div>
+                <span data-ct-list-target="#items" data-ct-list-type="words" style="display:none"></span>
                 <input type="text" id="title" placeholder="Title (optional) — e.g. Science Vocabulary" oninput="saveDraft()" style="margin-bottom:4px">
                 <div class="mask-row">
                     <span class="lab" id="itemsLabel">Words</span>
@@ -301,7 +303,7 @@
             <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
                 <button class="btn btn-primary" onclick="generate()"><i class="fas fa-play"></i> Play now</button>
                 <button class="btn btn-soft" onclick="openShare()"><i class="fas fa-share-nodes"></i> Share link &amp; QR</button>
-                <button class="btn btn-soft" onclick="exportSetup()"><i class="fas fa-file-arrow-down"></i> Save list (.txt)</button>
+                <button class="btn btn-soft" onclick="exportSetup()"><i class="fas fa-floppy-disk"></i> Save</button>
                 <button class="btn btn-soft" onclick="importSetup()"><i class="fas fa-file-arrow-up"></i> Load list</button>
             </div>
             <div class="notice" id="regenNotice"><i class="fas fa-circle-info"></i> Settings changed — a new link was generated. Re-share / re-scan the QR (the bookmark updated too).</div>
@@ -368,6 +370,10 @@
         function goHome(){ if(EMBEDDED){ try{window.parent.postMessage({ns:'classtools',cmd:'close'},'*'); return; }catch(e){} } showGallery(); }
         /* play-modal close (×) returns to the game list */
         window.ctClosePlay=function(){ showGallery(); };
+        /* when a saved word list is loaded, show it in the paste editor + refresh preview */
+        window.ctOnListLoad=function(){ try{ if(typeof setMode==='function') setMode('paste'); if(typeof previewUpdate==='function') previewUpdate(); }catch(e){} };
+        /* load a previous saved activity (markdown body of "- item" lines) back into the builder */
+        window.ctOnActivityLoad=function(content){ try{ const lines=String(content||'').split('\n').filter(function(l){return /^\s*[-*]\s+/.test(l);}).map(function(l){return l.replace(/^\s*[-*]\s+/,'').trim();}); if(!lines.length) return; set('items', lines.join('\n')); if(typeof setMode==='function') setMode('paste'); if(typeof previewUpdate==='function') previewUpdate(); }catch(e){} };
         /* Star shows only inside a specific game (builder or play), never on the gallery list. */
         function updateBack(){ const playing=location.hash.indexOf('d=')>=0; const formVisible=document.getElementById('form').style.display==='block'; const inside=playing||formVisible||inBuzzer; const w=document.getElementById('starWrap'); if(w) w.style.display=inside?'flex':'none'; }
         let actx=null,mgn=null,muted=false;
@@ -591,7 +597,7 @@
         function exportSetup(){ if(MODE==='rows') rowSync(); const items=val('items'); if(!items.trim()){ flash('Add some words first.'); return; }
             const name=META[curGame]?META[curGame].name:curGame; const title=val('title')||name;
             const md='---\ntool: wordgames\ngame: '+curGame+'\ntitle: '+title+'\nupdated: '+new Date().toISOString().slice(0,10)+'\n---\n\n# '+title+' ('+name+')\n\n'+items.split('\n').filter(function(s){return s.trim();}).map(function(s){return '- '+s.trim();}).join('\n')+'\n';
-            if(window.ctAccount&&ctAccount.saveSetup){ ctAccount.saveSetup(curGame, title, md); } /* writes to <folder>/WordGames/ (auto-created), else downloads .md */
+            if(window.ctAccount&&ctAccount.saveActivity){ const a=(window.ctActivity&&ctActivity.get)?ctActivity.get():{}; ctAccount.saveActivity({kind:curGame,title:title,className:a.className,subject:a.subject,grade:a.grade,section:a.section}, md); } /* files into <folder>/<Class>/<Subject>/ (asks where if unknown) */
             else { const base=(title).replace(/[^a-z0-9-_ ]/gi,'').trim()||curGame; const blob=new Blob([md],{type:'text/markdown'}); const u=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=u; a.download=base+'.md'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(u); } }
         function importSetup(){ document.getElementById('setupFile').click(); }
         document.getElementById('setupFile').addEventListener('change',function(e){ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>{ let text=String(r.result); let lines=text.split('\n');

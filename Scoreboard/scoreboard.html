@@ -107,6 +107,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid rgba(var(--primary-rgb
     <button class="ct-sb-show" type="button" onclick="ctToggleSidebar(this,'.work')"><i class="fas fa-angles-right"></i></button>
     <div class="side" id="side">
       <button class="ct-collapse" type="button" onclick="ctToggleSidebar(this,'.work')" title="Hide settings"><i class="fas fa-angles-left"></i> Hide</button>
+      <div data-ct-activity></div>
       <h4>Add team</h4>
       <input type="text" id="tName" placeholder="Team name" onkeydown="if(event.key==='Enter')addTeam()">
       <input type="text" id="tMem" placeholder="Members (optional)" onkeydown="if(event.key==='Enter')addTeam()">

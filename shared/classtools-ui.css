@@ -162,6 +162,16 @@ body.ct-playing .ct-play-close{ display:inline-flex; }
 .side > .classbar .field{ flex:1 1 auto !important; width:100%; }
 .side > .classbar input{ width:100%; }
 
+/* collapsible Activity bar (item 3) */
+details.ct-act{ border:1px solid var(--line); border-radius:12px; padding:7px 11px; margin:0 0 10px; background:var(--surface); }
+details.ct-act > summary{ cursor:pointer; font-weight:800; font-size:13px; color:var(--ink); list-style:none; display:flex; align-items:center; gap:7px; }
+details.ct-act > summary::-webkit-details-marker{ display:none; }
+details.ct-act > summary::after{ content:"\f078"; font-family:"Font Awesome 6 Free"; font-weight:900; margin-left:auto; font-size:11px; color:var(--muted); }
+details.ct-act[open] > summary::after{ content:"\f077"; }
+.ct-act-body{ display:flex; flex-direction:column; gap:7px; margin-top:8px; }
+.ct-act-row{ display:flex; gap:7px; }
+.ct-act-body input, .ct-act-body select{ width:100%; min-width:0; border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:9px; padding:8px 9px; font-family:var(--font-body,inherit); font-weight:600; font-size:13px; }
+
 /* fields (Activity/Grade/Section/Subject) stacked neatly inside a sidebar */
 .ct-fieldset{ display:flex; flex-direction:column; gap:8px; }
 .ct-fieldset .field{ display:flex; flex-direction:column; gap:3px; }
@@ -193,10 +203,29 @@ details.ct-collapsible[open] > summary::after{ transform:rotate(180deg); }
 .ct-acc-row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:8px 0; }
 .ct-acc-drawer input[type=text], .ct-acc-drawer textarea, .ct-acc-drawer select{ width:100%; border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:10px; padding:9px 10px; font-family:var(--font-body,inherit); font-weight:600; font-size:13px; }
 .ct-acc-drawer textarea{ min-height:90px; resize:vertical; }
-.ct-acc-classcard{ border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin:8px 0; background:var(--bg); }
+/* normalise drawer buttons (tools force width:100% on .btn-primary — undo that here) */
+.ct-acc-drawer .btn{ width:auto !important; padding:8px 13px !important; font-size:13px !important; border-radius:10px !important; box-shadow:none !important; }
+.ct-acc-row{ gap:8px; }
+/* obvious "connected" badge */
+.ct-acc-badge{ display:inline-flex; align-items:center; gap:7px; font-weight:800; font-size:12.5px; padding:7px 12px; border-radius:20px; }
+.ct-acc-badge.on{ background:rgba(34,197,94,.15); color:#16a34a; border:1px solid rgba(34,197,94,.5); }
+.ct-acc-badge.off{ background:var(--bg); color:var(--muted); border:1px solid var(--line); }
+.dark-mode .ct-acc-badge.on{ color:#4ade80; }
+/* profile */
+.ct-acc-profile{ display:flex; gap:12px; align-items:center; margin:8px 0 4px; }
+.ct-acc-photo{ width:54px; height:54px; border-radius:50%; object-fit:cover; background:var(--bg); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:22px; flex:0 0 auto; cursor:pointer; }
+/* list cards: compact, collapsible, actions pinned right */
+.ct-acc-classcard{ border:1px solid var(--line); border-radius:12px; padding:9px 11px; margin:7px 0; background:var(--bg); }
 .ct-acc-classcard .nm{ font-weight:800; display:flex; align-items:center; gap:8px; }
-.ct-acc-classcard .meta{ font-size:12px; color:var(--muted); margin-top:3px; }
-.ct-acc-classcard .acts{ display:flex; gap:6px; margin-top:8px; }
+.ct-acc-classcard .nm .ct-acc-pill{ margin-left:6px; }
+.ct-acc-classcard .acts{ margin-left:auto; display:flex; gap:4px; }
+.ct-acc-classcard .acts .btn{ padding:5px 9px !important; }
+.ct-acc-classcard .meta{ font-size:11.5px; color:var(--muted); margin-top:3px; }
+details.ct-acc-group{ margin:6px 0; }
+details.ct-acc-group > summary{ cursor:pointer; font-weight:800; font-size:13px; color:var(--ink); list-style:none; display:flex; align-items:center; gap:7px; padding:7px 4px; }
+details.ct-acc-group > summary::-webkit-details-marker{ display:none; }
+details.ct-acc-group > summary::after{ content:"\f078"; font-family:"Font Awesome 6 Free"; font-weight:900; margin-left:auto; font-size:11px; color:var(--muted); }
+details.ct-acc-group[open] > summary::after{ content:"\f077"; }
 .ct-acc-pill{ font-size:11px; font-weight:800; color:var(--primary); background:rgba(var(--primary-rgb),.12); border-radius:20px; padding:3px 9px; }
 /* "Load class" control injected into tools */
 .ct-classpick{ display:flex; gap:6px; align-items:center; margin:0 0 8px; }

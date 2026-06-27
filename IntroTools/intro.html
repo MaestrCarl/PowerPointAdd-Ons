@@ -218,9 +218,10 @@
                     <button class="ct-collapse" type="button" onclick="ctToggleSidebar(this,'.builder2')" title="Hide settings"><i class="fas fa-angles-left"></i> Hide</button>
                 </div>
                 <h2 id="formTitle" style="margin:0 0 6px">Tool</h2>
+                <div data-ct-activity></div>
                 <input type="text" id="title" placeholder="Title (optional) — e.g. Today's Mystery" oninput="saveDraft()" style="margin-bottom:4px">
                 <div class="mask-row"><span class="lab" id="itemsLabel">Items</span><button class="eye" id="maskBtn" onclick="toggleMask()"><i class="fas fa-eye-slash"></i> <span>Hidden</span></button></div>
-                <textarea id="items" class="masked" oninput="saveDraft()"></textarea>
+                <textarea id="items" class="masked" data-ct-list-target="#items" oninput="saveDraft()"></textarea>
                 <div id="itemsHelp" class="hint">One per line. Text, emoji, or a direct image/video URL.</div>
                 <div class="card" id="optCard" style="display:none">
                     <label class="fld" style="margin-top:0">Options</label>
