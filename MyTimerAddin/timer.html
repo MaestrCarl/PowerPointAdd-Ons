@@ -136,7 +136,7 @@
 </head>
 <body>
     <div class="topbar">
-        <div class="brand" id="brandHome" onclick="goBackHub()" title="Back to all tools" style="cursor:pointer"><i class="fas fa-stopwatch"></i> Timer Tools</div>
+        <div class="brand" id="brandHome" onclick="goBackHub()" title="Back to all tools" style="cursor:pointer"><i class="fas fa-toolbox"></i> ClassTools</div>
         <div class="star-wrap" id="starWrap" style="display:none">
             <button class="star-lg" id="starBtn" onclick="toggleBookmark()" title="Bookmark"><i class="far fa-star"></i></button>
             <span class="star-tip">Click to bookmark — reopens here automatically.</span>
@@ -148,15 +148,19 @@
         <button class="icon-btn" id="darkBtn" onclick="toggleDark()" title="Dark mode"><i class="fas fa-moon"></i></button>
     </div>
 
-    <div class="classbar">
-        <div class="field"><label>Activity</label><input id="ci-activity" placeholder="e.g. Group Task" oninput="saveSoon()"></div>
-        <div class="field"><label>Grade</label><input id="ci-grade" placeholder="e.g. Grade 7" oninput="saveSoon()"></div>
-        <div class="field"><label>Section</label><input id="ci-section" placeholder="e.g. Rizal" oninput="saveSoon()"></div>
-        <div class="field"><label>Subject</label><input id="ci-subject" placeholder="e.g. Science" oninput="saveSoon()"></div>
-    </div>
-
     <main>
-        <div id="editView" class="pane">
+        <div id="editView" class="pane ct-build" style="position:relative">
+            <div class="classbar ct-side" id="classbar" style="display:none">
+                <button class="ct-collapse" type="button" onclick="ctToggleSidebar(this,'#editView')" title="Hide settings"><i class="fas fa-angles-left"></i> Hide</button>
+                <div class="ct-fieldset">
+                    <div class="field"><label>Activity</label><input id="ci-activity" placeholder="e.g. Group Task" oninput="saveSoon()"></div>
+                    <div class="field"><label>Grade</label><input id="ci-grade" placeholder="e.g. Grade 7" oninput="saveSoon()"></div>
+                    <div class="field"><label>Section</label><input id="ci-section" placeholder="e.g. Rizal" oninput="saveSoon()"></div>
+                    <div class="field"><label>Subject</label><input id="ci-subject" placeholder="e.g. Science" oninput="saveSoon()"></div>
+                </div>
+            </div>
+            <button class="ct-sb-show" type="button" onclick="ctToggleSidebar(this,'#editView')"><i class="fas fa-sliders"></i> Settings</button>
+            <div class="ct-view">
             <div class="tgallery" id="modeGallery"></div>
             <div class="modeback" id="modeBack" style="display:none"><button class="btn ghost" onclick="showModeGallery()"><i class="fas fa-arrow-left"></i> All timers</button><h3 id="modeTitle" style="margin:0;font-family:var(--font-head)"></h3></div>
 
@@ -167,6 +171,7 @@
             <div id="split" class="panel"><button class="btn add-btn" onclick="addTimer('split')"><i class="fas fa-plus"></i> Add Split</button><div id="split-list"></div></div>
             <div id="silent" class="panel"><button class="btn add-btn" onclick="addTimer('silent')"><i class="fas fa-plus"></i> Add Silent</button><div class="hint">Visual-only — gentle end cue, no ticking.</div><div id="silent-list"></div></div>
             <div id="race" class="panel"><button class="btn add-btn" onclick="addTimer('race')"><i class="fas fa-plus"></i> Add Race</button><div class="hint">Circular countdown — the colour ring fills and a runner laps the dial.</div><div id="race-list"></div></div>
+            </div>
         </div>
 
         <div id="presentView" class="pane" data-ct-play data-ct-back="#p-edit">
@@ -235,7 +240,7 @@
         function toggleMute(){ muted=!muted; updateMuteIcon(); if(!muted){ ensureAudio(); marimba(880,0,.4);} saveSoon(); }
 
         /* ===== MODE ===== */
-        function setMode(present){ document.getElementById('editView').style.display=present?'none':'block'; document.getElementById('presentView').classList.toggle('show',present); document.getElementById('modeBtn').classList.toggle('on',present); document.querySelector('.classbar').style.display=present?'none':'flex'; if(present){ const t=timers.find(x=>x.id===activeId); if(t) updateUI(t); } }
+        function setMode(present){ document.getElementById('editView').style.display=present?'none':'flex'; document.getElementById('presentView').classList.toggle('show',present); document.getElementById('modeBtn').classList.toggle('on',present); document.querySelector('.classbar').style.display=present?'none':'flex'; if(present){ const t=timers.find(x=>x.id===activeId); if(t) updateUI(t); } }
         function toggleMode(){ playClick(); setMode(!document.getElementById('presentView').classList.contains('show')); }
         function pStart(){ if(activeId) startTimer(activeId); } function pPause(){ if(activeId) pauseTimer(activeId,true); } function pReset(){ if(activeId) resetTimer(activeId); }
 
@@ -298,7 +303,7 @@
             if(COUNTDOWNISH.includes(t.type) && t.elapsed===0){ const m=parseInt(val('m-'+id))||0, s=parseInt(val('s-'+id))||0; t.total=m*60+s; t.elapsed=t.total; }
             if(t.type==='pomodoro' && t.elapsed===0){ t.workSecs=(parseInt(val('work-'+id))||25)*60; t.breakSecs=(parseInt(val('break-'+id))||5)*60; t.phase='Work'; t.total=t.workSecs; t.elapsed=t.workSecs; }
             if(COUNTDOWNISH.includes(t.type) && t.total===0){ showAlert('Set a time first.', t.type); return; }
-            t.running=true; activeId=id; playStart(); updateUI(t);
+            t.running=true; activeId=id; playStart(); setMode(true); updateUI(t);
             t.interval=setInterval(()=>{ if(t.type==='stopwatch'||t.type==='split') t.elapsed+=1; else t.elapsed-=1; updateUI(t);
                 if(t.elapsed>0 && t.elapsed<=3 && t.type!=='silent' && t.type!=='stopwatch' && t.type!=='split') playTickS();
                 if(t.elapsed<=0 && COUNTDOWNISH.includes(t.type)) endCountdown(t); else if(t.elapsed<=0 && t.type==='pomodoro') endPomodoro(t); },1000); }

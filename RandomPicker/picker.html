@@ -197,7 +197,7 @@
 
     <!-- TOP BAR -->
     <div class="topbar">
-        <div class="brand" id="brandHome" onclick="goBackHub()" title="Back to all tools" style="cursor:pointer"><i class="fas fa-dice"></i> Pickers &amp; Groups</div>
+        <div class="brand" id="brandHome" onclick="goBackHub()" title="Back to all tools" style="cursor:pointer"><i class="fas fa-toolbox"></i> ClassTools</div>
         <div class="star-wrap" id="starWrap" style="display:none">
             <button class="star-lg" id="starBtn" onclick="toggleBookmark()" title="Bookmark"><i class="far fa-star"></i></button>
             <span class="star-tip">Click to bookmark — reopens here automatically.</span>
@@ -209,7 +209,7 @@
     </div>
 
     <!-- CLASS INFO -->
-    <div class="classbar">
+    <div class="classbar" id="classbar">
         <div class="field"><label>Activity</label><input id="ci-activity" placeholder="e.g. Quiz Bee" oninput="saveSoon()"></div>
         <div class="field"><label>Grade</label><input id="ci-grade" placeholder="e.g. Grade 7" oninput="saveSoon()"></div>
         <div class="field"><label>Section</label><input id="ci-section" placeholder="e.g. Section 1" oninput="saveSoon()"></div>
@@ -260,8 +260,7 @@
                         <textarea id="list-groups" placeholder="Enter names here (one per line)..." oninput="onNamesInput()"></textarea>
                         <div class="row">Number of groups: <input type="number" id="num-groups" value="3" min="1" max="20" oninput="saveSoon()"></div>
                         <label class="chk"><input type="checkbox" id="gp-bySize" onchange="saveSoon()"> Set size per group instead</label>
-                        <h4>Tap a crown to pre-assign group leaders</h4>
-                        <div class="roster" id="roster-groups"></div>
+                        <details class="ct-collapsible"><summary><i class="fas fa-crown"></i> Pre-assign group leaders (optional)</summary><div class="hint" style="margin:6px 0">Tap a crown to make that student a leader — spread one per group.</div><div class="roster" id="roster-groups"></div></details>
                         <button class="btn btn-primary" onclick="runGroups()"><i class="fas fa-users"></i> Generate Groups</button>
                         <div class="hint">Leaders are spread one-per-group first. Up to 10 groups fit on screen.</div>
                         <div class="history">
@@ -292,8 +291,7 @@
                                 <option value="trio">joins a trio</option>
                             </select>
                         </div>
-                        <h4>Tap a name to keep it apart from the others marked</h4>
-                        <div class="roster" id="roster-pairs"></div>
+                        <details class="ct-collapsible"><summary><i class="fas fa-user-slash"></i> Keep certain students apart (optional)</summary><div class="hint" style="margin:6px 0">Tap names to mark them — marked students will never be paired together.</div><div class="roster" id="roster-pairs"></div></details>
                         <button class="btn btn-primary" onclick="runPairs()"><i class="fas fa-user-group"></i> Generate Pairs</button>
                         <div class="hint">Marked students will never be paired with each other.</div>
                         <div class="history">
@@ -477,7 +475,9 @@
             {id:'spinner',name:'Spinner',icon:'fa-life-ring',desc:'Spin a wheel of names with a reveal modal.'}
         ];
         function buildModeGallery(){ const g=document.getElementById('modeGallery'); if(!g)return; g.innerHTML=''; PMODES.forEach(m=>{ const c=document.createElement('div'); c.className='tcard'; c.innerHTML='<div class="ic"><i class="fas '+m.icon+'"></i></div><h3>'+m.name+'</h3><p>'+m.desc+'</p>'; c.onclick=()=>openMode(m.id); g.appendChild(c); }); }
-        function openMode(name){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); const el=document.getElementById(name); if(el)el.classList.add('active'); document.getElementById('modeGallery').style.display='none'; document.getElementById('modeBack').style.display='flex'; const cb=document.querySelector('.classbar'); if(cb)cb.style.display='flex'; ctStar(true); const m=PMODES.find(x=>x.id===name); document.getElementById('modeTitle').textContent=m?m.name:''; renderRosters(); if(name==='spinner'){ sizeWheel(); renderWheel(); } saveSoon(); }
+        function openMode(name){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); const el=document.getElementById(name); if(el)el.classList.add('active'); document.getElementById('modeGallery').style.display='none'; document.getElementById('modeBack').style.display='flex'; ctMountSidebar(el); ctStar(true); const m=PMODES.find(x=>x.id===name); document.getElementById('modeTitle').textContent=m?m.name:''; renderRosters(); if(name==='spinner'){ sizeWheel(); renderWheel(); } saveSoon(); }
+        /* Inject the class-info fields + collapse controls into the active mode's sidebar */
+        function ctMountSidebar(el){ const cb=document.getElementById('classbar'); const side=el.querySelector('.side'); const work=el.querySelector('.work'); if(side){ if(cb){ side.insertBefore(cb, side.firstChild); cb.style.display='flex'; } if(!side.querySelector('.ct-collapse')){ const c=document.createElement('button'); c.className='ct-collapse'; c.type='button'; c.title='Hide settings'; c.innerHTML='<i class="fas fa-angles-left"></i> Hide'; c.onclick=function(){ if(window.ctToggleSidebar) ctToggleSidebar(c,'.work'); }; side.insertBefore(c, side.firstChild); } } if(work){ work.style.position='relative'; if(!work.querySelector('.ct-sb-show')){ const s=document.createElement('button'); s.className='ct-sb-show'; s.type='button'; s.innerHTML='<i class="fas fa-sliders"></i> Settings'; s.onclick=function(){ if(window.ctToggleSidebar) ctToggleSidebar(s,'.work'); }; work.insertBefore(s, work.firstChild); } } }
         function showModeGallery(){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); document.getElementById('modeGallery').style.display='grid'; document.getElementById('modeBack').style.display='none'; const cb=document.querySelector('.classbar'); if(cb)cb.style.display='none'; ctStar(false); }
         function getList(id) { return val(id).split('\n').map(n => n.trim()).filter(n => n !== ''); }
         function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -551,17 +551,21 @@
             const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
         }
 
-        /* ============ PRESENT (fullscreen) ============ */
-        function showPresent(html) {
+        /* ============ PRESENT (blurred full-screen modal) ============ */
+        /* Opens the present modal and returns its stage element so an action
+           can render/animate directly inside the blurred modal.            */
+        function actionStage(){
             document.getElementById('editView').style.display = 'none';
             const pv = document.getElementById('presentView'); pv.style.display = 'flex';
-            document.querySelector('.classbar').style.display = 'none';
-            document.getElementById('presentStage').innerHTML = html;
             const bar = document.getElementById('present-actions'); bar.innerHTML = '';
             const back = document.createElement('button'); back.className = 'btn btn-soft'; back.innerHTML = '<i class="fas fa-pen"></i> Back to setup';
-            back.onclick = () => { pv.style.display = 'none'; document.getElementById('editView').style.display = 'block'; document.querySelector('.classbar').style.display = 'flex'; };
-            bar.append(back);
+            back.onclick = () => { pv.style.display = 'none'; document.getElementById('editView').style.display = 'block'; };
+            const again = document.createElement('button'); again.className = 'btn go'; again.innerHTML = '<i class="fas fa-rotate-right"></i> Again';
+            again.onclick = () => { const fn = actionStage._again; if (typeof fn === 'function') fn(); };
+            bar.append(again, back);
+            const stage = document.getElementById('presentStage'); stage.innerHTML = ''; return stage;
         }
+        function showPresent(html) { const stage = actionStage(); stage.innerHTML = html; }
         function presentLast() {
             if (!lastResult.present) { flashStatus('Run an activity first.'); return; }
             playClick(); showPresent(lastResult.present);
@@ -574,9 +578,8 @@
             else pickerPool = full.slice();
             const pool = pickerPool.length ? pickerPool : full;
             ensureAudio();
-            const view = document.querySelector('#view-picker .view-body') || document.getElementById('view-picker');
-            const host = document.querySelector('#view-picker .view-body');
-            const target = host || document.getElementById('view-picker');
+            actionStage._again = runPicker;
+            const target = actionStage();
             const start = performance.now(); let delay = 55;
             (function cycle() {
                 target.innerHTML = '<div class="shuffle-name">' + esc(full[Math.floor(Math.random()*full.length)]) + '</div>';
@@ -617,13 +620,14 @@
             rest.forEach((nm, i) => { groups[i % num].members.push(nm); });
 
             // render empty cards then deal
-            const lay = layoutFor(num), view = document.getElementById('view-groups');
+            actionStage._again = runGroups;
+            const lay = layoutFor(num), view = actionStage();
             view.innerHTML = '<div class="view-title"><i class="fas fa-users"></i> Groups <span style="color:var(--muted);font-weight:800">(' + num + ')</span></div>' +
                 '<div class="view-body"><div class="grid ' + (lay.fit ? 'fit' : 'scroll') + '" id="g-grid" style="--cols:' + lay.cols + '"></div></div>';
             const grid = document.getElementById('g-grid');
             const cardEls = groups.map((g, i) => {
                 const card = document.createElement('div'); card.className = 'gcard'; card.style.setProperty('--g', PALETTE[i % PALETTE.length]);
-                card.innerHTML = '<div class="ghead"><span class="dot">' + (i+1) + '</span> Group ' + (i+1) + ' <span class="count" id="gc-' + i + '">0</span></div><div class="chips" id="gchips-' + i + '"></div>';
+                card.innerHTML = '<div class="ghead"><span class="gidx">' + (i+1) + '</span><span class="gname">Group ' + (i+1) + '</span><span class="count" id="gc-' + i + '">0</span></div><div class="chips" id="gchips-' + i + '"></div>';
                 grid.appendChild(card);
                 setTimeout(() => { card.classList.add('in'); playPop(i); }, 60 + i * 40);
                 return card;
@@ -659,14 +663,15 @@
             const all = getList('list-pairs'); if (all.length < 2) { flashStatus('Add at least two names.'); return; }
             ensureAudio();
             const pairs = makePairs(all);
-            const lay = layoutFor(pairs.length), view = document.getElementById('view-pairs');
+            actionStage._again = runPairs;
+            const lay = layoutFor(pairs.length), view = actionStage();
             view.innerHTML = '<div class="view-title"><i class="fas fa-user-group"></i> Pairs <span style="color:var(--muted);font-weight:800">(' + pairs.length + ')</span></div>' +
                 '<div class="view-body"><div class="grid ' + (lay.fit ? 'fit' : 'scroll') + '" id="p-grid" style="--cols:' + lay.cols + '"></div></div>';
             const grid = document.getElementById('p-grid');
             const total = pairs.length, dur = 3000, step = Math.max(150, dur / Math.max(1,total));
             pairs.forEach((p, i) => {
                 const card = document.createElement('div'); card.className = 'gcard'; card.style.setProperty('--g', PALETTE[i % PALETTE.length]);
-                card.innerHTML = '<div class="ghead"><span class="dot">' + (i+1) + '</span> ' + esc(p.title) + ' <span class="count">' + p.members.length + '</span></div>' +
+                card.innerHTML = '<div class="ghead"><span class="gidx">' + (i+1) + '</span><span class="gname">' + esc(p.title) + '</span> <span class="count">' + p.members.length + '</span></div>' +
                     '<div class="chips" id="pchips-' + i + '"></div>';
                 grid.appendChild(card);
                 setTimeout(() => {

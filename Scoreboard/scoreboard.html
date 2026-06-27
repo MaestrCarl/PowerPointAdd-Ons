@@ -88,7 +88,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid rgba(var(--primary-rgb
 <body>
 <canvas id="confetti"></canvas>
 <div class="topbar">
-  <div class="brand" id="brandHome" onclick="goBackHub()" title="Back to all tools" style="cursor:pointer"><i class="fas fa-ranking-star"></i> Scoreboard &amp; Scoring</div>
+  <div class="brand" id="brandHome" onclick="goBackHub()" title="Back to all tools" style="cursor:pointer"><i class="fas fa-toolbox"></i> ClassTools</div>
   <div class="star-wrap">
     <button class="star-lg" id="starBtn" onclick="toggleBookmark()" title="Bookmark"><i class="far fa-star"></i></button>
     <span class="star-tip">Click to bookmark — reopens here automatically.</span>
@@ -102,8 +102,10 @@ input:focus,select:focus,textarea:focus{outline:2px solid rgba(var(--primary-rgb
 </div>
 
 <main>
-  <div class="work" id="work">
+  <div class="work" id="work" style="position:relative">
+    <button class="ct-sb-show" type="button" onclick="ctToggleSidebar(this,'.work')"><i class="fas fa-sliders"></i> Settings</button>
     <div class="side" id="side">
+      <button class="ct-collapse" type="button" onclick="ctToggleSidebar(this,'.work')" title="Hide settings"><i class="fas fa-angles-left"></i> Hide</button>
       <h4>Add team</h4>
       <input type="text" id="tName" placeholder="Team name" onkeydown="if(event.key==='Enter')addTeam()">
       <input type="text" id="tMem" placeholder="Members (optional)" onkeydown="if(event.key==='Enter')addTeam()">

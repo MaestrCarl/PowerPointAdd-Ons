@@ -141,7 +141,8 @@
         .b2-right{flex:1 1 300px;min-width:260px;position:sticky;top:0;}
         .b2-right .card{margin-top:0;}
         .wrow{display:flex;gap:7px;align-items:center;margin-bottom:7px;}
-        .wrow input.w{flex:0 0 38%;} .wrow input.d{flex:1 1 auto;}
+        .wrow input{min-width:0;} /* let word + clue share one line even in the narrow sidebar */
+        .wrow input.w{flex:1 1 40%;} .wrow input.d,.wrow input.c{flex:2 1 50%;}
         .wrow .del{flex:0 0 auto;width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer;}
         .wrow .del:hover{color:var(--danger);border-color:var(--danger);}
         .addw{margin-top:4px;}
@@ -205,7 +206,7 @@
 <body>
     <canvas id="confetti"></canvas>
     <div class="topbar">
-        <div class="brand" id="brandHome" onclick="goHome()" title="Back to all tools" style="cursor:pointer"><i class="fas fa-spell-check"></i> <span id="brandName">Word Games &amp; Builders</span></div>
+        <div class="brand" id="brandHome" onclick="goHome()" title="Back to all tools" style="cursor:pointer"><i class="fas fa-toolbox"></i> ClassTools<span id="brandName" style="display:none"></span></div>
         <div class="star-wrap" id="starWrap" style="display:none">
             <button class="star-lg" id="starBtn" onclick="toggleBookmark()" title="Bookmark"><i class="far fa-star"></i></button>
             <span class="star-tip">Click to bookmark — this page reopens here automatically.</span>
@@ -227,11 +228,15 @@
 
         <!-- BUILDER FORM -->
         <div id="form" style="display:none">
-            <button class="btn btn-soft" onclick="showGallery()" style="margin-bottom:6px"><i class="fas fa-arrow-left"></i> All games</button>
-            <h2 id="formTitle">Game</h2>
-            <input type="text" id="title" placeholder="Title (optional) — e.g. Science Vocabulary" oninput="saveDraft()" style="margin-bottom:4px">
-            <div class="builder2">
+            <div class="builder2" style="position:relative">
+              <button class="ct-sb-show" type="button" onclick="ctToggleSidebar(this,'.builder2')"><i class="fas fa-sliders"></i> Settings</button>
               <div class="b2-left">
+                <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:8px">
+                    <button class="btn btn-soft" onclick="showGallery()"><i class="fas fa-arrow-left"></i> All games</button>
+                    <button class="ct-collapse" type="button" onclick="ctToggleSidebar(this,'.builder2')" title="Hide settings"><i class="fas fa-angles-left"></i> Hide</button>
+                </div>
+                <h2 id="formTitle" style="margin:0 0 6px">Game</h2>
+                <input type="text" id="title" placeholder="Title (optional) — e.g. Science Vocabulary" oninput="saveDraft()" style="margin-bottom:4px">
                 <div class="mask-row">
                     <span class="lab" id="itemsLabel">Words</span>
                     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -247,11 +252,7 @@
                     <div id="itemsHelp" class="hint">One per line.</div>
                 </div>
                 <div id="gameOpts"></div>
-              </div>
-              <div class="b2-right" id="previewPanel" style="display:none"><div class="card"><label class="fld" style="margin-top:0"><i class="fas fa-eye"></i> Live preview</label><div id="b2preview" class="prevwrap" data-ct-shell data-ct-hint="Live preview&#10;Your game board appears here as you add words."></div><div id="exportRow" style="margin-top:10px"></div></div></div>
-            </div>
-
-            <div class="card">
+                <div class="card">
                 <label class="fld" style="margin-top:0">Options</label>
                 <div class="optrow" id="kbRow">
                     <label class="chk"><input type="checkbox" id="optNums" onchange="saveDraft()"> Numbers (0–9)</label>
@@ -296,6 +297,9 @@
                 <button class="btn btn-soft" onclick="importSetup()"><i class="fas fa-file-arrow-up"></i> Load list</button>
             </div>
             <div class="notice" id="regenNotice"><i class="fas fa-circle-info"></i> Settings changed — a new link was generated. Re-share / re-scan the QR (the bookmark updated too).</div>
+              </div>
+              <div class="b2-right" id="previewPanel"><div class="card"><label class="fld" style="margin-top:0"><i class="fas fa-eye"></i> Live preview</label><div id="b2preview" class="prevwrap" data-ct-shell data-ct-hint="Live preview&#10;Your game board appears here as you add words."></div><div id="exportRow" style="margin-top:10px"></div></div></div>
+            </div>
         </div>
 
         <!-- PLAYER -->

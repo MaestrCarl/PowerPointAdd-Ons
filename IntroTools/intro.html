@@ -181,7 +181,7 @@
 <body>
     <canvas id="confetti"></canvas>
     <div class="topbar">
-        <div class="brand" id="brandHome" onclick="goHome()" title="Back to all tools" style="cursor:pointer"><i class="fas fa-wand-sparkles"></i> <span id="brandName">Intro &amp; Reveal Tools</span></div>
+        <div class="brand" id="brandHome" onclick="goHome()" title="Back to all tools" style="cursor:pointer"><i class="fas fa-toolbox"></i> ClassTools<span id="brandName" style="display:none"></span></div>
         <div class="star-wrap" id="starWrap" style="display:none"><button class="star-lg" id="starBtn" onclick="toggleBookmark()" title="Bookmark"><i class="far fa-star"></i></button><span class="star-tip">Click to bookmark — reopens here automatically.</span></div>
         <div class="spacer"></div>
         <button class="icon-btn" id="shareBtn" onclick="openShare()" title="Share link & QR"><i class="fas fa-share-nodes"></i></button>
@@ -198,11 +198,15 @@
         </div>
 
         <div id="form" style="display:none">
-            <button class="btn btn-soft" onclick="showGallery()" style="margin-bottom:6px"><i class="fas fa-arrow-left"></i> All tools</button>
-            <h2 id="formTitle">Tool</h2>
-            <input type="text" id="title" placeholder="Title (optional) — e.g. Today's Mystery" oninput="saveDraft()" style="margin-bottom:4px">
-            <div class="builder2">
+            <div class="builder2" style="position:relative">
+              <button class="ct-sb-show" type="button" onclick="ctToggleSidebar(this,'.builder2')"><i class="fas fa-sliders"></i> Settings</button>
               <div class="b2-left">
+                <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:8px">
+                    <button class="btn btn-soft" onclick="showGallery()"><i class="fas fa-arrow-left"></i> All tools</button>
+                    <button class="ct-collapse" type="button" onclick="ctToggleSidebar(this,'.builder2')" title="Hide settings"><i class="fas fa-angles-left"></i> Hide</button>
+                </div>
+                <h2 id="formTitle" style="margin:0 0 6px">Tool</h2>
+                <input type="text" id="title" placeholder="Title (optional) — e.g. Today's Mystery" oninput="saveDraft()" style="margin-bottom:4px">
                 <div class="mask-row"><span class="lab" id="itemsLabel">Items</span><button class="eye" id="maskBtn" onclick="toggleMask()"><i class="fas fa-eye-slash"></i> <span>Hidden</span></button></div>
                 <textarea id="items" class="masked" oninput="saveDraft()"></textarea>
                 <div id="itemsHelp" class="hint">One per line. Text, emoji, or a direct image/video URL.</div>
@@ -211,14 +215,14 @@
                     <div class="optrow" id="pickRow"><label class="chk">Pick how many at once <input type="number" id="optPick" value="1" min="1" max="9" style="width:60px" oninput="saveDraft()"></label>
                     <label class="chk"><input type="checkbox" id="optExclude" checked onchange="saveDraft()"> Don't repeat picks</label></div>
                 </div>
+                <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+                    <button class="btn btn-primary" onclick="generate()"><i class="fas fa-play"></i> Play now</button>
+                    <button class="btn btn-soft" onclick="openShare()"><i class="fas fa-share-nodes"></i> Share link &amp; QR</button>
+                </div>
+                <div class="notice" id="regenNotice"><i class="fas fa-circle-info"></i> Settings changed — a new link was generated. Re-share / re-scan the QR (the bookmark updated too).</div>
               </div>
               <div class="b2-right"><div class="pvcard"><label class="fld" style="margin-top:0"><i class="fas fa-eye"></i> Live preview</label><div id="introPreview" data-ct-shell data-ct-hint="Live preview&#10;Your reveal scene appears here as you set it up."></div></div></div>
             </div>
-            <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
-                <button class="btn btn-primary" onclick="generate()"><i class="fas fa-play"></i> Play now</button>
-                <button class="btn btn-soft" onclick="openShare()"><i class="fas fa-share-nodes"></i> Share link &amp; QR</button>
-            </div>
-            <div class="notice" id="regenNotice"><i class="fas fa-circle-info"></i> Settings changed — a new link was generated. Re-share / re-scan the QR (the bookmark updated too).</div>
         </div>
 
         <div id="player" class="play" data-ct-play data-ct-back="#backBtn" style="display:none"></div>

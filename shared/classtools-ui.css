@@ -68,7 +68,8 @@ body.ct-playing .ct-play-close{ display:inline-flex; }
 .b2-left{
   background:var(--surface); border:1px solid var(--line);
   border-radius:var(--radius,16px); padding:14px;
-  align-self:flex-start;
+  align-self:flex-start; position:sticky; top:0;
+  max-height:calc(100vh - 96px); overflow:auto;
 }
 .dark-mode .ct-side, .dark-mode .b2-left{ box-shadow:inset 0 0 0 1px rgba(255,255,255,.02); }
 
@@ -125,10 +126,43 @@ body.ct-playing .ct-play-close{ display:inline-flex; }
 }
 .ct-sb-collapsed .ct-sb-show{ display:inline-flex; }
 
+/* the Activity/Grade/Section/Subject bar, when relocated into a sidebar column */
+.ct-build .classbar.ct-side{
+  flex:0 0 300px !important; max-width:320px; min-width:240px;
+  flex-direction:column !important; align-items:stretch !important;
+  border-bottom:1px solid var(--line) !important;
+}
+.ct-build .classbar.ct-side .field{ flex:1 1 auto !important; width:100%; }
+.ct-build .classbar.ct-side input{ width:100%; }
+
+/* classbar injected into a tool's existing .side sidebar (picker) */
+.side > .classbar{
+  flex-direction:column !important; align-items:stretch !important;
+  background:transparent !important; border:none !important;
+  border-bottom:1px solid var(--line) !important;
+  padding:0 0 10px !important; margin:0 0 10px !important; gap:8px;
+}
+.side > .classbar .field{ flex:1 1 auto !important; width:100%; }
+.side > .classbar input{ width:100%; }
+
 /* fields (Activity/Grade/Section/Subject) stacked neatly inside a sidebar */
 .ct-fieldset{ display:flex; flex-direction:column; gap:8px; }
 .ct-fieldset .field{ display:flex; flex-direction:column; gap:3px; }
 .ct-fieldset .field label{ font-size:11px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+
+/* collapsible <details> used for optional settings (leaders, keep-apart, etc.) */
+details.ct-collapsible{ border:1px solid var(--line); border-radius:12px; padding:7px 11px; margin:8px 0; background:var(--surface); }
+details.ct-collapsible > summary{ cursor:pointer; font-weight:800; font-size:13px; color:var(--ink); list-style:none; display:flex; align-items:center; gap:7px; }
+details.ct-collapsible > summary::-webkit-details-marker{ display:none; }
+details.ct-collapsible > summary::after{ content:"\f078"; font-family:"Font Awesome 6 Free"; font-weight:900; margin-left:auto; font-size:11px; color:var(--muted); transition:transform .2s; }
+details.ct-collapsible[open] > summary{ margin-bottom:6px; color:var(--primary); }
+details.ct-collapsible[open] > summary::after{ transform:rotate(180deg); }
+
+/* big group/pair index badge in the picker result cards */
+.gcard .ghead{ display:flex; align-items:center; gap:9px; }
+.gcard .ghead .gidx{ font-family:var(--font-head); font-weight:800; font-size:1.55rem; line-height:1; color:#fff; background:var(--g,var(--primary)); border-radius:11px; min-width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 5px 12px rgba(0,0,0,.2); flex:0 0 auto; }
+.gcard .ghead .gname{ font-family:var(--font-head); font-weight:700; }
+.gcard .ghead .count{ margin-left:auto; }
 
 /* ---------- shared utility ---------- */
 .ct-smooth-ring{ transition:stroke .3s ease !important; } /* offset driven by rAF, not CSS */

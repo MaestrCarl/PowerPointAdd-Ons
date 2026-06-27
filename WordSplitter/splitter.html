@@ -97,7 +97,7 @@ input[type=text],input[type=number],select{padding:8px 10px;border:1px solid var
 <body>
 <canvas id="confetti"></canvas>
 <div class="topbar">
-  <div class="brand" id="brandHome" onclick="goBackHub()" title="Back to all tools" style="cursor:pointer"><i class="fas fa-scissors"></i> Word Splitter</div>
+  <div class="brand" id="brandHome" onclick="goBackHub()" title="Back to all tools" style="cursor:pointer"><i class="fas fa-toolbox"></i> ClassTools</div>
   <div class="star-wrap">
     <button class="star-lg" id="starBtn" onclick="toggleBookmark()" title="Bookmark"><i class="far fa-star"></i></button>
     <span class="star-tip">Click to bookmark — reopens here automatically.</span>
@@ -110,8 +110,10 @@ input[type=text],input[type=number],select{padding:8px 10px;border:1px solid var
 <main>
   <!-- BUILDER -->
   <div id="buildView" class="pane">
-    <div class="work">
+    <div class="work" style="position:relative">
+      <button class="ct-sb-show" type="button" onclick="ctToggleSidebar(this,'.work')"><i class="fas fa-sliders"></i> Settings</button>
       <div class="side">
+        <button class="ct-collapse" type="button" onclick="ctToggleSidebar(this,'.work')" title="Hide settings"><i class="fas fa-angles-left"></i> Hide</button>
         <h4>Words</h4>
         <textarea id="words" placeholder="One word per line.&#10;&#10;Split precisely with a dash (or / · |):&#10;but-ter-fly&#10;com-pu-ter | a machine that computes&#10;&#10;Or just type a word and let auto-split chop it:&#10;rainbow"></textarea>
         <div class="hint">Use a delimiter for exact syllables: <b>but-ter-fly</b>. Plain words are auto-split. Add a hint with <b>| your hint</b>.</div>
