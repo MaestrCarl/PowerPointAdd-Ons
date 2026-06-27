@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../shared/classtools-ui.css">
     <script src="../shared/classtools-ui.js" defer></script>
+    <script src="../shared/classtools-account.js" defer></script>
     <style>
         :root {
             --bg: #f4f1ff; --bg-2: #e7fbff; --surface: #ffffff; --surface-2: #f6f5ff;
@@ -229,7 +230,7 @@
                 <div class="work">
                     <div class="side">
                         <h4>Names</h4>
-                        <textarea id="list-picker" placeholder="Enter names here (one per line)..." oninput="onNamesInput()"></textarea>
+                        <textarea id="list-picker" data-ct-class-target="#list-picker" placeholder="Enter names here (one per line)..." oninput="onNamesInput()"></textarea>
                         <label class="chk"><input type="checkbox" id="pk-remove" onchange="saveSoon()"> Remove name once selected</label>
                         <label class="chk"><input type="checkbox" id="pk-noRepeat" checked onchange="saveSoon()"> Avoid repeats until everyone is picked</label>
                         <button class="btn btn-primary" onclick="runPicker()"><i class="fas fa-wand-magic-sparkles"></i> Pick a Student</button>
@@ -257,7 +258,7 @@
                 <div class="work">
                     <div class="side">
                         <h4>Names</h4>
-                        <textarea id="list-groups" placeholder="Enter names here (one per line)..." oninput="onNamesInput()"></textarea>
+                        <textarea id="list-groups" data-ct-class-target="#list-groups" placeholder="Enter names here (one per line)..." oninput="onNamesInput()"></textarea>
                         <div class="row">Number of groups: <input type="number" id="num-groups" value="3" min="1" max="20" oninput="saveSoon()"></div>
                         <label class="chk"><input type="checkbox" id="gp-bySize" onchange="saveSoon()"> Set size per group instead</label>
                         <details class="ct-collapsible"><summary><i class="fas fa-crown"></i> Pre-assign group leaders (optional)</summary><div class="hint" style="margin:6px 0">Tap a crown to make that student a leader — spread one per group.</div><div class="roster" id="roster-groups"></div></details>
@@ -284,7 +285,7 @@
                 <div class="work">
                     <div class="side">
                         <h4>Names</h4>
-                        <textarea id="list-pairs" placeholder="Enter names here (one per line)..." oninput="onNamesInput()"></textarea>
+                        <textarea id="list-pairs" data-ct-class-target="#list-pairs" placeholder="Enter names here (one per line)..." oninput="onNamesInput()"></textarea>
                         <div class="row">Leftover student:
                             <select id="pr-odd" onchange="saveSoon()">
                                 <option value="solo">stays solo</option>
@@ -315,7 +316,7 @@
                 <div class="work">
                     <div class="side">
                         <h4>Names</h4>
-                        <textarea id="list-spinner" placeholder="Paste names here (one per line)..." oninput="spinnerSetNames()" style="min-height:150px"></textarea>
+                        <textarea id="list-spinner" data-ct-class-target="#list-spinner" placeholder="Paste names here (one per line)..." oninput="spinnerSetNames()" style="min-height:150px"></textarea>
                         <label class="chk"><input type="checkbox" id="sp-remove" onchange="saveSoon()"> Remove name after spin</label>
                         <div class="btn-row">
                             <button class="btn btn-soft" onclick="resetWheel()"><i class="fas fa-rotate-left"></i> Restore all names</button>

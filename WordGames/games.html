@@ -9,6 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link rel="stylesheet" href="../shared/classtools-ui.css">
     <script src="../shared/classtools-ui.js" defer></script>
+    <script src="../shared/classtools-account.js" defer></script>
     <style>
         :root{--bg:#f4f1ff;--bg-2:#e7fbff;--surface:#fff;--ink:#241b4e;--muted:#6b6790;--line:#e7e3f5;
             --primary:#6d28d9;--primary-2:#9333ea;--primary-rgb:109,40,217;--danger:#ff3d7f;--ok:#22c55e;--gold:#ffb020;--radius:16px;
@@ -146,6 +147,7 @@
         .wrow .del{flex:0 0 auto;width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer;}
         .wrow .del:hover{color:var(--danger);border-color:var(--danger);}
         .addw{margin-top:4px;}
+        .rowthumb{flex:1 1 40%;min-width:0;height:38px;object-fit:contain;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:2px;}
         .wrow{flex-wrap:wrap;}
         .rtick{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:800;color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:2px 7px;cursor:pointer;}
         .rtick input{margin:0;width:auto;}
@@ -287,6 +289,12 @@
                 <div id="groupsEditor" style="display:none">
                     <div style="display:flex;gap:8px"><input type="text" id="grpName" placeholder="Group / team name" onkeydown="if(event.key==='Enter'){event.preventDefault();addGroup();}"><button class="btn btn-soft" onclick="addGroup()"><i class="fas fa-plus"></i></button></div>
                     <div class="grpEdit" id="grpList"></div>
+                    <details class="ct-collapsible"><summary><i class="fas fa-shuffle"></i> Auto-make teams from a class list (optional)</summary>
+                        <div class="hint" style="margin:6px 0">Paste students (or load a saved class), choose how many teams, and we’ll shuffle them into balanced teams with members.</div>
+                        <textarea id="grpRoster" data-ct-class-target="#grpRoster" placeholder="One student per line" style="min-height:90px"></textarea>
+                        <div class="optrow"><label class="chk">Number of teams <input type="number" id="grpCount" value="3" min="1" max="12" style="width:60px"></label>
+                        <button class="btn btn-primary" type="button" onclick="randomizeTeams()"><i class="fas fa-wand-magic-sparkles"></i> Randomize into teams</button></div>
+                    </details>
                 </div>
             </div>
 
@@ -432,7 +440,7 @@
             // reset shared option controls
             set('title',''); set('items','');
             document.getElementById('optNums').checked=false; document.getElementById('optSyms').checked=false;
-            set('optTries','3'); document.getElementById('optGroups').checked=false; groupsList=[]; drawGroups(); toggleGroupsEditor();
+            set('optTries','3'); document.getElementById('optGroups').checked=false; groupsList=[]; groupMembers={}; drawGroups(); toggleGroupsEditor();
             document.getElementById('optTimer').checked=false; toggleTimerEditor();
             document.getElementById('kbRow').style.display = (id==='hg')?'flex':'none';
             document.getElementById('triesRow').style.display = m.tries?'flex':'none';
@@ -447,9 +455,11 @@
         function toggleGroupsEditor(){document.getElementById('groupsEditor').style.display=document.getElementById('optGroups').checked?'block':'none';}
         function toggleTimerEditor(){document.getElementById('timerEditor').style.display=document.getElementById('optTimer').checked?'block':'none';toggleTimerDur();}
         function toggleTimerDur(){document.getElementById('timerDurWrap').style.display=(val('optTimerMode')==='up')?'none':'inline-flex';}
+        let groupMembers={}; /* {teamName:[members]} — optional */
         function addGroup(){const i=document.getElementById('grpName');const n=i.value.trim();if(!n)return;groupsList.push(n);i.value='';i.focus();drawGroups();saveDraft();}
-        function removeGroup(i){groupsList.splice(i,1);drawGroups();saveDraft();}
-        function drawGroups(){document.getElementById('grpList').innerHTML=groupsList.map((g,i)=>'<span class="grpChip">'+esc(g)+'<button onclick="removeGroup('+i+')"><i class="fas fa-xmark"></i></button></span>').join('');}
+        function removeGroup(i){const n=groupsList[i];groupsList.splice(i,1);if(n)delete groupMembers[n];drawGroups();saveDraft();}
+        function drawGroups(){document.getElementById('grpList').innerHTML=groupsList.map((g,i)=>{const mem=groupMembers[g]||[];return '<span class="grpChip" style="flex-direction:column;align-items:flex-start;gap:3px"><span>'+esc(g)+' <button onclick="removeGroup('+i+')"><i class="fas fa-xmark"></i></button></span>'+(mem.length?'<span style="font-weight:600;font-size:11px;color:var(--muted)">'+mem.map(esc).join(', ')+'</span>':'')+'</span>';}).join('');}
+        function randomizeTeams(){ const raw=(val('grpRoster')||'').split('\n').map(s=>s.trim()).filter(Boolean); if(!raw.length){flash('Add or load some student names first.');return;} const n=Math.max(1,Math.min(12,parseInt(val('grpCount'))||3)); const shuffled=raw.slice(); for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];} groupsList=[]; groupMembers={}; for(let i=0;i<n;i++){const name='Team '+(i+1);groupsList.push(name);groupMembers[name]=[];} shuffled.forEach((s,i)=>{const name=groupsList[i%n];groupMembers[name].push(s);}); drawGroups(); saveDraft(); }
         function parseItems(){return val('items').split('\n').map(s=>s.trim()).filter(Boolean);}
         function commonOpt(){return {nums:document.getElementById('optNums').checked,syms:document.getElementById('optSyms').checked,groups:document.getElementById('optGroups').checked,tries:Math.max(1,parseInt(val('optTries'))||3)};}
         function buildTimer(){
@@ -459,7 +469,8 @@
             const total=Math.max(1,mins*60+secs);
             return {on:true,mode,secs:total,style:val('optTimerStyle')||'num'};
         }
-        function buildPayload(){
+        function buildPayload(){ const _p=_bp(); if(_p&&document.getElementById('optGroups').checked&&groupsList.length){ const gm={}; groupsList.forEach(n=>{ if(groupMembers[n]&&groupMembers[n].length) gm[n]=groupMembers[n]; }); if(Object.keys(gm).length)_p.gmem=gm; } return _p; }
+        function _bp(){
             if(MODE==='rows') rowSync();
             const t=val('title').trim(), seed=Math.floor(Math.random()*1e9), timer=buildTimer();
             const opt=commonOpt(), groups=opt.groups?groupsList.slice():[];
@@ -517,12 +528,12 @@
             document.getElementById('modeRows').classList.toggle('on',MODE==='rows'); document.getElementById('modePaste').classList.toggle('on',MODE==='paste'); applyMask(); }
         function onPasteInput(){ previewUpdate(); saveDraft(); }
         function rowsRender(){ const host=document.getElementById('rowsEditor'); if(!host)return; const g=curGame;
-            if(g==='cat'){ host.innerHTML=ROWS.map((r,i)=>'<div class="wrow" data-i="'+i+'"><input class="d" type="text" placeholder="word / item" value="'+escAttr(r.w)+'" oninput="rowSync()"><select onchange="rowSync()">'+CATS.map(c=>'<option'+(c===r.cat?' selected':'')+'>'+esc(c)+'</option>').join('')+'</select><button type="button" class="del" onclick="rowRemove('+i+')"><i class="fas fa-xmark"></i></button></div>').join(''); applyMask(); return; }
+            if(g==='cat'){ host.innerHTML=ROWS.map((r,i)=>{const isImg=catIsImg(r.w);return '<div class="wrow" data-i="'+i+'">'+(isImg?'<img class="rowthumb" src="'+escAttr(r.w)+'" alt="">':'<input class="d" type="text" placeholder="word, or attach an image →" value="'+escAttr(r.w)+'" oninput="rowSync()">')+'<select onchange="rowSync()">'+CATS.map(c=>'<option'+(c===r.cat?' selected':'')+'>'+esc(c)+'</option>').join('')+'</select><button type="button" class="del" title="Attach picture" onclick="catRowImg('+i+')"><i class="fas fa-image"></i></button><button type="button" class="del" onclick="rowRemove('+i+')"><i class="fas fa-xmark"></i></button></div>';}).join(''); applyMask(); return; }
             const E=ENTRY[g]; if(!E){host.innerHTML='';return;}
             host.innerHTML=ROWS.map((r,i)=>{ let inner=E.fields.map(f=>'<input class="'+f.cls+'" type="text" placeholder="'+f.ph+'" value="'+escAttr(r[f.k])+'" oninput="rowSync()">').join(''); if(E.ticks){ inner+='<label class="rtick" title="Allow this word diagonally"><input type="checkbox" '+(r.diag?'checked':'')+' onchange="rowSync()">D</label><label class="rtick" title="Allow this word reversed"><input type="checkbox" '+(r.rev?'checked':'')+' onchange="rowSync()">R</label>'; } return '<div class="wrow" data-i="'+i+'">'+inner+'<button type="button" class="del" onclick="rowRemove('+i+')"><i class="fas fa-xmark"></i></button></div>'; }).join(''); applyMask();
         }
         function rowSync(){ const g=curGame; const rows=document.querySelectorAll('#rowsEditor .wrow');
-            if(g==='cat'){ ROWS=Array.from(rows).map(row=>({w:row.querySelector('input[type=text]').value,cat:(row.querySelector('select')||{}).value||''})); }
+            if(g==='cat'){ ROWS=Array.from(rows).map(row=>{ const inp=row.querySelector('input[type=text]'); const img=row.querySelector('img.rowthumb'); return {w:inp?inp.value:(img?img.getAttribute('src'):''),cat:(row.querySelector('select')||{}).value||''}; }); }
             else { const E=ENTRY[g]; ROWS=Array.from(rows).map(row=>{ const txt=row.querySelectorAll('input[type=text]'); const o={}; E.fields.forEach((f,i)=>o[f.k]=txt[i]?txt[i].value:''); if(E.ticks){ const cb=row.querySelectorAll('input[type=checkbox]'); o.diag=cb[0]?cb[0].checked:false; o.rev=cb[1]?cb[1].checked:false; } return o; }); }
             set('items',rowsToText()); previewUpdate(); saveDraft();
         }
@@ -544,6 +555,9 @@
             if(!ROWS.length)ROWS=[defaultRow(g)];
         }
         function catRender(){ const host=document.getElementById('catCats'); if(!host)return; host.innerHTML='<label class="fld" style="margin-top:0">Categories</label><div class="grpEdit">'+CATS.map((c,i)=>'<span class="grpChip">'+esc(c)+'<button type="button" onclick="catDel('+i+')"><i class="fas fa-xmark"></i></button></span>').join('')+'</div><div style="display:flex;gap:8px;margin-top:6px"><input type="text" id="catNew" placeholder="Add a category" onkeydown="if(event.key===\'Enter\'){event.preventDefault();catAdd();}"><button type="button" class="btn btn-soft" onclick="catAdd()"><i class="fas fa-plus"></i></button></div><label class="fld">Words &amp; their category</label>'; }
+        function catIsImg(s){ return /^(data:image\/|https?:\/\/[^\s]+\.(png|jpe?g|gif|webp|svg)(\?[^\s]*)?$)/i.test(String(s||'').trim()); }
+        function catItemHTML(t){ return catIsImg(t)?'<img src="'+escAttr(t)+'" alt="" style="max-height:46px;max-width:120px;border-radius:7px;vertical-align:middle;display:block">':esc(t); }
+        function catRowImg(i){ const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.onchange=function(){ const f=inp.files[0]; if(!f)return; const r=new FileReader(); r.onload=function(){ rowSync(); if(ROWS[i]) ROWS[i].w=String(r.result); rowsRender(); set('items',rowsToText()); previewUpdate(); saveDraft(); }; r.readAsDataURL(f); }; inp.click(); }
         function catAdd(){ const i=document.getElementById('catNew'); const n=(i.value||'').trim(); if(!n)return; if(CATS.indexOf(n)<0)CATS.push(n); i.value=''; catRender(); rowsRender(); set('items',rowsToText()); previewUpdate(); saveDraft(); }
         function catDel(i){ const name=CATS[i]; CATS.splice(i,1); ROWS.forEach(r=>{if(r.cat===name)r.cat=CATS[0]||'';}); catRender(); rowsRender(); set('items',rowsToText()); previewUpdate(); saveDraft(); }
         function wordDirs(o){ const H=gv('wsH'),V=gv('wsV'),D=gv('wsD')||o.diag,R=gv('wsR')||o.rev; let d=[]; if(H){d.push([0,1]); if(R)d.push([0,-1]);} if(V){d.push([1,0]); if(R)d.push([-1,0]);} if(D){d.push([1,1],[1,-1]); if(R)d.push([-1,-1],[-1,1]);} if(!d.length)d=[[0,1],[1,0]]; return d; }
@@ -633,8 +647,8 @@
         function generate(){const p=buildPayload();if(!p){flash('Add at least one item.');return;}location.hash='d='+enc(p);}
         function flash(m){const n=document.getElementById('itemsHelp');const o=n.textContent;n.textContent=m;n.style.color='var(--danger)';setTimeout(()=>{n.textContent=o;n.style.color='';},2400);}
         let DRAFT=null;
-        function sharedOpts(){ const dg=document.getElementById('optDrag'); return {tries:val('optTries'),drag:dg?dg.checked:true,groupsOn:document.getElementById('optGroups').checked,groups:groupsList,timerOn:document.getElementById('optTimer').checked,timerMode:val('optTimerMode'),timerMin:val('optTimerMin'),timerSec:val('optTimerSec'),timerStyle:val('optTimerStyle')}; }
-        function applyShared(d){ if(d.tries)set('optTries',d.tries); const dg=document.getElementById('optDrag'); if(dg)dg.checked=d.drag!==false; document.getElementById('optGroups').checked=!!d.groupsOn; groupsList=d.groups||[]; drawGroups(); toggleGroupsEditor(); document.getElementById('optTimer').checked=!!d.timerOn; if(d.timerMode)set('optTimerMode',d.timerMode); if(d.timerMin!=null&&d.timerMin!=='')set('optTimerMin',d.timerMin); if(d.timerSec!=null&&d.timerSec!=='')set('optTimerSec',d.timerSec); if(d.timerStyle)set('optTimerStyle',d.timerStyle); toggleTimerEditor(); }
+        function sharedOpts(){ const dg=document.getElementById('optDrag'); return {tries:val('optTries'),drag:dg?dg.checked:true,groupsOn:document.getElementById('optGroups').checked,groups:groupsList,timerOn:document.getElementById('optTimer').checked,timerMode:val('optTimerMode'),timerMin:val('optTimerMin'),timerSec:val('optTimerSec'),timerStyle:val('optTimerStyle'),gmem:groupMembers}; }
+        function applyShared(d){ if(d.tries)set('optTries',d.tries); const dg=document.getElementById('optDrag'); if(dg)dg.checked=d.drag!==false; document.getElementById('optGroups').checked=!!d.groupsOn; groupsList=d.groups||[]; groupMembers=d.gmem||{}; drawGroups(); toggleGroupsEditor(); document.getElementById('optTimer').checked=!!d.timerOn; if(d.timerMode)set('optTimerMode',d.timerMode); if(d.timerMin!=null&&d.timerMin!=='')set('optTimerMin',d.timerMin); if(d.timerSec!=null&&d.timerSec!=='')set('optTimerSec',d.timerSec); if(d.timerStyle)set('optTimerStyle',d.timerStyle); toggleTimerEditor(); }
         function saveDraft(){ if(!curGame)return; try{ const d=Object.assign({g:curGame,t:val('title'),items:val('items'),mode:MODE,caps:CAPS,nums:gv('optNums'),syms:gv('optSyms')},sharedOpts()); if(curGame==='ws'){ d.wsH=gv('wsH'); d.wsV=gv('wsV'); d.wsD=gv('wsD'); d.wsR=gv('wsR'); d.snake=wsSnake; d.size=val('wsSize'); } DRAFT=d; localStorage.setItem('ct-wg-draft',JSON.stringify(d)); }catch(e){} updateStarHint(); }
         function loadDraft(){ try{ DRAFT=JSON.parse(localStorage.getItem('ct-wg-draft'))||null; }catch(e){ DRAFT=null; } }
         function applyDraft(d){ set('title',d.t||''); set('items',d.items||''); document.getElementById('optNums').checked=!!d.nums; document.getElementById('optSyms').checked=!!d.syms; if(d.caps){ CAPS=d.caps; const u=document.getElementById('caseUp'),l=document.getElementById('caseLo'); if(u)u.classList.toggle('on',CAPS==='upper'); if(l)l.classList.toggle('on',CAPS==='lower'); } if(curGame==='ws'){ setChk('wsH',d.wsH!==false); setChk('wsV',d.wsV!==false); setChk('wsD',!!d.wsD); setChk('wsR',!!d.wsR); wsSnake=!!d.snake; const a=document.getElementById('wsStraight'),b=document.getElementById('wsSnake'); if(a)a.classList.toggle('on',!wsSnake); if(b)b.classList.toggle('on',wsSnake); if(d.size){wsSizeManual=true;set('wsSize',d.size);} } applyShared(d); parseToRows(); rowsRender(); if(curGame==='cat')catRender(); previewUpdate(); if(d.mode==='paste')setMode('paste'); }
@@ -704,7 +718,7 @@
         function award(pts){ if(cfg.opt&&cfg.opt.groups&&scores.length){ scores[activeGroup]+=pts; } }
         function nextIdx(){ idx=(idx+1)%totalItems(); PLAYERS[cfg.g](); timerPaint(); }
         function titleBar(){ return cfg.t?'<div class="ptitle">'+esc(cfg.t)+'</div>':''; }
-        function groupsBar(){ if(!(cfg.opt&&cfg.opt.groups&&cfg.groups.length))return ''; return '<div class="groups" id="grpBar">'+cfg.groups.map((g,i)=>'<div class="gcard'+(i===activeGroup?' active':'')+'" onclick="selGroup('+i+')"><span>'+esc(g)+'</span><span class="gs" id="gs-'+i+'">'+scores[i]+'</span></div>').join('')+'</div><div class="hint">Tap the group that’s answering — points are added automatically.</div>'; }
+        function groupsBar(){ if(!(cfg.opt&&cfg.opt.groups&&cfg.groups.length))return ''; const gm=cfg.gmem||{}; return '<div class="groups" id="grpBar">'+cfg.groups.map((g,i)=>{const mem=gm[g]||[];return '<div class="gcard'+(i===activeGroup?' active':'')+'" onclick="selGroup('+i+')"><span>'+esc(g)+'</span><span class="gs" id="gs-'+i+'">'+scores[i]+'</span>'+(mem.length?'<span style="font-size:10px;font-weight:600;color:var(--muted);max-width:120px;line-height:1.2">'+mem.map(esc).join(', ')+'</span>':'')+'</div>';}).join('')+'</div><div class="hint">Tap the group that’s answering — points are added automatically.</div>'; }
         function selGroup(i){ activeGroup=i; document.querySelectorAll('#grpBar .gcard').forEach((c,j)=>c.classList.toggle('active',j===i)); sKey(); }
         function bumpGroup(){ if(!(cfg.opt&&cfg.opt.groups&&scores.length))return; const el=document.getElementById('gs-'+activeGroup); if(el){ el.textContent=scores[activeGroup]; el.classList.remove('gpts'); void el.offsetWidth; el.classList.add('gpts'); } }
 
@@ -818,8 +832,8 @@
                 '<div class="play-actions"><button class="btn btn-soft" onclick="PLAYERS.cat()"><i class="fas fa-rotate-left"></i> Restart</button></div>';
             const catsEl=document.getElementById('cats'),poolEl=document.getElementById('pool'),msg=document.getElementById('catMsg'),scoreEl=document.getElementById('catScore');
             cats.forEach((c,ci)=>{const col=document.createElement('div');col.className='catcol';col.dataset.ci=ci;col.onclick=()=>place(ci);col.innerHTML='<div class="ch">'+esc(c.n)+'</div><div class="placed" id="placed-'+ci+'"></div>';catsEl.appendChild(col);});
-            function drawPool(){poolEl.innerHTML='';order.forEach(i=>{const it=pool[i];if(it.placed)return;const c=document.createElement('div');c.className='poolchip'+(sel===i?' sel':'');c.textContent=it.t;c.onclick=(e)=>{e.stopPropagation();sel=(sel===i?-1:i);sKey();drawPool();};poolEl.appendChild(c);});}
-            function place(ci){ if(sel<0){msg.textContent='Pick an item first.';msg.className='msg';return;} const it=pool[sel]; if(it.cat===ci){ it.placed=true; const p=document.getElementById('placed-'+ci); const sp=document.createElement('span'); sp.className='pchip'; sp.textContent=it.t; p.appendChild(sp); done++; scoreEl.innerHTML='<i class="fas fa-check"></i> '+done+'/'+totalN; sGood(); sel=-1; drawPool(); award(1); bumpGroup(); msg.textContent=''; if(done===totalN){msg.textContent='🎉 All sorted!';msg.className='msg win';sWin();confetti();} } else { const col=catsEl.children[ci]; col.classList.remove('flash');void col.offsetWidth;col.classList.add('flash'); sBad(); msg.textContent='Not that category — try again!'; msg.className='msg lose'; } }
+            function drawPool(){poolEl.innerHTML='';order.forEach(i=>{const it=pool[i];if(it.placed)return;const c=document.createElement('div');c.className='poolchip'+(sel===i?' sel':'');c.innerHTML=catItemHTML(it.t);c.onclick=(e)=>{e.stopPropagation();sel=(sel===i?-1:i);sKey();drawPool();};poolEl.appendChild(c);});}
+            function place(ci){ if(sel<0){msg.textContent='Pick an item first.';msg.className='msg';return;} const it=pool[sel]; if(it.cat===ci){ it.placed=true; const p=document.getElementById('placed-'+ci); const sp=document.createElement('span'); sp.className='pchip'; sp.innerHTML=catItemHTML(it.t); p.appendChild(sp); done++; scoreEl.innerHTML='<i class="fas fa-check"></i> '+done+'/'+totalN; sGood(); sel=-1; drawPool(); award(1); bumpGroup(); msg.textContent=''; if(done===totalN){msg.textContent='🎉 All sorted!';msg.className='msg win';sWin();confetti();} } else { const col=catsEl.children[ci]; col.classList.remove('flash');void col.offsetWidth;col.classList.add('flash'); sBad(); msg.textContent='Not that category — try again!'; msg.className='msg lose'; } }
             window.place=place;
             drawPool();
             timerPaint();

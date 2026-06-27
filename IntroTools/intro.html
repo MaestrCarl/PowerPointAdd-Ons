@@ -9,6 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link rel="stylesheet" href="../shared/classtools-ui.css">
     <script src="../shared/classtools-ui.js" defer></script>
+    <script src="../shared/classtools-account.js" defer></script>
     <style>
         :root{--bg:#f4f1ff;--bg-2:#e7fbff;--surface:#fff;--ink:#241b4e;--muted:#6b6790;--line:#e7e3f5;--primary:#6d28d9;--primary-2:#9333ea;--primary-rgb:109,40,217;--danger:#ff3d7f;--ok:#22c55e;--gold:#ffb020;--radius:16px;--font-head:'Baloo 2',sans-serif;--font-body:'Nunito',sans-serif;}
         .dark-mode{--bg:#14122e;--bg-2:#0e1330;--surface:#211d44;--ink:#efeaff;--muted:#a9a3d6;--line:#352f63;--primary:#a78bfa;--primary-2:#c084fc;--primary-rgb:167,139,250;--danger:#ff5c93;}
@@ -74,8 +75,11 @@
         .deco.frame{right:8%;top:12%;width:58px;height:46px;border-radius:5px;background:linear-gradient(135deg,#ffd27f,#ff9a5a);border:5px solid #fff;box-shadow:0 6px 14px rgba(0,0,0,.18);}
         .deco.bunting{left:0;right:0;top:0;height:26px;display:flex;justify-content:center;gap:10px;}
         .deco.bunting i{width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:16px solid var(--c,#ff3d7f);filter:drop-shadow(0 2px 2px rgba(0,0,0,.15));}
-        .deco.plant{left:4%;bottom:6%;font-size:clamp(46px,9vmin,84px);z-index:5;filter:drop-shadow(0 6px 6px rgba(0,0,0,.25));}
+        .deco.plant{left:3%;bottom:5%;font-size:clamp(64px,14vmin,130px);z-index:1;filter:drop-shadow(0 6px 6px rgba(0,0,0,.25));}
         .deco.rug{left:50%;bottom:6%;width:60%;height:48px;transform:translateX(-50%) rotateX(60deg);border-radius:50%;background:radial-gradient(circle,rgba(109,40,217,.30),rgba(109,40,217,0) 70%);z-index:1;}
+        /* keep the reveal items (envelopes / doors / scratch cards) above the floor line & decor */
+        .room .grid2{position:relative;z-index:4;}
+        .room::after{z-index:0;}
 
         /* ===== MYSTERY BOX (true 3D cube) ===== */
         .boxscene{perspective:1100px;display:flex;align-items:flex-end;justify-content:center;min-height:230px;position:relative;z-index:4;}
@@ -123,6 +127,12 @@
         #scratchCanvas{position:absolute;inset:0;touch-action:none;cursor:crosshair;}
         /* pixel/hidden */
         .pix{filter:blur(var(--b,24px));transition:filter .4s ease;} .pixtext{font-family:var(--font-head);font-weight:700;font-size:clamp(2rem,10vmin,7rem);}
+        .pix.pixelated{image-rendering:pixelated;}
+        .pixwrap{position:relative;display:inline-block;max-width:100%;}
+        .pixmask{position:absolute;inset:0;pointer-events:none;}
+        .pixtile{position:absolute;background:var(--surface);box-shadow:inset 0 0 0 1px rgba(var(--primary-rgb),.18);transition:opacity .45s ease;}
+        .dark-mode .pixtile{background:#2a2456;}
+        .pixpatch{position:absolute;border-radius:50%;background:radial-gradient(circle at 40% 35%,var(--primary),var(--primary-2));opacity:.92;transition:opacity .55s ease;filter:blur(2px);}
         /* ===== MODAL REVEAL EFFECT + history + door room ===== */
         .reveal-modal{perspective:1500px;}
         .reveal3d{background:var(--surface);color:var(--ink);border-radius:22px;padding:24px 28px;box-shadow:0 30px 70px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:16px;align-items:center;max-width:92vw;transform-style:preserve-3d;}
@@ -214,6 +224,13 @@
                     <label class="fld" style="margin-top:0">Options</label>
                     <div class="optrow" id="pickRow"><label class="chk">Pick how many at once <input type="number" id="optPick" value="1" min="1" max="9" style="width:60px" oninput="saveDraft()"></label>
                     <label class="chk"><input type="checkbox" id="optExclude" checked onchange="saveDraft()"> Don't repeat picks</label></div>
+                    <div class="optrow" id="pixelRow" style="display:none">
+                        <label class="chk">Reveal steps <input type="number" id="optSteps" value="5" min="2" max="12" style="width:58px" oninput="saveDraft()"></label>
+                        <label class="chk">Hide style
+                            <select id="optBlur" onchange="saveDraft()"><option value="smooth">Smooth blur</option><option value="pixel">Pixelated</option><option value="tiles">Mosaic tiles</option><option value="patches">Hidden patches</option></select>
+                        </label>
+                        <label class="chk"><input type="checkbox" id="optOcclude" onchange="saveDraft()"> Add random occluding shapes (harder)</label>
+                    </div>
                 </div>
                 <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
                     <button class="btn btn-primary" onclick="generate()"><i class="fas fa-play"></i> Play now</button>
@@ -324,14 +341,14 @@
         let cur=null;
         function buildGallery(){const g=document.getElementById('galleryGrid');g.innerHTML='';ACTS.forEach(m=>{const t=document.createElement('div');t.className='gtile'+(m.soon?' soon':'');t.style.setProperty('--gc',m.c1);t.style.setProperty('--gc2',m.c2);t.innerHTML='<div class="ic"><i class="fas '+m.icon+'"></i></div><h3>'+m.name+'</h3><p>'+m.desc+'</p>';if(!m.soon)t.onclick=()=>openForm(m.id);g.appendChild(t);});}
         function showGallery(){location.hash='';document.getElementById('gallery').style.display='block';document.getElementById('form').style.display='none';document.getElementById('player').style.display='none';document.getElementById('editBtn').style.display='none';document.getElementById('brandName').textContent='Intro & Reveal Tools';updateStarHint();}
-        function openForm(id){cur=id;const m=M[id];document.getElementById('gallery').style.display='none';document.getElementById('form').style.display='block';document.getElementById('player').style.display='none';document.getElementById('brandName').textContent=m.name;document.getElementById('formTitle').textContent=m.name;document.getElementById('itemsLabel').textContent='Items';document.getElementById('items').placeholder=m.ph||'';document.getElementById('itemsHelp').textContent=m.label+' · Hidden by default — Enter makes a new line.';document.getElementById('optCard').style.display=(m.opt==='pick')?'block':'none';maskHeadsUp();introPreview();updateBack();updateStarHint();}
+        function openForm(id){cur=id;const m=M[id];document.getElementById('gallery').style.display='none';document.getElementById('form').style.display='block';document.getElementById('player').style.display='none';document.getElementById('brandName').textContent=m.name;document.getElementById('formTitle').textContent=m.name;document.getElementById('itemsLabel').textContent='Items';document.getElementById('items').placeholder=m.ph||'';document.getElementById('itemsHelp').textContent=m.label+' · Hidden by default — Enter makes a new line.';const showOpt=(m.opt==='pick'||id==='pixel');document.getElementById('optCard').style.display=showOpt?'block':'none';document.getElementById('pickRow').style.display=(m.opt==='pick')?'flex':'none';document.getElementById('pixelRow').style.display=(id==='pixel')?'flex':'none';maskHeadsUp();introPreview();updateBack();updateStarHint();}
         function parseItems(){return val('items').split('\n').map(s=>s.trim()).filter(Boolean);}
-        function buildPayload(){const t=val('title').trim(),raw=parseItems();if(!raw.length)return null;const seed=Math.floor(Math.random()*1e9);const opt={};if(M[cur].opt==='pick'){opt.pick=Math.max(1,parseInt(val('optPick'))||1);opt.exclude=document.getElementById('optExclude').checked;}return{g:cur,t,items:raw,opt,seed};}
+        function buildPayload(){const t=val('title').trim(),raw=parseItems();if(!raw.length)return null;const seed=Math.floor(Math.random()*1e9);const opt={};if(M[cur].opt==='pick'){opt.pick=Math.max(1,parseInt(val('optPick'))||1);opt.exclude=document.getElementById('optExclude').checked;}if(cur==='pixel'){opt.steps=Math.max(2,Math.min(12,parseInt(val('optSteps'))||5));opt.blur=val('optBlur')||'smooth';opt.occlude=document.getElementById('optOcclude').checked;}return{g:cur,t,items:raw,opt,seed};}
         function linkFor(p){return location.origin+location.pathname+'#d='+enc(p);}
         function generate(){const p=buildPayload();if(!p){flash('Add at least one item.');return;}location.hash='d='+enc(p);}
         function flash(m){const n=document.getElementById('itemsHelp');const o=n.textContent;n.textContent=m;n.style.color='var(--danger)';setTimeout(()=>{n.textContent=o;n.style.color='';},2400);}
-        function saveDraft(){try{localStorage.setItem('ct-intro-draft',JSON.stringify({g:cur,t:val('title'),items:val('items'),pick:val('optPick'),exclude:document.getElementById('optExclude').checked}));}catch(e){}try{introPreview();}catch(e){}updateStarHint();}
-        function loadDraft(){try{const d=JSON.parse(localStorage.getItem('ct-intro-draft'));if(d&&d.g&&M[d.g]){openForm(d.g);set('title',d.t);set('items',d.items);if(d.pick)set('optPick',d.pick);document.getElementById('optExclude').checked=d.exclude!==false;maskHeadsUp();introPreview();}}catch(e){}}
+        function saveDraft(){try{localStorage.setItem('ct-intro-draft',JSON.stringify({g:cur,t:val('title'),items:val('items'),pick:val('optPick'),exclude:document.getElementById('optExclude').checked,steps:val('optSteps'),blur:val('optBlur'),occlude:document.getElementById('optOcclude').checked}));}catch(e){}try{introPreview();}catch(e){}updateStarHint();}
+        function loadDraft(){try{const d=JSON.parse(localStorage.getItem('ct-intro-draft'));if(d&&d.g&&M[d.g]){openForm(d.g);set('title',d.t);set('items',d.items);if(d.pick)set('optPick',d.pick);document.getElementById('optExclude').checked=d.exclude!==false;if(d.steps)set('optSteps',d.steps);if(d.blur)set('optBlur',d.blur);document.getElementById('optOcclude').checked=!!d.occlude;maskHeadsUp();introPreview();}}catch(e){}}
         function goEdit(){const wasPlaying=location.hash.indexOf('d=')>=0;const id=cfg?cfg.g:cur;location.hash='';if(id&&M[id])openForm(id);if(wasPlaying)document.getElementById('regenNotice').style.display='block';}
         function currentLink(){if(location.hash.indexOf('d=')>=0)return location.href;const p=buildPayload();return p?linkFor(p):null;}
         function openShare(){const url=currentLink();if(!url){flash('Add at least one item first.');return;}document.getElementById('shareLink').value=url;const box=document.getElementById('qrBox');box.innerHTML='';try{new QRCode(box,{text:url,width:188,height:188,colorDark:'#241b4e',colorLight:'#ffffff'});}catch(e){box.innerHTML='<span class="hint">QR unavailable offline.</span>';}openModal('shareModal');}
@@ -406,7 +423,7 @@
             const n=cfg.parsed.length; removeRevealed=true; revealReset();
             const player=document.getElementById('player');
             player.innerHTML=titleBar()+'<div class="pcount">Tap an envelope to open it.</div>'+
-                '<div class="room">'+roomDeco()+'<div class="grid2" id="envGrid" style="--cc:'+Math.min(4,Math.max(2,Math.ceil(Math.sqrt(n))))+'"></div></div>'+
+                '<div class="room">'+roomDeco()+'<div class="grid2" id="envGrid" style="--cc:'+Math.min(6,Math.max(2,Math.ceil(Math.sqrt(n))))+'"></div></div>'+
                 removeBar()+revealBar()+
                 '<div class="play-actions"><button class="btn btn-soft" onclick="playEnvelopes()"><i class="fas fa-rotate-left"></i> Close all</button></div>';
             const grid=document.getElementById('envGrid'); syncRemoveUI();
@@ -419,7 +436,7 @@
             const player=document.getElementById('player');
             const cc=Math.min(5,Math.max(2,Math.ceil(Math.sqrt(n))*1));
             player.innerHTML=titleBar()+'<div class="pcount">Choose a door.</div>'+
-                '<div class="room">'+roomDeco()+'<div class="grid2 doors" id="doorGrid" style="--cc:'+Math.min(5,Math.max(2,n>6?Math.ceil(n/2):n))+'"></div></div>'+
+                '<div class="room">'+roomDeco()+'<div class="grid2 doors" id="doorGrid" style="--cc:'+Math.min(6,Math.max(2,n>6?Math.ceil(n/2):n))+'"></div></div>'+
                 removeBar()+revealBar()+
                 '<div class="play-actions"><button class="btn btn-soft" onclick="playDoors()"><i class="fas fa-rotate-left"></i> Reset doors</button></div>';
             const grid=document.getElementById('doorGrid'); syncRemoveUI();
@@ -455,7 +472,7 @@
             const order=shuf(cfg.parsed.map(function(_,i){return i;}),cfg.seed), n=order.length; revealReset();
             const player=document.getElementById('player');
             player.innerHTML=titleBar()+'<div class="pcount">Pick a card to scratch.</div>'+
-                '<div class="room">'+roomDeco()+'<div class="grid2 cards" id="cardGrid" style="--cc:'+Math.min(5,Math.max(2,Math.ceil(Math.sqrt(n))))+'"></div></div>'+
+                '<div class="room">'+roomDeco()+'<div class="grid2 cards" id="cardGrid" style="--cc:'+Math.min(6,Math.max(2,Math.ceil(Math.sqrt(n))))+'"></div></div>'+
                 removeBar()+revealBar()+
                 '<div class="play-actions"><button class="btn btn-soft" onclick="playScratch()"><i class="fas fa-rotate-left"></i> Reset cards</button></div>';
             const grid=document.getElementById('cardGrid'); syncRemoveUI();
@@ -488,12 +505,25 @@
         /* ===== HIDDEN REVEAL (blur) ===== */
         function playPixel(){
             let i=0; const player=document.getElementById('player'); revealReset();
-            function build(){const it=cfg.parsed[i];let b=24;player.innerHTML=titleBar()+'<div class="pcount">Item '+(i+1)+' / '+cfg.parsed.length+' — guess it!</div>'+
-                '<div class="pix" id="pix" style="--b:24px">'+(it.t==='text'?'<span class="pixtext">'+esc(it.v)+'</span>':itemHTML(it,false))+'</div>'+revealBar()+
-                '<div class="play-actions"><button class="btn btn-primary" onclick="pxClear()"><i class="fas fa-magnifying-glass-plus"></i> Clearer</button><button class="btn btn-soft" onclick="pxReveal()"><i class="fas fa-eye"></i> Reveal</button><button class="btn btn-soft" onclick="pxNext()"><i class="fas fa-forward"></i> Next</button></div>';
-                const pix=document.getElementById('pix');
-                window.pxClear=function(){b=Math.max(0,b-5);pix.style.setProperty('--b',b+'px');sTick();if(b===0){sReveal();confetti(900);pushReveal(it);}};
-                window.pxReveal=function(){b=0;pix.style.setProperty('--b','0px');sReveal();confetti(900);pushReveal(it);};
+            const O=cfg.opt||{}; const steps=Math.max(2,Math.min(12,O.steps||5)); const style=O.blur||'smooth'; const occlude=!!O.occlude;
+            function build(){
+                const it=cfg.parsed[i]; let step=steps; // remaining reveal steps
+                const content=(it.t==='text'?'<span class="pixtext">'+esc(it.v)+'</span>':itemHTML(it,false));
+                player.innerHTML=titleBar()+'<div class="pcount">Item '+(i+1)+' / '+cfg.parsed.length+' — guess it!</div>'+
+                    '<div class="pixwrap" id="pixwrap"><div class="pix" id="pix">'+content+'</div><div class="pixmask" id="pixmask"></div></div>'+revealBar()+
+                    '<div class="play-actions"><button class="btn btn-primary" onclick="pxClear()"><i class="fas fa-magnifying-glass-plus"></i> Clearer</button><button class="btn btn-soft" onclick="pxReveal()"><i class="fas fa-eye"></i> Reveal</button><button class="btn btn-soft" onclick="pxNext()"><i class="fas fa-forward"></i> Next</button></div>';
+                const pix=document.getElementById('pix'), mask=document.getElementById('pixmask');
+                pix.classList.toggle('pixelated', style==='pixel');
+                var tiles=[];
+                function maxBlur(){ return style==='pixel'? 9 : 26; }
+                function paintBlur(){ pix.style.setProperty('--b', (style==='smooth'||style==='pixel') ? (maxBlur()*step/steps)+'px' : '0px'); }
+                // occlusion / mosaic layers
+                if(style==='tiles'){ var n=36; for(var k=0;k<n;k++){ var t=document.createElement('div'); t.className='pixtile'; t.style.left=(k%6)*(100/6)+'%'; t.style.top=Math.floor(k/6)*(100/6)+'%'; t.style.width=(100/6)+'%'; t.style.height=(100/6)+'%'; mask.appendChild(t); tiles.push(t); } }
+                if(style==='patches'||occlude){ var np=style==='patches'?16:7; for(var p=0;p<np;p++){ var c=document.createElement('div'); c.className='pixpatch'; var sz=18+Math.random()*26; c.style.width=sz+'%'; c.style.height=sz+'%'; c.style.left=(Math.random()*92)+'%'; c.style.top=(Math.random()*82)+'%'; mask.appendChild(c); tiles.push(c); } }
+                function shuffleHide(frac){ var live=tiles.filter(function(x){return !x._gone;}); var rm=Math.ceil(tiles.length/steps); for(var r=0;r<rm&&live.length;r++){ var idx=Math.floor(Math.random()*live.length); var el=live.splice(idx,1)[0]; el._gone=true; el.style.opacity='0'; } }
+                paintBlur();
+                window.pxClear=function(){ if(step<=0)return; step--; paintBlur(); if(tiles.length)shuffleHide(); sTick(); if(step<=0){ tiles.forEach(function(t){t._gone=true;t.style.opacity='0';}); sReveal();confetti(900);pushReveal(it);} };
+                window.pxReveal=function(){ step=0; paintBlur(); pix.style.setProperty('--b','0px'); tiles.forEach(function(t){t.style.opacity='0';}); sReveal();confetti(900);pushReveal(it); };
             }
             window.pxNext=function(){i=(i+1)%cfg.parsed.length;build();};
             build();

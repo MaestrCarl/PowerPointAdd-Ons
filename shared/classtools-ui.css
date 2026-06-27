@@ -175,5 +175,26 @@ details.ct-collapsible[open] > summary::after{ transform:rotate(180deg); }
 .gcard .ghead .gname{ font-family:var(--font-head); font-weight:700; }
 .gcard .ghead .count{ margin-left:auto; }
 
+/* ---------- 19) TEACHER ACCOUNT DRAWER ---------- */
+.ct-acc-scrim{ position:fixed; inset:0; background:rgba(10,8,30,.45); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); z-index:2400; opacity:0; pointer-events:none; transition:opacity .2s; }
+.ct-acc-scrim.show{ opacity:1; pointer-events:auto; }
+.ct-acc-drawer{ position:fixed; top:0; right:0; bottom:0; width:min(430px,95vw); background:var(--surface); color:var(--ink); border-left:1px solid var(--line); z-index:2500; transform:translateX(102%); transition:transform .26s ease; overflow:auto; padding:18px; box-shadow:-22px 0 60px rgba(0,0,0,.3); }
+.ct-acc-drawer.show{ transform:none; }
+.ct-acc-drawer h2{ font-family:var(--font-head,inherit); font-size:19px; margin:0 0 2px; display:flex; align-items:center; gap:9px; }
+.ct-acc-drawer h3{ font-family:var(--font-head,inherit); font-size:14px; margin:18px 0 8px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); }
+.ct-acc-drawer .ct-acc-x{ position:absolute; top:14px; right:14px; width:34px; height:34px; border-radius:10px; border:1px solid var(--line); background:var(--surface); color:var(--muted); cursor:pointer; }
+.ct-acc-note{ font-size:12px; line-height:1.5; color:var(--muted); background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin:10px 0; }
+.ct-acc-row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:8px 0; }
+.ct-acc-drawer input[type=text], .ct-acc-drawer textarea, .ct-acc-drawer select{ width:100%; border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:10px; padding:9px 10px; font-family:var(--font-body,inherit); font-weight:600; font-size:13px; }
+.ct-acc-drawer textarea{ min-height:90px; resize:vertical; }
+.ct-acc-classcard{ border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin:8px 0; background:var(--bg); }
+.ct-acc-classcard .nm{ font-weight:800; display:flex; align-items:center; gap:8px; }
+.ct-acc-classcard .meta{ font-size:12px; color:var(--muted); margin-top:3px; }
+.ct-acc-classcard .acts{ display:flex; gap:6px; margin-top:8px; }
+.ct-acc-pill{ font-size:11px; font-weight:800; color:var(--primary); background:rgba(var(--primary-rgb),.12); border-radius:20px; padding:3px 9px; }
+/* "Load class" control injected into tools */
+.ct-classpick{ display:flex; gap:6px; align-items:center; margin:0 0 8px; }
+.ct-classpick select{ flex:1 1 auto; }
+
 /* ---------- shared utility ---------- */
 .ct-smooth-ring{ transition:stroke .3s ease !important; } /* offset driven by rAF, not CSS */
