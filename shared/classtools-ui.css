@@ -45,6 +45,8 @@ body.ct-playing [data-ct-play].ct-play-surface .play,
 body.ct-playing [data-ct-play].ct-play-surface .player{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; justify-content:center; }
 /* keep buttons inside the modal a pleasant, modest size */
 body.ct-playing [data-ct-play].ct-play-surface .btn{ padding:9px 15px; font-size:14px; }
+/* text-overflow safety net: long words/titles wrap & shrink instead of bleeding out */
+body.ct-playing [data-ct-play].ct-play-surface :is(.bigtext,.pixtext,.scram,.ptitle,.slot,.poolchip,.pchip,.dtile,.chip,.word){ overflow-wrap:anywhere; max-width:100%; }
 body.ct-playing [data-ct-play].ct-play-surface .present-actions{ flex:0 0 auto; }
 
 /* close (×) — docked to the card's top-right by the shared script */

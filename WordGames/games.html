@@ -589,9 +589,10 @@
         function exportPNG(answer){ if(curGame==='ws')exportWsPNG(answer); else if(curGame==='cw')exportCwPNG(answer); }
         /* ===== Save / load the word list as a text file (item 11) ===== */
         function exportSetup(){ if(MODE==='rows') rowSync(); const items=val('items'); if(!items.trim()){ flash('Add some words first.'); return; }
-            const name=META[curGame]?META[curGame].name:curGame; const meta='# ClassTools '+name+' | game:'+curGame+' | title:'+(val('title')||'');
-            const base=(val('title')||curGame).replace(/[^a-z0-9-_ ]/gi,'').trim()||curGame;
-            const blob=new Blob([meta+'\n'+items],{type:'text/plain'}); const u=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=u; a.download=base+'.txt'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(u); }
+            const name=META[curGame]?META[curGame].name:curGame; const title=val('title')||name;
+            const md='---\ntool: wordgames\ngame: '+curGame+'\ntitle: '+title+'\nupdated: '+new Date().toISOString().slice(0,10)+'\n---\n\n# '+title+' ('+name+')\n\n'+items.split('\n').filter(function(s){return s.trim();}).map(function(s){return '- '+s.trim();}).join('\n')+'\n';
+            if(window.ctAccount&&ctAccount.saveSetup){ ctAccount.saveSetup(curGame, title, md); } /* writes to <folder>/WordGames/ (auto-created), else downloads .md */
+            else { const base=(title).replace(/[^a-z0-9-_ ]/gi,'').trim()||curGame; const blob=new Blob([md],{type:'text/markdown'}); const u=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=u; a.download=base+'.md'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(u); } }
         function importSetup(){ document.getElementById('setupFile').click(); }
         document.getElementById('setupFile').addEventListener('change',function(e){ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>{ let text=String(r.result); let lines=text.split('\n');
             if(lines[0] && lines[0].trim().startsWith('#')){ const mt=lines[0].match(/title:\s*(.*)$/i); if(mt&&mt[1].trim())set('title',mt[1].trim()); lines=lines.slice(1); }

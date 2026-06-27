@@ -56,7 +56,9 @@
         .ptitle{font-family:var(--font-head);font-weight:700;color:var(--primary);font-size:clamp(1rem,3.2vmin,1.9rem);}
         .pcount{font-size:13px;color:var(--muted);font-weight:700;}
         .play-actions{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;}
-        .bigtext{font-family:var(--font-head);font-weight:700;font-size:clamp(1.8rem,8vmin,6rem);color:var(--ink);}
+        .bigtext{font-family:var(--font-head);font-weight:700;font-size:clamp(1.6rem,7vmin,5rem);color:var(--ink);max-width:100%;overflow-wrap:anywhere;text-align:center;line-height:1.1;}
+        .scratchUnder{container-type:inline-size;}
+        .scratchUnder .bigtext{font-size:clamp(1rem,11cqw,2.6rem);padding:0 10px;}
         .reveal-stage{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;align-items:center;}
         .ritem{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px 22px;box-shadow:0 12px 30px rgba(0,0,0,.16);cursor:pointer;animation:pop .5s cubic-bezier(.18,.89,.32,1.28) both;}
         @keyframes pop{0%{transform:scale(.2) rotate(-12deg);opacity:0;}60%{transform:scale(1.12) rotate(4deg);opacity:1;}100%{transform:scale(1) rotate(0);}}
