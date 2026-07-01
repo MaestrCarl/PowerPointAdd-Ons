@@ -16,10 +16,27 @@
   closeBtn.className = 'ct-play-close'; closeBtn.type = 'button';
   closeBtn.setAttribute('aria-label', 'Close');
   closeBtn.innerHTML = '<i class="fas fa-xmark"></i>';
+  /* Inject a consistent "Back to Maestr" home link into the tool's topbar
+     so every ClassTools app has clear cross-site navigation (one place,
+     all tools). Tools live at Class Tools/<Tool>/<file>.html, so Maestr
+     home is two levels up. Skipped if a home link already exists. */
+  function addHomeLink() {
+    var bar = document.querySelector('.topbar');
+    if (!bar || bar.querySelector('.ct-home-link')) return;
+    var a = document.createElement('a');
+    a.className = 'ct-home-link';
+    a.href = '../../index.html';
+    a.setAttribute('aria-label', 'Back to Maestr home');
+    a.innerHTML = '<span class="ct-home-mark" aria-hidden="true">M</span>' +
+                  '<span class="ct-home-label">Maestr</span>';
+    bar.insertBefore(a, bar.firstChild);
+  }
+
   function addChrome() {
     if (!document.body) return;
     if (!scrim.parentNode) document.body.appendChild(scrim);
     if (!closeBtn.parentNode) document.body.appendChild(closeBtn);
+    addHomeLink();
   }
 
   var current = null; // the surface currently shown as a modal

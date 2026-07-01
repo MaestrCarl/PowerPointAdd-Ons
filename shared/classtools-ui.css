@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
 /* ============================================================
    ClassTools shared UI layer  (loaded by every tool)
    Items: 1) blurred full-screen play modal   2) left-sidebar settings
@@ -5,6 +7,81 @@
    Relies on each tool's own design tokens (--surface, --line, --ink,
    --primary, --primary-2, --primary-rgb, --muted, --radius, --font-head).
    ============================================================ */
+
+/* ============================================================
+   0) MAESTR BRAND REMAP  — full visual rebrand of every tool.
+   ------------------------------------------------------------
+   Each tool defines its OWN palette/fonts in an inline :root (timer=
+   purple, picker=indigo, …). Rather than rewrite 8 apps, we forcibly
+   remap the shared token names to Maestr's brand values here. Custom
+   properties honour !important, so these win regardless of whether the
+   tool's inline <style> loads before or after this file. Change a value
+   here → every ClassTools app updates. Mirrors assets/styles.css :root.
+   ============================================================ */
+:root {
+  /* Brand core — scholarly ink-blue + gold (matches Maestr) */
+  --primary:      #25426B !important;   /* deep academic ink-blue */
+  --primary-2:    #33578C !important;   /* lighter blue for gradients */
+  --primary-rgb:  37, 66, 107 !important;
+  --gold:         #B0883E !important;   /* scholarly gold accent */
+
+  /* Neutrals — apple-esque, matches Maestr */
+  --bg:        #FBFBFD !important;
+  --bg-2:      #EDF1F8 !important;   /* brand-tint wash */
+  --surface:   #FFFFFF !important;
+  --surface-2: #F5F5F7 !important;
+  --ink:       #1D1D1F !important;
+  --muted:     #5B5B61 !important;
+  --line:      #E6E6EB !important;
+
+  /* Shape + type */
+  --radius:    16px !important;
+  --font-head: "Fraunces", Georgia, "Times New Roman", serif !important;
+  --font-body: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  --font-logo: "Fraunces", Georgia, serif !important;   /* was Luckiest Guy on the hub */
+}
+
+/* Dark mode kept working, remapped to a Maestr-dark palette. */
+.dark-mode {
+  --primary:      #7CA0D6 !important;
+  --primary-2:    #A9C0E4 !important;
+  --primary-rgb:  124, 160, 214 !important;
+  --gold:         #D9B981 !important;
+  --bg:        #14161C !important;
+  --bg-2:      #0F1420 !important;
+  --surface:   #1C2230 !important;
+  --surface-2: #232B3B !important;
+  --ink:       #EDEFF4 !important;
+  --muted:     #9AA3B5 !important;
+  --line:      #2C3550 !important;
+}
+
+/* Serif headings feel scholarly, matching the rest of Maestr. */
+.topbar .brand,
+.tcard h3, .gcard .ghead .gname,
+.ct-acc-drawer h2 { font-family: var(--font-head) !important; letter-spacing: -.01em; }
+
+/* ── "Back to Maestr" home link injected into every tool's topbar
+      by classtools-ui.js (addChrome). Gives clear, consistent
+      cross-site navigation from inside any tool. ── */
+.ct-home-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  flex: 0 0 auto; margin-right: 4px;
+  padding: 6px 11px 6px 8px; border-radius: 999px;
+  background: rgba(255,255,255,.16); color: #fff;
+  font-family: var(--font-body); font-weight: 700; font-size: 13px;
+  text-decoration: none; white-space: nowrap;
+  transition: background .15s, transform .1s;
+}
+.ct-home-link:hover { background: rgba(255,255,255,.3); }
+.ct-home-link:active { transform: scale(.94); }
+.ct-home-link .ct-home-mark {
+  width: 22px; height: 22px; border-radius: 7px; flex: 0 0 auto;
+  display: inline-grid; place-items: center;
+  background: #fff; color: var(--primary);
+  font-family: var(--font-head); font-weight: 600; font-size: 13px; line-height: 1;
+}
+@media (max-width: 460px) { .ct-home-link .ct-home-label { display: none; } }
 
 /* ---------- 0) CONSISTENT TOP-BAR ELEMENTS ---------- */
 /* Brand must not resize as you navigate (some tools used vw-based clamp). */
