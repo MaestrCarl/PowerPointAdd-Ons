@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Video recorder</title>
+<!--
+  Vie Linduma — Teleprompter video recorder (external bridge page).
+
+  WHY THIS EXISTS
+  Google Apps Script serves web apps inside a nested iframe whose `allow`
+  attribute intentionally omits camera + microphone, so getUserMedia() is
+  blocked there and cannot be enabled from your code. This page is hosted
+  OUTSIDE Apps Script (e.g. GitHub Pages) and opened as a TOP-LEVEL window,
+  where the camera works normally. It records the teleprompter + a picture-in-
+  picture of the user's face into ONE video, then hands the video back to the
+  Apps Script app via window.opener.postMessage().
+
+  URL PARAMETERS (all optional)
+    ?script=<url-encoded teleprompter text>
+    &title=<heading text>
+    &origin=<exact origin allowed to receive the video, e.g.
+             https://n-xxxxx-script.googleusercontent.com ; if omitted the
+             page posts to the opener with "*", which is fine because the
+             Apps Script side validates THIS page's origin instead>
+  It also accepts the script via postMessage after load:
+    opener -> this page: { type:'vl-init', script:'...', title:'...' }
+-->
+<style>
+  :root { --accent:#0f766e; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; height:100%; background:#000; color:#fff;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; }
+  #wrap { max-width:520px; margin:0 auto; min-height:100%; display:flex; flex-direction:column; padding:12px; }
+  h1 { font-size:1rem; font-weight:700; margin:6px 4px 10px; }
+  .stage { position:relative; width:100%; margin:0 auto; }
+  canvas { width:100%; height:auto; display:block; background:#000; border-radius:14px; }
+  video#src { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+  .rec { position:absolute; top:12px; left:12px; background:rgba(0,0,0,.5);
+    padding:4px 10px; border-radius:20px; font-size:.82rem; display:none; }
+  .rec .dot { color:#ff4d4d; }
+  .ctrls { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:12px; }
+  button { font:inherit; font-weight:600; border:0; border-radius:10px; padding:11px 16px;
+    cursor:pointer; background:#2a2f3a; color:#fff; }
+  button.primary { background:var(--accent); }
+  button.rec-on { background:#ff4d4d; }
+  button.ghost { background:transparent; border:1px solid #3a4150; }
+  button:disabled { opacity:.4; }
+  .hint { text-align:center; color:#aab3c2; font-size:.85rem; margin-top:10px; min-height:1.2em; padding:0 8px; }
+  .done { text-align:center; padding:24px; }
+  .done .ok { font-size:44px; }
+  a.link { color:#7fd8c9; }
+  input[type=file] { display:none; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <h1 id="title">Confirmation video</h1>
+  <div class="stage">
+    <canvas id="cv" width="720" height="1280"></canvas>
+    <video id="src" playsinline muted autoplay></video>
+    <div class="rec" id="rec"><span class="dot">&#9679;</span> <span id="time">0:00</span></div>
+  </div>
+  <div class="ctrls" id="ctrls"></div>
+  <div class="hint" id="hint"></div>
+  <input type="file" id="native" accept="video/*" capture="user">
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var qs = new URLSearchParams(location.search);
+  var SCRIPT_TEXT = decode(qs.get('script')) || 'Please state your name and confirm that you have read and agree to this contract.';
+  var TITLE = decode(qs.get('title')) || 'Confirmation video';
+  var TARGET_ORIGIN = qs.get('origin') || '*';   // opener may also send it via postMessage
+
+  var el = function (id) { return document.getElementById(id); };
+  el('title').textContent = TITLE;
+
+  // The opener can push config after we load (avoids long URLs).
+  window.addEventListener('message', function (e) {
+    var d = e.data || {};
+    if (d && d.type === 'vl-init') {
+      if (d.script) { SCRIPT_TEXT = String(d.script); lines = null; }
+      if (d.title) { TITLE = String(d.title); el('title').textContent = TITLE; }
+      if (d.origin) TARGET_ORIGIN = String(d.origin);
+    }
+  });
+
+  var cv = el('cv'), ctx = cv.getContext('2d'), video = el('src');
+  var stream = null, recorder = null, chunks = [], raf = null, timer = null, startT = 0;
+  var scroll = 0, lines = null, blob = null, mime = '';
+  var W = 720, H = 1280, LINE_H = 62;
+
+  function decode(s) { try { return s ? decodeURIComponent(s) : ''; } catch (e) { return s || ''; } }
+  function setHint(t) { el('hint').textContent = t || ''; }
+
+  function canRecord() {
+    try {
+      return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) &&
+        typeof MediaRecorder !== 'undefined' &&
+        !!HTMLCanvasElement.prototype.captureStream;
+    } catch (e) { return false; }
+  }
+
+  // ---- rendering -----------------------------------------------------------
+  function wrap(text, maxW) {
+    ctx.font = '600 42px system-ui,-apple-system,Segoe UI,Roboto,sans-serif';
+    var out = [];
+    String(text).split(/\n/).forEach(function (para) {
+      var words = para.split(/\s+/), line = '';
+      words.forEach(function (w) {
+        var t = line ? line + ' ' + w : w;
+        if (ctx.measureText(t).width > maxW && line) { out.push(line); line = w; }
+        else line = t;
+      });
+      out.push(line);
+    });
+    return out;
+  }
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+  var lastT = 0;
+  function frame(now) {
+    if (!lines) lines = wrap(SCRIPT_TEXT, W - 96);
+    if (!lastT) lastT = now;
+    var dt = (now - lastT) / 1000; lastT = now;
+    var recording = recorder && recorder.state === 'recording';
+    if (recording) scroll += 34 * dt;                 // teleprompter speed (px/s)
+
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+    // teleprompter (white, centred, scrolls up)
+    ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+    ctx.font = '600 42px system-ui,-apple-system,Segoe UI,Roboto,sans-serif';
+    var top = H * 0.62 - scroll;
+    for (var i = 0; i < lines.length; i++) {
+      var y = top + i * LINE_H;
+      if (y > -LINE_H && y < H + LINE_H) ctx.fillText(lines[i], W / 2, y);
+    }
+    // PiP camera, mirrored, rounded, bottom-right
+    if (video.videoWidth) {
+      var pw = 236, ph = 314, px = W - pw - 26, py = H - ph - 26;
+      ctx.save(); roundRect(px, py, pw, ph, 22); ctx.clip();
+      var vr = video.videoWidth / video.videoHeight, pr = pw / ph, dw, dh, dx, dy;
+      if (vr > pr) { dh = ph; dw = ph * vr; dx = px - (dw - pw) / 2; dy = py; }
+      else { dw = pw; dh = pw / vr; dx = px; dy = py - (dh - ph) / 2; }
+      ctx.translate(px + pw / 2, 0); ctx.scale(-1, 1); ctx.translate(-(px + pw / 2), 0);
+      ctx.drawImage(video, dx, dy, dw, dh);
+      ctx.restore();
+      ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 3; roundRect(px, py, pw, ph, 22); ctx.stroke();
+    }
+    raf = requestAnimationFrame(frame);
+  }
+
+  // ---- camera + recording --------------------------------------------------
+  function startCamera() {
+    setHint('Your browser will ask for camera & microphone — tap Allow.');
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true })
+      .then(function (s) {
+        stream = s; video.srcObject = s; video.play().catch(function () {});
+        if (!raf) raf = requestAnimationFrame(frame);
+        setHint('Camera ready — tap Record and read the script.');
+        renderCtrls();
+      })
+      .catch(function () {
+        setHint('The camera was blocked. You can still record with your device camera below.');
+        renderCtrls(true);
+      });
+  }
+  function startRecording() {
+    if (!stream) { startCamera(); return; }
+    var out = cv.captureStream(30);
+    (stream.getAudioTracks() || []).forEach(function (t) { try { out.addTrack(t); } catch (e) {} });
+    mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus') ? 'video/webm;codecs=vp9,opus'
+      : MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus') ? 'video/webm;codecs=vp8,opus'
+      : MediaRecorder.isTypeSupported('video/webm') ? 'video/webm'
+      : MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' : '';
+    try { recorder = mime ? new MediaRecorder(out, { mimeType: mime }) : new MediaRecorder(out); }
+    catch (e) { setHint('Recording is not supported on this browser — use your device camera below.'); renderCtrls(true); return; }
+    chunks = []; scroll = 0;
+    recorder.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+    recorder.onstop = function () {
+      blob = new Blob(chunks, { type: mime || 'video/webm' });
+      el('rec').style.display = 'none';
+      renderCtrls();
+      setHint('Recorded. Review, then "Send to app".');
+    };
+    recorder.start();
+    startT = Date.now();
+    el('rec').style.display = 'block';
+    timer = setInterval(function () {
+      var s = Math.floor((Date.now() - startT) / 1000);
+      el('time').textContent = Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
+      if (s >= 120) stopRecording();
+    }, 500);
+    renderCtrls();
+  }
+  function stopRecording() {
+    if (timer) { clearInterval(timer); timer = null; }
+    if (recorder && recorder.state === 'recording') { try { recorder.stop(); } catch (e) {} }
+  }
+  function retake() { blob = null; renderCtrls(); setHint('Camera ready — tap Record.'); }
+
+  // ---- native fallback -----------------------------------------------------
+  el('native').addEventListener('change', function () {
+    var f = el('native').files && el('native').files[0];
+    if (f) { blob = f; mime = f.type || 'video/mp4'; renderCtrls(); setHint('Recorded with your device camera. Tap "Send to app".'); }
+  });
+
+  // ---- send back to the Apps Script app ------------------------------------
+  function sendToApp() {
+    if (!blob) return;
+    setHint('Sending…');
+    var reader = new FileReader();
+    reader.onload = function () {
+      var base64 = String(reader.result).split(',')[1];
+      var msg = { type: 'vl-video', mime: blob.type || mime || 'video/webm', base64: base64 };
+      try { if (window.opener) window.opener.postMessage(msg, TARGET_ORIGIN); } catch (e) {}
+      showDone();
+    };
+    reader.readAsDataURL(blob);
+  }
+  function showDone() {
+    document.getElementById('wrap').innerHTML =
+      '<div class="done"><div class="ok">&#10004;</div>' +
+      '<h1>Video sent</h1><p>Return to the app to finish. You can close this tab.</p>' +
+      '<button class="primary" onclick="window.close()">Close</button></div>';
+  }
+
+  // ---- controls ------------------------------------------------------------
+  function btn(label, cls, fn) { var b = document.createElement('button'); b.textContent = label; if (cls) b.className = cls; b.onclick = fn; return b; }
+  function renderCtrls(forceNative) {
+    var c = el('ctrls'); c.innerHTML = '';
+    if (blob) {
+      c.appendChild(btn('Retake', 'ghost', retake));
+      c.appendChild(btn('Send to app', 'primary', sendToApp));
+      return;
+    }
+    if (recorder && recorder.state === 'recording') { c.appendChild(btn('Stop recording', 'rec-on', stopRecording)); return; }
+    if (canRecord() && !forceNative) {
+      if (!stream) c.appendChild(btn('Start camera', 'primary', startCamera));
+      else c.appendChild(btn('Record', 'primary', startRecording));
+    }
+    c.appendChild(btn('Use device camera', canRecord() && !forceNative ? 'ghost' : 'primary', function () { el('native').click(); }));
+  }
+
+  // boot: draw the teleprompter immediately (even before the camera starts)
+  raf = requestAnimationFrame(frame);
+  renderCtrls();
+  if (!canRecord()) setHint('Live recording is limited on this browser — use "Use device camera".');
+})();
+</script>
+</body>
+</html>
