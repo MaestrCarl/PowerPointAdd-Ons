@@ -10,18 +10,19 @@
 <link rel="stylesheet" href="../shared/classtools-ui.css">
 <script src="../shared/classtools-ui.js" defer></script>
     <script src="../shared/classtools-account.js" defer></script>
+    <script src="../../assets/tool-shell.js" data-root="../../" defer></script>
 <style>
 :root{
-  --bg:#f4f1ff;--bg-2:#e7fbff;--surface:#ffffff;--surface-2:#f6f5ff;
-  --ink:#241b4e;--muted:#6b6790;--line:#e7e3f5;
-  --primary:#6d28d9;--primary-2:#9333ea;--primary-rgb:109,40,217;
+  --bg:#F2F5FA;--bg-2:#E9F1F8;--surface:#ffffff;--surface-2:#F5F7FB;
+  --ink:#212B40;--muted:#5C6880;--line:#DEE5F0;
+  --primary:#25426B;--primary-2:#3D6396;--primary-rgb:37,66,107;
   --danger:#ff3d7f;--ok:#22c55e;--gold:#ffb020;--radius:18px;
   --font-head:'Baloo 2',sans-serif;--font-body:'Nunito',sans-serif;
 }
 .dark-mode{
-  --bg:#14122e;--bg-2:#0e1330;--surface:#211d44;--surface-2:#2a2552;
-  --ink:#efeaff;--muted:#a9a3d6;--line:#352f63;
-  --primary:#a78bfa;--primary-2:#c084fc;--primary-rgb:167,139,250;--danger:#ff5c93;--gold:#ffc861;
+  --bg:#10151F;--bg-2:#1C2740;--surface:#171E2C;--surface-2:#1E2637;
+  --ink:#E9ECF3;--muted:#A9B1C0;--line:#2A3347;
+  --primary:#6C92C7;--primary-2:#8FB0DC;--primary-rgb:108,146,199;--danger:#ff5c93;--gold:#ffc861;
 }
 *{box-sizing:border-box;}
 html,body{height:100%;}
@@ -225,7 +226,7 @@ function updateMuteIcon(){const b=$('muteBtn');b.classList.toggle('on',muted);b.
 function toggleMute(){muted=!muted;updateMuteIcon();}
 
 /* ---------- confetti ---------- */
-const PAL=['#6d28d9','#ff3d7f','#14d6c4','#ffb020','#2f6bff','#22c55e','#ef4444','#f97316'];
+const PAL=['#3D6396','#ff3d7f','#14d6c4','#ffb020','#2f6bff','#22c55e','#ef4444','#f97316'];
 function confetti(ms){const c=$('confetti'),W=c.width=innerWidth,H=c.height=innerHeight,ctx=c.getContext('2d');const ps=[];for(let i=0;i<100;i++)ps.push({x:W/2+(Math.random()-.5)*W*.3,y:H*.35,vx:(Math.random()-.5)*9,vy:Math.random()*-9-4,g:.22+Math.random()*.12,s:5+Math.random()*6,rot:Math.random()*6,vr:(Math.random()-.5)*.3,c:PAL[i%PAL.length]});const end=performance.now()+(ms||1600);(function f(now){ctx.clearRect(0,0,W,H);ps.forEach(p=>{p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.fillStyle=p.c;ctx.globalAlpha=.9;ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);ctx.restore();});now<end?requestAnimationFrame(f):ctx.clearRect(0,0,W,H);})(performance.now());}
 
 /* ---------- TTS ---------- */
@@ -412,12 +413,12 @@ function downloadCert(){
   const pct=Math.round((score/WORDS.length)*100);
   const c=document.createElement('canvas');c.width=900;c.height=560;const x=c.getContext('2d');
   const g=x.createLinearGradient(0,0,900,560);g.addColorStop(0,'#ffffff');g.addColorStop(1,'#efe9ff');x.fillStyle=g;x.fillRect(0,0,900,560);
-  x.strokeStyle='#6d28d9';x.lineWidth=10;x.strokeRect(16,16,868,528);
-  x.textAlign='center';x.fillStyle='#6d28d9';x.font='700 30px Baloo 2, Arial';x.fillText('★ Certificate of Completion ★',450,90);
-  x.fillStyle='#241b4e';x.font='700 46px Baloo 2, Arial';x.fillText(student?student.name:'Great work!',450,180);
+  x.strokeStyle='#25426B';x.lineWidth=10;x.strokeRect(16,16,868,528);
+  x.textAlign='center';x.fillStyle='#25426B';x.font='700 30px Baloo 2, Arial';x.fillText('★ Certificate of Completion ★',450,90);
+  x.fillStyle='#212B40';x.font='700 46px Baloo 2, Arial';x.fillText(student?student.name:'Great work!',450,180);
   if(student){x.font='600 22px Nunito, Arial';x.fillStyle='#6b6790';x.fillText(student.num+'  ·  '+student.grade+'  ·  '+student.cls,450,220);}
-  x.fillStyle='#241b4e';x.font='700 30px Baloo 2, Arial';x.fillText('Spelling Helper',450,290);
-  x.fillStyle='#9333ea';x.font='700 64px Baloo 2, Arial';x.fillText(score+' / '+WORDS.length+'   ('+pct+'%)',450,380);
+  x.fillStyle='#212B40';x.font='700 30px Baloo 2, Arial';x.fillText('Spelling Helper',450,290);
+  x.fillStyle='#3D6396';x.font='700 64px Baloo 2, Arial';x.fillText(score+' / '+WORDS.length+'   ('+pct+'%)',450,380);
   x.fillStyle='#6b6790';x.font='600 20px Nunito, Arial';x.fillText(new Date().toLocaleString(),450,440);
   // copy QR canvas if present
   const qr=$('qrbox').querySelector('canvas')||$('qrbox').querySelector('img');

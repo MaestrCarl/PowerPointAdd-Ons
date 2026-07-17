@@ -10,11 +10,12 @@
     <link rel="stylesheet" href="../shared/classtools-ui.css">
     <script src="../shared/classtools-ui.js" defer></script>
     <script src="../shared/classtools-account.js" defer></script>
+    <script src="../../assets/tool-shell.js" data-root="../../" defer></script>
     <style>
-        :root{--bg:#f4f1ff;--bg-2:#e7fbff;--surface:#fff;--ink:#241b4e;--muted:#6b6790;--line:#e7e3f5;
-            --primary:#6d28d9;--primary-2:#9333ea;--primary-rgb:109,40,217;--radius:18px;--gold:#ffb020;
+        :root{--bg:#F2F5FA;--bg-2:#E9F1F8;--surface:#fff;--ink:#212B40;--muted:#5C6880;--line:#DEE5F0;
+            --primary:#25426B;--primary-2:#3D6396;--primary-rgb:37,66,107;--radius:18px;--gold:#ffb020;
             --font-head:'Baloo 2',sans-serif;--font-body:'Nunito',sans-serif;--font-logo:'Luckiest Guy',cursive;}
-        .dark-mode{--bg:#14122e;--bg-2:#0e1330;--surface:#211d44;--ink:#efeaff;--muted:#a9a3d6;--line:#352f63;--primary:#a78bfa;--primary-2:#c084fc;--primary-rgb:167,139,250;}
+        .dark-mode{--bg:#10151F;--bg-2:#1C2740;--surface:#171E2C;--ink:#E9ECF3;--muted:#A9B1C0;--line:#2A3347;--primary:#6C92C7;--primary-2:#8FB0DC;--primary-rgb:108,146,199;}
         *{box-sizing:border-box;}
         body{font-family:var(--font-body);margin:0;min-height:100vh;color:var(--ink);background:radial-gradient(1200px 700px at 85% -15%,var(--bg-2),var(--bg)) fixed;overflow-x:hidden;transition:background .3s,color .3s;}
         .topbar{display:flex;align-items:center;gap:10px;padding:9px 14px;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;box-shadow:0 4px 16px rgba(var(--primary-rgb),.35);}
@@ -105,13 +106,13 @@
         /* TOOL REGISTRY — grouped into sections. Append to add more. */
         const SECTIONS = [
             { name: 'Classroom Tools', tools: [
-                { title: 'Timer Tools', desc: 'Countdown, stopwatch, pomodoro, race & more.', icon: 'fas fa-stopwatch', url: '../MyTimerAddin/timer.html', c1:'#6d28d9', c2:'#9333ea' },
+                { title: 'Timer Tools', desc: 'Countdown, stopwatch, pomodoro, race & more.', icon: 'fas fa-stopwatch', url: '../MyTimerAddin/timer.html', c1:'#25426B', c2:'#3D6396' },
                 { title: 'Pickers, Pairings & Groupings', desc: 'Pick students, make pairs & groups, spinner.', icon: 'fas fa-dice', url: '../RandomPicker/picker.html', c1:'#2f6bff', c2:'#14d6c4' },
                 { title: 'Intro & Reveal Tools', desc: "Mystery box, doors, envelopes, wheel, scratch & reveal.", icon: 'fas fa-wand-sparkles', url: '../IntroTools/intro.html', c1:'#f97316', c2:'#ff3d7f' }
             ]},
             { name: 'Gaming Tools', tools: [
                 { title: 'Word Games & Builders', desc: 'Hangman, scramble, word search, crossword & more.', icon: 'fas fa-spell-check', url: '../WordGames/games.html', c1:'#ff3d7f', c2:'#f97316' },
-                { title: 'Spelling Helper', desc: 'Listen & spell — type, click letters or letter blocks. Natural voice.', icon: 'fas fa-ear-listen', url: '../SpellingHelper/spelling.html', c1:'#9333ea', c2:'#6d28d9' },
+                { title: 'Spelling Helper', desc: 'Listen & spell — type, click letters or letter blocks. Natural voice.', icon: 'fas fa-ear-listen', url: '../SpellingHelper/spelling.html', c1:'#3D6396', c2:'#25426B' },
                 { title: 'Word Splitter', desc: 'Split words into syllables — arrange parts or fill the blanks, with audio & hints.', icon: 'fas fa-scissors', url: '../WordSplitter/splitter.html', c1:'#14d6c4', c2:'#2f6bff' },
                 { title: 'Scoreboard & Scoring', desc: 'Teams, members & live scoring.', icon: 'fas fa-ranking-star', url: '../Scoreboard/scoreboard.html', c1:'#22c55e', c2:'#14d6c4' }
             ]}

@@ -10,9 +10,10 @@
     <link rel="stylesheet" href="../shared/classtools-ui.css">
     <script src="../shared/classtools-ui.js" defer></script>
     <script src="../shared/classtools-account.js" defer></script>
+    <script src="../../assets/tool-shell.js" data-root="../../" defer></script>
     <style>
-        :root{--bg:#f4f1ff;--bg-2:#e7fbff;--surface:#fff;--ink:#241b4e;--muted:#6b6790;--line:#e7e3f5;--primary:#6d28d9;--primary-2:#9333ea;--primary-rgb:109,40,217;--danger:#ff3d7f;--ok:#22c55e;--gold:#ffb020;--radius:16px;--font-head:'Baloo 2',sans-serif;--font-body:'Nunito',sans-serif;}
-        .dark-mode{--bg:#14122e;--bg-2:#0e1330;--surface:#211d44;--ink:#efeaff;--muted:#a9a3d6;--line:#352f63;--primary:#a78bfa;--primary-2:#c084fc;--primary-rgb:167,139,250;--danger:#ff5c93;}
+        :root{--bg:#F2F5FA;--bg-2:#E9F1F8;--surface:#fff;--ink:#212B40;--muted:#5C6880;--line:#DEE5F0;--primary:#25426B;--primary-2:#3D6396;--primary-rgb:37,66,107;--danger:#ff3d7f;--ok:#22c55e;--gold:#ffb020;--radius:16px;--font-head:'Baloo 2',sans-serif;--font-body:'Nunito',sans-serif;}
+        .dark-mode{--bg:#10151F;--bg-2:#1C2740;--surface:#171E2C;--ink:#E9ECF3;--muted:#A9B1C0;--line:#2A3347;--primary:#6C92C7;--primary-2:#8FB0DC;--primary-rgb:108,146,199;--danger:#ff5c93;}
         *{box-sizing:border-box;}html,body{height:100%;}
         body{margin:0;font-family:var(--font-body);color:var(--ink);height:100vh;display:flex;flex-direction:column;overflow:hidden;background:radial-gradient(1200px 700px at 85% -15%,var(--bg-2),var(--bg)) fixed;transition:background .3s,color .3s;}
         button{font-family:var(--font-body);}
@@ -78,7 +79,7 @@
         .deco.bunting{left:0;right:0;top:0;height:26px;display:flex;justify-content:center;gap:10px;}
         .deco.bunting i{width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:16px solid var(--c,#ff3d7f);filter:drop-shadow(0 2px 2px rgba(0,0,0,.15));}
         .deco.plant{left:3%;bottom:5%;font-size:clamp(64px,14vmin,130px);z-index:1;filter:drop-shadow(0 6px 6px rgba(0,0,0,.25));}
-        .deco.rug{left:50%;bottom:6%;width:60%;height:48px;transform:translateX(-50%) rotateX(60deg);border-radius:50%;background:radial-gradient(circle,rgba(109,40,217,.30),rgba(109,40,217,0) 70%);z-index:1;}
+        .deco.rug{left:50%;bottom:6%;width:60%;height:48px;transform:translateX(-50%) rotateX(60deg);border-radius:50%;background:radial-gradient(circle,rgba(37,66,107,.30),rgba(37,66,107,0) 70%);z-index:1;}
         /* keep the reveal items (envelopes / doors / scratch cards) above the floor line & decor */
         .room .grid2{position:relative;z-index:4;}
         .room::after{z-index:0;}
@@ -103,8 +104,8 @@
 
         /* ===== ENVELOPES / DOORS GRID ===== */
         .grid2{display:grid;gap:16px;grid-template-columns:repeat(var(--cc,3),1fr);width:100%;max-width:680px;perspective:1000px;}
-        .env{aspect-ratio:4/3;border-radius:12px;background:linear-gradient(160deg,#7c3aed,#9333ea);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.9rem;position:relative;box-shadow:0 14px 26px rgba(0,0,0,.26);transition:transform .3s;border:none;transform-style:preserve-3d;overflow:hidden;}
-        .env::before{content:"";position:absolute;left:0;top:0;width:100%;height:60%;background:linear-gradient(180deg,#8b53f0,#6d28d9);clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top;transition:transform .5s;z-index:2;box-shadow:0 3px 6px rgba(0,0,0,.2);}
+        .env{aspect-ratio:4/3;border-radius:12px;background:linear-gradient(160deg,#33578C,#3D6396);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.9rem;position:relative;box-shadow:0 14px 26px rgba(0,0,0,.26);transition:transform .3s;border:none;transform-style:preserve-3d;overflow:hidden;}
+        .env::before{content:"";position:absolute;left:0;top:0;width:100%;height:60%;background:linear-gradient(180deg,#4E79B3,#25426B);clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top;transition:transform .5s;z-index:2;box-shadow:0 3px 6px rgba(0,0,0,.2);}
         .env::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(0,0,0,.12));}
         .env i{position:relative;z-index:1;}
         .env .seal{position:absolute;top:46%;left:50%;width:30px;height:30px;border-radius:50%;background:var(--gold);transform:translate(-50%,-50%);z-index:3;box-shadow:0 2px 5px rgba(0,0,0,.3);}
@@ -276,11 +277,11 @@
         /* ===== REGISTRY ===== */
         const ACTS=[
             {id:'box',name:"What's in the Box",icon:'fa-box-open',c1:'#f97316',c2:'#ff3d7f',desc:'Shake the box & pick mystery items.',label:'Items (text, emoji, or image/video URL)',ph:'🎁\nApple\nSurprise!\nhttps://site.com/cat.png',opt:'pick'},
-            {id:'env',name:'Magic Envelopes',icon:'fa-envelope',c1:'#6d28d9',c2:'#9333ea',desc:'Open an envelope to reveal what’s inside.',label:'One item per envelope',ph:'Question 1\n🎬 Movie clue\nBonus points'},
+            {id:'env',name:'Magic Envelopes',icon:'fa-envelope',c1:'#25426B',c2:'#3D6396',desc:'Open an envelope to reveal what’s inside.',label:'One item per envelope',ph:'Question 1\n🎬 Movie clue\nBonus points'},
             {id:'door',name:'Mystery Doors',icon:'fa-door-open',c1:'#2f6bff',c2:'#14d6c4',desc:'Pick a door — see what’s behind it.',label:'One reveal per door',ph:'🏆 Prize\nTry again\n⭐ Bonus'},
             {id:'wheel',name:'Mystery Wheel',icon:'fa-life-ring',c1:'#22c55e',c2:'#14d6c4',desc:'Spin to choose a topic or name.',label:'One option per line',ph:'Volcanoes\nSpace\nDinosaurs\nOceans'},
             {id:'scratch',name:'Scratch Card',icon:'fa-eraser',c1:'#ffb020',c2:'#f97316',desc:'Scratch the card to reveal it.',label:'One item per card',ph:'You win! 🎉\n🍀 Lucky\nTry again'},
-            {id:'pixel',name:'Hidden Reveal',icon:'fa-eye-low-vision',c1:'#a855f7',c2:'#6d28d9',desc:'Guess the blurred item as it clears.',label:'One item per line (text/emoji or image URL)',ph:'Elephant\n🗼 Eiffel Tower\nhttps://site.com/map.png'}
+            {id:'pixel',name:'Hidden Reveal',icon:'fa-eye-low-vision',c1:'#6C92C7',c2:'#25426B',desc:'Guess the blurred item as it clears.',label:'One item per line (text/emoji or image URL)',ph:'Elephant\n🗼 Eiffel Tower\nhttps://site.com/map.png'}
         ];
         const M={}; ACTS.forEach(a=>M[a.id]=a);
         const PLAYERS={box:playBox,env:playEnvelopes,door:playDoors,wheel:playWheel,scratch:playScratch,pixel:playPixel};
@@ -311,7 +312,7 @@
         function sReveal(){mar(523.25,0,.55);mar(659.25,.09,.55);mar(783.99,.18,.55);mar(1046.5,.3,.6);}
         function sTick(){tn(900,.02,'square',.05);}function sShake(){tn(140,.08,'sawtooth',.15);tn(180,.08,'sawtooth',.12,.06);}function sClick(){tn(660,.05,'sine',.2);}
         function toggleMute(){muted=!muted;const b=document.getElementById('muteBtn');b.classList.toggle('on',muted);b.innerHTML=muted?'<i class="fas fa-volume-xmark"></i>':'<i class="fas fa-volume-high"></i>';if(!muted){ea();mar(880,0,.4);}}
-        const PAL=['#6d28d9','#ff3d7f','#14d6c4','#ffb020','#2f6bff','#22c55e','#ef4444','#f97316'];
+        const PAL=['#3D6396','#ff3d7f','#14d6c4','#ffb020','#2f6bff','#22c55e','#ef4444','#f97316'];
         function confetti(ms){const c=document.getElementById('confetti'),W=c.width=innerWidth,H=c.height=innerHeight,x=c.getContext('2d'),p=[];for(let i=0;i<90;i++)p.push({x:W/2+(Math.random()-.5)*W*.3,y:H*.35,vx:(Math.random()-.5)*9,vy:Math.random()*-9-4,g:.22+Math.random()*.12,s:5+Math.random()*6,r:Math.random()*6,vr:(Math.random()-.5)*.3,c:PAL[i%PAL.length]});const end=performance.now()+(ms||1500);(function f(n){x.clearRect(0,0,W,H);p.forEach(o=>{o.vy+=o.g;o.x+=o.vx;o.y+=o.vy;o.r+=o.vr;x.save();x.translate(o.x,o.y);x.rotate(o.r);x.fillStyle=o.c;x.globalAlpha=.9;x.fillRect(-o.s/2,-o.s/2,o.s,o.s*.6);x.restore();});if(n<end)requestAnimationFrame(f);else x.clearRect(0,0,W,H);})(performance.now());}
         function enc(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o))));}
         function dec(s){return JSON.parse(decodeURIComponent(escape(atob(s))));}
@@ -354,7 +355,7 @@
         function loadDraft(){try{const d=JSON.parse(localStorage.getItem('ct-intro-draft'));if(d&&d.g&&M[d.g]){openForm(d.g);set('title',d.t);set('items',d.items);if(d.pick)set('optPick',d.pick);document.getElementById('optExclude').checked=d.exclude!==false;if(d.steps)set('optSteps',d.steps);if(d.blur)set('optBlur',d.blur);document.getElementById('optOcclude').checked=!!d.occlude;maskHeadsUp();introPreview();}}catch(e){}}
         function goEdit(){const wasPlaying=location.hash.indexOf('d=')>=0;const id=cfg?cfg.g:cur;location.hash='';if(id&&M[id])openForm(id);if(wasPlaying)document.getElementById('regenNotice').style.display='block';}
         function currentLink(){if(location.hash.indexOf('d=')>=0)return location.href;const p=buildPayload();return p?linkFor(p):null;}
-        function openShare(){const url=currentLink();if(!url){flash('Add at least one item first.');return;}document.getElementById('shareLink').value=url;const box=document.getElementById('qrBox');box.innerHTML='';try{new QRCode(box,{text:url,width:188,height:188,colorDark:'#241b4e',colorLight:'#ffffff'});}catch(e){box.innerHTML='<span class="hint">QR unavailable offline.</span>';}openModal('shareModal');}
+        function openShare(){const url=currentLink();if(!url){flash('Add at least one item first.');return;}document.getElementById('shareLink').value=url;const box=document.getElementById('qrBox');box.innerHTML='';try{new QRCode(box,{text:url,width:188,height:188,colorDark:'#212B40',colorLight:'#ffffff'});}catch(e){box.innerHTML='<span class="hint">QR unavailable offline.</span>';}openModal('shareModal');}
         function copyShare(){const i=document.getElementById('shareLink');i.select();try{navigator.clipboard.writeText(i.value);}catch(e){}}
 
         /* ===== PLAYER FRAMEWORK ===== */
@@ -378,7 +379,7 @@
             else if(cur==='pixel'){ const it=parseItem(items[0]); host.innerHTML=count+'<div class="pix" style="--b:14px">'+(it.t==='text'?'<span class="pixtext" style="font-size:2.2rem">'+esc(it.v)+'</span>':itemHTML(it,false))+'</div><div class="pvnote">Clears gradually as students guess.</div>'; }
         }
         function wheelMini(items){ const labels=items.map(function(l){return parseItem(l);}); const nn=labels.length,seg=360/nn; let stops=''; for(let i=0;i<nn;i++){const c=PAL[i%PAL.length];stops+=c+' '+(i*seg)+'deg '+((i+1)*seg)+'deg'+(i<nn-1?',':'');} return '<div class="wheelmini" style="background:conic-gradient('+stops+')"></div>'; }
-        function roomDeco(){return '<div class="deco bunting"><i style="--c:#ff3d7f"></i><i style="--c:#ffb020"></i><i style="--c:#14d6c4"></i><i style="--c:#6d28d9"></i><i style="--c:#22c55e"></i><i style="--c:#2f6bff"></i></div><div class="deco window"></div><div class="deco frame"></div><div class="deco plant">🪴</div><div class="deco rug"></div>';}
+        function roomDeco(){return '<div class="deco bunting"><i style="--c:#ff3d7f"></i><i style="--c:#ffb020"></i><i style="--c:#14d6c4"></i><i style="--c:#25426B"></i><i style="--c:#22c55e"></i><i style="--c:#2f6bff"></i></div><div class="deco window"></div><div class="deco frame"></div><div class="deco plant">🪴</div><div class="deco rug"></div>';}
 
         /* ===== REVEAL FRAMEWORK (3D modal reveal + history + remove toggle) ===== */
         let REVEALED=[], removeRevealed=true;

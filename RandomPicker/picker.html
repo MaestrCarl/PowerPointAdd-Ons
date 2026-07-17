@@ -9,18 +9,19 @@
     <link rel="stylesheet" href="../shared/classtools-ui.css">
     <script src="../shared/classtools-ui.js" defer></script>
     <script src="../shared/classtools-account.js" defer></script>
+    <script src="../../assets/tool-shell.js" data-root="../../" defer></script>
     <style>
         :root {
-            --bg: #f4f1ff; --bg-2: #e7fbff; --surface: #ffffff; --surface-2: #f6f5ff;
-            --ink: #241b4e; --muted: #6b6790; --line: #e7e3f5;
-            --primary: #6d28d9; --primary-2: #9333ea; --primary-rgb: 109, 40, 217;
+            --bg: #F2F5FA; --bg-2: #E9F1F8; --surface: #ffffff; --surface-2: #F5F7FB;
+            --ink: #212B40; --muted: #5C6880; --line: #DEE5F0;
+            --primary: #25426B; --primary-2: #3D6396; --primary-rgb: 37, 66, 107;
             --danger: #ff3d7f; --gold: #ffb020; --radius: 18px;
             --font-head: 'Baloo 2', sans-serif; --font-body: 'Nunito', sans-serif;
         }
         .dark-mode {
-            --bg: #14122e; --bg-2: #0e1330; --surface: #211d44; --surface-2: #2a2552;
-            --ink: #efeaff; --muted: #a9a3d6; --line: #352f63;
-            --primary: #a78bfa; --primary-2: #c084fc; --primary-rgb: 167, 139, 250;
+            --bg: #10151F; --bg-2: #1C2740; --surface: #171E2C; --surface-2: #1E2637;
+            --ink: #E9ECF3; --muted: #A9B1C0; --line: #2A3347;
+            --primary: #6C92C7; --primary-2: #8FB0DC; --primary-rgb: 108, 146, 199;
             --danger: #ff5c93; --gold: #ffc861;
         }
         * { box-sizing: border-box; }
@@ -364,7 +365,7 @@
     <input type="file" id="fileImport" accept=".json,.txt" style="display:none">
 
     <script>
-        const PALETTE = ['#6d28d9','#ff3d7f','#14d6c4','#ffb020','#2f6bff','#22c55e','#ef4444','#f97316','#a855f7','#06b6d4','#eab308','#10b981'];
+        const PALETTE = ['#3D6396','#ff3d7f','#14d6c4','#ffb020','#2f6bff','#22c55e','#ef4444','#f97316','#a855f7','#06b6d4','#eab308','#10b981'];
         const STATE_KEY = 'ct-picker-state';
         const THEME_KEY = 'ct-theme';
         let lastResult = { label: '', body: '', present: null };

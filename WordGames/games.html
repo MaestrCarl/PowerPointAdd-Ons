@@ -10,11 +10,12 @@
     <link rel="stylesheet" href="../shared/classtools-ui.css">
     <script src="../shared/classtools-ui.js" defer></script>
     <script src="../shared/classtools-account.js" defer></script>
+    <script src="../../assets/tool-shell.js" data-root="../../" defer></script>
     <style>
-        :root{--bg:#f4f1ff;--bg-2:#e7fbff;--surface:#fff;--ink:#241b4e;--muted:#6b6790;--line:#e7e3f5;
-            --primary:#6d28d9;--primary-2:#9333ea;--primary-rgb:109,40,217;--danger:#ff3d7f;--ok:#22c55e;--gold:#ffb020;--radius:16px;
+        :root{--bg:#F2F5FA;--bg-2:#E9F1F8;--surface:#fff;--ink:#212B40;--muted:#5C6880;--line:#DEE5F0;
+            --primary:#25426B;--primary-2:#3D6396;--primary-rgb:37,66,107;--danger:#ff3d7f;--ok:#22c55e;--gold:#ffb020;--radius:16px;
             --font-head:'Baloo 2',sans-serif;--font-body:'Nunito',sans-serif;}
-        .dark-mode{--bg:#14122e;--bg-2:#0e1330;--surface:#211d44;--ink:#efeaff;--muted:#a9a3d6;--line:#352f63;--primary:#a78bfa;--primary-2:#c084fc;--primary-rgb:167,139,250;--danger:#ff5c93;}
+        .dark-mode{--bg:#10151F;--bg-2:#1C2740;--surface:#171E2C;--ink:#E9ECF3;--muted:#A9B1C0;--line:#2A3347;--primary:#6C92C7;--primary-2:#8FB0DC;--primary-rgb:108,146,199;--danger:#ff5c93;}
         *{box-sizing:border-box;} html,body{height:100%;}
         body{margin:0;font-family:var(--font-body);color:var(--ink);height:100vh;display:flex;flex-direction:column;overflow:hidden;background:radial-gradient(1200px 700px at 85% -15%,var(--bg-2),var(--bg)) fixed;transition:background .3s,color .3s;}
         button{font-family:var(--font-body);}
@@ -339,11 +340,11 @@
            GAME REGISTRY — add a new game by adding a META entry + a play fn.
            ===================================================================== */
         const GAMES = [
-            { id:'hg', name:'Hangman', icon:'fa-person-hiking', c1:'#6d28d9', c2:'#9333ea', desc:'Guess the word letter by letter.', label:'Words (optional hint: "word | hint")', ph:'photosynthesis | how plants make food\ngravity | pulls things down', tries:false },
+            { id:'hg', name:'Hangman', icon:'fa-person-hiking', c1:'#25426B', c2:'#3D6396', desc:'Guess the word letter by letter.', label:'Words (optional hint: "word | hint")', ph:'photosynthesis | how plants make food\ngravity | pulls things down', tries:false },
             { id:'sc', name:'Word Scramble', icon:'fa-shuffle', c1:'#ff3d7f', c2:'#f97316', desc:'Unscramble the jumbled letters.', label:'Words to scramble — one per line', ph:'elephant\nrainbow\nvolcano', tries:true },
             { id:'se', name:'Sentence Unscramble', icon:'fa-quote-left', c1:'#2f6bff', c2:'#14d6c4', desc:'Put the words in the right order.', label:'Sentences — one per line', ph:'The quick brown fox jumps.', tries:true },
             { id:'cat', name:'Category Sort', icon:'fa-layer-group', c1:'#22c55e', c2:'#14d6c4', desc:'Sort items into the right category.', label:'One category per line:  Category = item1, item2, item3', ph:'Mammals = dog, cat, whale\nBirds = eagle, sparrow, owl', tries:false, kb:false },
-            { id:'ws', name:'Word Search', icon:'fa-table-cells', c1:'#a855f7', c2:'#6d28d9', desc:'Find hidden words in the grid.', label:'Words to hide', ph:'planet', tries:false, kb:false, custom:true },
+            { id:'ws', name:'Word Search', icon:'fa-table-cells', c1:'#6C92C7', c2:'#25426B', desc:'Find hidden words in the grid.', label:'Words to hide', ph:'planet', tries:false, kb:false, custom:true },
             { id:'cw', name:'Crossword', icon:'fa-puzzle-piece', c1:'#f59e0b', c2:'#ff3d7f', desc:'Fill the crossword from clues.', label:'Words & clues', tries:false, kb:false, custom:true },
             { id:'buzz', name:'Quiz Buzzer', icon:'fa-bell', c1:'#ef4444', c2:'#f97316', desc:'Buzz in — first team to press wins the round.', special:true }
         ];
@@ -383,7 +384,7 @@
         function sGood(){mar(659.25,0,.5);}function sBad(){tn(180,.2,'sawtooth',.22);}function sKey(){tn(720,.04,'sine',.16);}function sHint(){tn(1046,.1,'sine',.2);}
         function sWin(){mar(523.25,0,.55);mar(659.25,.09,.55);mar(783.99,.18,.55);mar(1046.5,.3,.6);}
         function toggleMute(){muted=!muted;const b=document.getElementById('muteBtn');b.classList.toggle('on',muted);b.innerHTML=muted?'<i class="fas fa-volume-xmark"></i>':'<i class="fas fa-volume-high"></i>';if(!muted){ea();mar(880,0,.4);}}
-        const PAL=['#6d28d9','#ff3d7f','#14d6c4','#ffb020','#2f6bff','#22c55e','#ef4444','#f97316'];
+        const PAL=['#3D6396','#ff3d7f','#14d6c4','#ffb020','#2f6bff','#22c55e','#ef4444','#f97316'];
         function confetti(ms){const c=document.getElementById('confetti'),W=c.width=innerWidth,H=c.height=innerHeight,x=c.getContext('2d'),p=[];for(let i=0;i<90;i++)p.push({x:W/2+(Math.random()-.5)*W*.3,y:H*.35,vx:(Math.random()-.5)*9,vy:Math.random()*-9-4,g:.22+Math.random()*.12,s:5+Math.random()*6,r:Math.random()*6,vr:(Math.random()-.5)*.3,c:PAL[i%PAL.length]});const end=performance.now()+(ms||1500);(function f(n){x.clearRect(0,0,W,H);p.forEach(o=>{o.vy+=o.g;o.x+=o.vx;o.y+=o.vy;o.r+=o.vr;x.save();x.translate(o.x,o.y);x.rotate(o.r);x.fillStyle=o.c;x.globalAlpha=.9;x.fillRect(-o.s/2,-o.s/2,o.s,o.s*.6);x.restore();});if(n<end)requestAnimationFrame(f);else x.clearRect(0,0,W,H);})(performance.now());}
         function enc(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o))));}
         function dec(s){return JSON.parse(decodeURIComponent(escape(atob(s))));}
@@ -663,7 +664,7 @@
 
         /* ===== SHARE + QR ===== */
         function currentLink(){ if(location.hash.indexOf('d=')>=0) return location.href; const p=buildPayload(); return p?linkFor(p):null; }
-        function openShare(){ const url=currentLink(); if(!url){flash('Add at least one item first.');return;} document.getElementById('shareLink').value=url; const box=document.getElementById('qrBox'); box.innerHTML=''; try{ new QRCode(box,{text:url,width:188,height:188,colorDark:'#241b4e',colorLight:'#ffffff'}); }catch(e){ box.innerHTML='<span class="hint">QR unavailable offline.</span>'; } openModal('shareModal'); }
+        function openShare(){ const url=currentLink(); if(!url){flash('Add at least one item first.');return;} document.getElementById('shareLink').value=url; const box=document.getElementById('qrBox'); box.innerHTML=''; try{ new QRCode(box,{text:url,width:188,height:188,colorDark:'#212B40',colorLight:'#ffffff'}); }catch(e){ box.innerHTML='<span class="hint">QR unavailable offline.</span>'; } openModal('shareModal'); }
         function copyShare(){ const i=document.getElementById('shareLink'); i.select(); try{navigator.clipboard.writeText(i.value);}catch(e){} }
 
         /* ===== IN-GAME TIMER ===== */
