@@ -50,6 +50,37 @@
   var TOOLS_LIST = [['picker', 'Pickers & Groups'], ['timer', 'Timer Tools'], ['intro', 'Intro & Reveal'], ['wordgames', 'Word Games'], ['spelling', 'Spelling Helper'], ['splitter', 'Word Splitter'], ['scoreboard', 'Scoreboard']];
   var TOOL_FOLDER = { wordgames: 'WordGames', picker: 'Pickers', timer: 'Timer', scoreboard: 'Scoreboard', intro: 'IntroTools', splitter: 'WordSplitter', spelling: 'SpellingHelper', hub: 'ClassTools' };
   var TYPES = [['class', 'Class list (students)'], ['words', 'Word / spelling list'], ['questions', 'Questions'], ['items', 'General items'], ['media', 'Media (images/links)']];
+  /* Lists that are always there, whether or not a teacher has saved anything.
+     Kept OUT of the `lists` array on purpose: that array is what gets written to
+     the folder, exported and deleted, and a built-in has no business in any of
+     those. It is merged in only where lists are OFFERED — listLists and getList
+     — so save, scan, export and delete carry on seeing only real files.
+
+     Numbers exists because a roster is not always names. Seat numbers, jersey
+     numbers, a class whose list you do not have to hand: typing 1 to 30 into a
+     textarea is a minute of nobody's time well spent. */
+  var BUILTIN = [{
+    id: 'ct:builtin:numbers-30',
+    title: 'Numbers',
+    /* Offered under every type that means "a list of things with names on
+       them". A roster of thirty, thirty items to sort, thirty questions to
+       hand out — the numbers serve all of them, and a teacher who has filtered
+       the picker to "General items" should not be told there is nothing
+       ready-made. Not `media`: a number is not a picture or a link. */
+    type: 'class',
+    types: ['class', 'items', 'words', 'questions'],
+    tools: [],                      // empty means every tool
+    builtin: true,
+    items: (function () { var a = []; for (var i = 1; i <= 30; i++) a.push(String(i)); return a; })()
+  }];
+  function builtinFor(type, forTool) {
+    return BUILTIN.filter(function (L) {
+      var types = L.types || [L.type];
+      return (!type || types.indexOf(type) >= 0) &&
+             (!forTool || !L.tools.length || L.tools.indexOf(forTool) >= 0);
+    });
+  }
+
   var profile = { name: '', subjects: [], photo: '' };
   var settings = { defaultDark: false };
   function typeLabel(t) { for (var i = 0; i < TYPES.length; i++) if (TYPES[i][0] === t) return TYPES[i][1]; return t; }
@@ -323,7 +354,11 @@
     }
     drawer.innerHTML = h;
   }
-  function getList(id) { for (var i = 0; i < lists.length; i++) if (lists[i].id === id) return lists[i]; return null; }
+  function getList(id) {
+    for (var i = 0; i < lists.length; i++) if (lists[i].id === id) return lists[i];
+    for (var j = 0; j < BUILTIN.length; j++) if (BUILTIN[j].id === id) return BUILTIN[j];
+    return null;
+  }
 
   window.ctAccount = {
     tool: TOOL,
@@ -331,6 +366,7 @@
     scan: function () { if (!dirHandle) { chooseFolder(); return; } scanFolder().then(function (ok) { toast(ok ? 'Scanned — ' + lists.length + ' list(s) found.' : 'Could not read folder. Try “Change folder”.'); render(); }); },
     export: exportBundle, import: importBundle,
     listLists: function (type, forTool) { return lists.filter(function (L) { return (!type || L.type === type) && (!forTool || !L.tools.length || L.tools.indexOf(forTool) >= 0); }); },
+    builtinLists: builtinFor,
     getList: getList, onChange: function (fn) { listeners.push(fn); },
     open: openDr, _close: closeDr,
     _new: function () { isNew = true; editingId = null; render(); },
@@ -405,9 +441,17 @@
   }
   function fillOptions(ctrl, type, lockType) {
     var sel = ctrl.querySelector('.ct-lp-list');
-    var rel = window.ctAccount.listLists(type || lockType || '', TOOL === 'hub' ? '' : TOOL);
-    sel.innerHTML = '<option value="">' + (rel.length ? 'Load a saved list…' : 'No saved lists yet') + '</option>' +
-      rel.map(function (L) { return '<option value="' + L.id + '">' + esc(L.title) + ' (' + (L.items || []).length + ')</option>'; }).join('');
+    var t = type || lockType || '', forTool = TOOL === 'hub' ? '' : TOOL;
+    var rel = window.ctAccount.listLists(t, forTool);
+    var built = builtinFor(t, forTool);
+    var opt = function (L) {
+      return '<option value="' + L.id + '">' + esc(L.title) + ' (' + (L.items || []).length + ')</option>';
+    };
+    /* Grouped, not merged. A built-in cannot be renamed or deleted, so showing
+       it in the same run as the teacher's own lists invites them to try. */
+    sel.innerHTML = '<option value="">' + (rel.length || built.length ? 'Load a list…' : 'No saved lists yet') + '</option>' +
+      (built.length ? '<optgroup label="Ready made">' + built.map(opt).join('') + '</optgroup>' : '') +
+      (rel.length ? '<optgroup label="Your lists">' + rel.map(opt).join('') + '</optgroup>' : '');
   }
   listeners.push(buildListPickers);
 
